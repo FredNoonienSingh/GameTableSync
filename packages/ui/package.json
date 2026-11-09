@@ -1,0 +1,17 @@
+{
+  "name": "@gts/ui",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "peerDependencies": {
+    "@mantine/core": "*",
+    "@mantine/hooks": "*",
+    "@tabler/icons-react": "*",
+    "framer-motion": "*",
+    "next": "*",
+    "next-intl": "*",
+    "react": "*",
+    "react-dom": "*"
+  }
+}

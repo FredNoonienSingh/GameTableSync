@@ -1,0 +1,76 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: gts-db-dev
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-gts}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gts_dev_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-gts_dev}
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gts} -d ${POSTGRES_DB:-gts_dev}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  seaweedfs:
+    image: chrislusf/seaweedfs:latest
+    container_name: gts-seaweedfs-dev
+    restart: unless-stopped
+    command: "server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json -filer"
+    ports:
+      - "8333:8333" # S3 API (http://localhost:8333)
+      - "8888:8888" # Filer UI (http://localhost:8888)
+    volumes:
+      - seaweed_dev:/data
+      - ./s3.json:/etc/seaweedfs/s3.json:ro
+
+  app-backend:
+    build:
+      context: ./GTS_app/backend
+      dockerfile: Dockerfile
+    container_name: gts-backend-dev
+    restart: unless-stopped
+    env_file:
+      - ./GTS_app/.env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-gts}:${POSTGRES_PASSWORD:-gts_dev_pass}@db:5432/${POSTGRES_DB:-gts_dev}
+      S3_ENDPOINT: http://seaweedfs:8333
+      FLASK_ENV: development
+      FLASK_DEBUG: "1"
+    ports:
+      - "5001:5000" # Accessible at http://localhost:5001
+    volumes:
+      - ./GTS_app/backend:/app # Live code reload
+    depends_on:
+      db:
+        condition: service_healthy
+      seaweedfs:
+        condition: service_started
+
+  discord-bot:
+    build:
+      context: ./GTS_discord
+      dockerfile: Dockerfile
+    container_name: gts-discord-dev
+    restart: unless-stopped
+    env_file:
+      - ./GTS_discord/.env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-gts}:${POSTGRES_PASSWORD:-gts_dev_pass}@db:5432/${POSTGRES_DB:-gts_dev}
+      BACKEND_API_URL: http://app-backend:5000
+    volumes:
+      - ./GTS_discord:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata_dev:
+  seaweed_dev:

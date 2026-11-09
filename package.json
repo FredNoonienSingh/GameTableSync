@@ -1,0 +1,23 @@
+{
+  "name": "gts-monorepo",
+  "private": true,
+  "workspaces": [
+    "GTS_landingpage",
+    "GTS_app/frontend",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:infra": "docker compose -f compose.dev.yaml up --build",
+    "dev:infra:down": "docker compose -f compose.dev.yaml down",
+    "dev:landing": "npm --workspace=GTS_landingpage run dev",
+    "dev:app": "npm --workspace=GTS_app/frontend run dev",
+    "dev": "concurrently -k -c \"blue,green,magenta\" -n \"INFRA,LANDING,APP\" \"npm run dev:infra\" \"npm run dev:landing\" \"npm run dev:app\"",
+    "prod:up": "docker compose -f docker-compose.yaml up -d --build"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "concurrently": "^10.0.7"
+  }
+}
