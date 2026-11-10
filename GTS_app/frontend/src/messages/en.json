@@ -1,0 +1,40 @@
+{
+  "App": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "tabletop": "Tabletop",
+      "ttSystems": "Multi-System Support",
+      "ttCampaign": "Narrative Campaign Editor",
+      "ttRoster": "Army List Viewer",
+      "rpg": "RPG",
+      "rpgSheets": "Character Sheets",
+      "rpgWorldmap": "World & Hex Maps",
+      "rpgSessions": "Session Logs & Bastions",
+      "tcg": "TCG",
+      "tcgDecks": "DeckViewer & Legality",
+      "tcgCompanion": "Live In-Game Companion",
+      "tcgPods": "Draft Pods & Prize Ledger",
+      "gameFinder": "Game Finder",
+      "account": "User Account"
+    },
+    "home": {
+      "badge": "COMMAND HUB ONLINE",
+      "title": "WELCOME TO GAMETABLESYNC",
+      "subtitle": "Your unified command infrastructure for wargaming, tournaments, and army rosters.",
+      "ctaTournaments": "VIEW TOURNAMENTS",
+      "ctaGameFinder": "FIND A GAME",
+      "cardMatchmakingTitle": "MATCHMAKING",
+      "cardMatchmakingDesc": "Challenge players, organize 1v1 or 2v2 battles, and manage matches in real time.",
+      "cardTournamentsTitle": "TOURNAMENT BRACKETS",
+      "cardTournamentsDesc": "Swiss system, automated round pairings, and integrated submission deadlines.",
+      "cardArmyViewerTitle": "ARMY VIEWER",
+      "cardArmyViewerDesc": "Import BattleScribe or NewRecruit rosters right to the gaming table."
+    },
+    "footer": {
+      "copyright": "© 2027 GameTableSync. All rights reserved.",
+      "imprint": "Imprint",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service"
+    }
+  }
+}

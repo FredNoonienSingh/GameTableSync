@@ -1,0 +1,117 @@
+{
+  "HomePage": {
+    "intro": {
+      "badge": "PLATFORM LAUNCH 2027",
+      "title": "COMMAND YOUR CLUB",
+      "subtitle": "The all-in-one B2B management engine for Wargaming, RPGs, and Trading Card Games. Built for tournament organizers, tabletop clubs, and local game stores.",
+      "cta": "START FREE TRIAL",
+      "countdown": {
+        "label": "SYSTEM ONLINE IN",
+        "days": "DAYS",
+        "hours": "HRS",
+        "minutes": "MIN",
+        "seconds": "SEC"
+      }
+    },
+    "general": {
+      "badge": "CORE CLUB ENGINE",
+      "title": "UNIFIED COMMAND INFRASTRUCTURE",
+      "description": "Everything your club or store needs to automate daily operations, connect players, and run events across any game system.",
+      "subScheduling": {
+        "title": "SCHEDULING HELPER & ATTENDANCE",
+        "description": "Smart date-polling, automated table reservations, capacity limits, and one-click RSVP tracking so you always know which tables are active."
+      },
+      "subDiscord": {
+        "title": "NATIVE DISCORD BOT & INTEGRATIONS",
+        "description": "Two-way Discord sync: automated round pairings, event reminders, role assignments, and result reporting directly inside your club server."
+      },
+      "subMatchmaking": {
+        "title": "MULTI-SYSTEM ELO & HYBRID TOURNAMENTS",
+        "description": "Dedicated ELO ratings per game system alongside instant matchmaking and tournament setup—supporting local, online, live, and asynchronous play."
+      }
+    },
+    "tabletop": {
+      "badge": "WARGAMING & TABLETOP",
+      "title": "MULTI-SYSTEM TABLETOP COMMAND",
+      "description": "Built for Games Workshop systems, historicals, and indie skirmishers alike. Manage competitive GTs and sprawling narrative campaigns in one hub.",
+      "subSystems": {
+        "title": "MULTI-SYSTEM SUPPORT (GW & BEYOND)",
+        "description": "Tailored scoring matrices, differential points, and table layouts for major grimdark, fantasy, and skirmish rulesets."
+      },
+      "subCampaign": {
+        "title": "NARRATIVE CAMPAIGN EDITOR",
+        "description": "Visual campaign builder for planetary crusades, territory control, persistent unit XP, battle scars, and custom mission trees."
+      },
+      "subListViewer": {
+        "title": "INTEGRATED ARMY LIST VIEWER",
+        "description": "Instant roster imports, clean stat-profile formatting, list-lock validation, and one-tap opponent list inspection at the table."
+      }
+    },
+    "rpg": {
+      "badge": "ROLEPLAYING & NARRATIVE",
+      "title": "LIVING CAMPAIGN CHRONICLES",
+      "description": "Empower Game Masters to run persistent shared worlds, open-table West Marches, and long-running club chronicles without administrative burnout.",
+      "subSheets": {
+        "title": "DIGITAL CHARACTER SHEETS",
+        "description": "System-agnostic, live-synced character sheets with inventory management, leveling logs, and GM-verified stat blocks."
+      },
+      "subWorldMap": {
+        "title": "INTERACTIVE WORLD & HEX-MAP ENGINE",
+        "description": "Shared campaign maps with dynamic fog-of-war, discovered location pins, faction influence zones, and travel route calculators."
+      },
+      "subSession": {
+        "title": "PARTY LOOT, BASTIONS & SESSION LOGS",
+        "description": "Shared party treasuries, downtime bastion progression, NPC codexes, and automated quest briefings pushed straight to Discord."
+      }
+    },
+    "tcg": {
+      "badge": "TRADING CARD GAMES",
+      "title": "HIGH-SPEED TCG ARENA",
+      "description": "Run 60-player Friday night pods, weekend qualifiers, and seasonal store leagues with zero bottleneck at the judge counter.",
+      "subDeckViewer": {
+        "title": "VISUAL DECKVIEWER & LEGALITY CHECK",
+        "description": "Interactive decklist inspection, mana-curve breakdowns, format ban-list validation, and sideboard verification before round one."
+      },
+      "subIngame": {
+        "title": "LIVE IN-GAME COMPANION APP",
+        "description": "Synchronized mobile life-point counters, poison/commander damage trackers, round timers, and instant two-player match result sign-off."
+      },
+      "subDraft": {
+        "title": "DRAFT PODS, CUBE & PRIZE LEDGER",
+        "description": "Automated pod seating, cross-pod pairing protection, cube card-pool tracking, and store-credit prize distribution logs."
+      }
+    },
+    "footer": {
+      "copyright": "© 2027 GameTableSync. All rights reserved.",
+      "imprint": "Imprint",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "contact": "Contact"
+    },
+    "Imprint": {
+      "title": "IMPRINT",
+      "back": "BACK TO HOME",
+      "placeholder": "Legal imprint (Impressum) details required by German law will be inserted here."
+    },
+    "Privacy": {
+      "title": "PRIVACY POLICY",
+      "back": "BACK TO HOME",
+      "placeholder": "Privacy policy and GDPR compliance details will be inserted here."
+    },
+    "Terms": {
+      "title": "AGB",
+      "back": "ZURÜCK ZUR STARTSEITE",
+      "placeholder": "Hier folgen die Informationen zur Datenverarbeitung und DSGVO-Konformität."
+    },
+    "Contact": {
+      "title": "CONTACT US",
+      "subtitle": "Questions about the platform or early access? Drop us a line.",
+      "emailLabel": "Your Email Address",
+      "subjectLabel": "Subject",
+      "messageLabel": "Message",
+      "submit": "SEND MESSAGE",
+      "success": "Transmission successful. We will get back to you shortly.",
+      "error": "Error sending message. Please try again later."
+    }
+  }
+}

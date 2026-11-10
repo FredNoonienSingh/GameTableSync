@@ -1,0 +1,45 @@
+name: Discord Commit Notification
+
+on:
+  push:
+    branches:
+      - main # Ändere dies, falls du alle Branches tracken willst (dann '- "**"' nutzen)
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # Zwingend erforderlich, um den diff zum vorherigen Commit zu bilden
+
+      - name: Gather Stats and Send to Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_HOOK }}
+        run: |
+          # Commit-Infos auslesen
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+          AUTHOR=$(git log -1 --pretty=format:"%an")
+          COMMIT_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+          
+          # Diff-Stats generieren (z.B. " 3 files changed, 45 insertions(+), 12 deletions(-)")
+          STATS=$(git diff --shortstat HEAD^ HEAD || echo "Keine Detail-Stats verfügbar (ggf. Force Push oder initialer Commit)")
+          
+          # JSON Payload sicher mit jq zusammenbauen (verhindert Fehler bei Sonderzeichen in Commit-Messages)
+          JSON_PAYLOAD=$(jq -n \
+            --arg title "Neue Änderungen von $AUTHOR" \
+            --arg url "$COMMIT_URL" \
+            --arg desc "**Commit:** $COMMIT_MSG\n\n**Statistik:**\n\`$STATS\`" \
+            '{
+              embeds: [{
+                title: $title,
+                url: $url,
+                description: $desc,
+                color: 14705451
+              }]
+            }'
+          )
+          
+          # HTTP POST an Discord
+          curl -s -H "Content-Type: application/json" -d "$JSON_PAYLOAD" $DISCORD_WEBHOOK

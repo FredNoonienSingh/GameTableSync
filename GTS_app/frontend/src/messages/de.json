@@ -1,0 +1,40 @@
+{
+  "App": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "tabletop": "Tabletop",
+      "ttSystems": "Multi-System Support",
+      "ttCampaign": "Kampagnen-Editor",
+      "ttRoster": "Armeelisten-Viewer",
+      "rpg": "RPG",
+      "rpgSheets": "Charakterbögen",
+      "rpgWorldmap": "Welt- & Hex-Karten",
+      "rpgSessions": "Session Logs & Bastionen",
+      "tcg": "TCG",
+      "tcgDecks": "DeckViewer & Format-Check",
+      "tcgCompanion": "Live In-Game Companion",
+      "tcgPods": "Draft-Pods & Preis-Tracker",
+      "gameFinder": "Game Finder",
+      "account": "Benutzerkonto"
+    },
+    "home": {
+      "badge": "COMMAND HUB ONLINE",
+      "title": "WILLKOMMEN BEIM GAMETABLESYNC",
+      "subtitle": "Deine zentrale Kommando-Infrastruktur für Wargaming, Turniere und Armeelisten.",
+      "ctaTournaments": "TURNIERE ANSEHEN",
+      "ctaGameFinder": "SPIEL FINDEN",
+      "cardMatchmakingTitle": "MATCHMAKING",
+      "cardMatchmakingDesc": "Fordere Spieler heraus, organisiere 1v1 oder 2v2 Gefechte und verwalte Matches in Echtzeit.",
+      "cardTournamentsTitle": "TURNIER-BRACKETS",
+      "cardTournamentsDesc": "Schweizer System, automatische Runden-Pairings und integrierte Abgabe-Fristen.",
+      "cardArmyViewerTitle": "ARMEE-VIEWER",
+      "cardArmyViewerDesc": "Importiere BattleScribe- oder NewRecruit-Listen direkt an den Spieltisch."
+    },
+    "footer": {
+      "copyright": "© 2027 GameTableSync. Alle Rechte vorbehalten.",
+      "imprint": "Impressum",
+      "privacy": "Datenschutzerklärung",
+      "terms": "AGB"
+    }
+  }
+}

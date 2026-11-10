@@ -1,0 +1,49 @@
+name: Deploy to Oracle Cloud
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: Ordo-Website
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH Agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: SSH into Oracle Server and Deploy
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+        run: |
+          # Disable host key checking for the automated runner
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+          # Connect to your server and run your deployment script/commands
+          ssh "$SSH_USER@$SSH_HOST" << 'EOF'
+            PROJECT_DIR="/home/ubuntu/ordo-website"
+            REPO_URL="git@github.com:FredNoonienSingh/Tabletop-Website.git"
+
+            if [ -d "$PROJECT_DIR" ]; then
+              echo "Directory exists. Pulling latest changes..."
+              cd "$PROJECT_DIR"
+              git pull origin main
+            else
+              echo "Directory does not exist. Cloning repository..."
+              git clone "$REPO_URL" "$PROJECT_DIR"
+              cd "$PROJECT_DIR"
+            fi
+            
+            # Run Docker build and restart
+            docker compose pull && docker compose up -d --build
+            
+            echo "Successfully deployed on Oracle Cloud!"
+          EOF

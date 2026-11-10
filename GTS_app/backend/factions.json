@@ -1,0 +1,166 @@
+{
+  "systems": [
+    {
+      "system": "40k",
+      "name": "Warhammer 40,000",
+      "is_structured": true,
+      "categories": [
+        {
+          "name": "Space Marines",
+          "factions": [
+            "Black Templars",
+            "Blood Angels",
+            "Dark Angels",
+            "Deathwatch",
+            "Grey Knights",
+            "Imperial Fists",
+            "Iron Hands",
+            "Raven Guard",
+            "Salamanders",
+            "Space Wolves",
+            "Ultramarines",
+            "White Scars",
+            "Space-Marine (Generisch)"
+          ]
+        },
+        {
+          "name": "Imperium",
+          "factions": [
+            "Adepta Sororitas",
+            "Adeptus Custodes",
+            "Adeptus Mechanicus",
+            "Adeptus Titanicus",
+            "Astra Militarum",
+            "Agents of the Imperium",
+            "Imperiale Ritter"
+          ]
+        },
+        {
+          "name": "Chaos",
+          "factions": [
+            "Black Legion",
+            "Chaosdaemonen",
+            "Chaos Knights",
+            "Chaos Space Marines",
+            "Death Guard",
+            "Emperor's Children",
+            "Iron Warriors",
+            "Rote Korsaren",
+            "Thousand Sons",
+            "Titanicus Traitoris",
+            "World Eaters"
+          ]
+        },
+        {
+          "name": "Xenos",
+          "factions": [
+            "Aeldari",
+            "Drukhari",
+            "Symbiontenkulte",
+            "Leagues of Votann",
+            "Necrons",
+            "Orks",
+            "Sternenreich der T'au",
+            "Tyraniden"
+          ]
+        }
+      ]
+    },
+    {
+      "system": "AoS",
+      "name": "Age of Sigmar",
+      "is_structured": true,
+      "categories": [
+        {
+          "name": "Ordnung",
+          "factions": [
+            "Städte Sigmars",
+            "Töchter des Khaine",
+            "Tiefenvolk der Idoneth",
+            "Himmelsherrscher der Kharadron",
+            "Khazalid-Festen",
+            "Lichtfürsten der Lumineth",
+            "Seraphon",
+            "Sturmgeschmiedete Ewige",
+            "Sylvaneth"
+          ]
+        },
+        {
+          "name": "Tod",
+          "factions": [
+            "Höfe der Leichenfresser",
+            "Nachtspuk",
+            "Knochenlegionen der Ossiarch",
+            "Seelenbrand-Grabesfürsten"
+          ]
+        },
+        {
+          "name": "Chaos",
+          "factions": [
+            "Klingen des Khorne",
+            "Jünger des Tzeentch",
+            "Hedonites of Slaanesh",
+            "Helschmiede des Hashut",
+            "Madensippe des Nurgle",
+            "Skaven",
+            "Sklaven der Finsternis"
+          ]
+        },
+        {
+          "name": "Zerstörung",
+          "factions": [
+            "Gloomspite Gitz",
+            "Ogor Mawtribes",
+            "Orruk-Kriegsclans",
+            "Behemats Söhne"
+          ]
+        }
+      ]
+    },
+    {
+      "system": "30k",
+      "name": "Horus Heresy",
+      "is_structured": true,
+      "categories": [
+        {
+          "name": "Loyalisten (Legiones Astartes)",
+          "factions": [
+            "Blood Angels",
+            "Dark Angels",
+            "Imperial Fists",
+            "Knights Errant",
+            "Iron Hands",
+            "Raven Guard",
+            "Salamanders",
+            "Space Wolves",
+            "Ultramarines",
+            "White Scars"
+          ]
+        },
+        {
+          "name": "Verräter (Legiones Astartes)",
+          "factions": [
+            "Alpha Legion",
+            "Death Guard",
+            "Emperor's Children",
+            "Iron Warriors",
+            "Night Lords",
+            "Sons of Horus",
+            "Thousand Sons",
+            "Word Bearers",
+            "World Eaters"
+          ]
+        },
+        {
+          "name": "Mechanicum & Guard",
+          "factions": [
+            "Mechanicum (Loyal)",
+            "Mechanicum (Traitor)",
+            "Guard / Solar Auxilia (Loyal)",
+            "Guard / Miliz (Traitor)"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH Agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy to Server via SSH
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+        run: |
+          # Add server to known hosts to prevent connection prompts
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+          # Connect and run deployment commands on the server
+          ssh "$SSH_USER@$SSH_HOST" << 'EOF'
+            cd /path/to/your/app on server
+            
+            # Pull latest changes
+            git pull origin main
+            
+            # Run your build/restart steps (e.g., Docker, npm, etc.)
+            docker compose down && docker compose up -d --build
+            
+            echo "Deployment completed successfully!"
+          EOF
