@@ -15,9 +15,9 @@ export function FanningCardsGraphic({ progress }: { progress: MotionValue<number
 }
 
 function FanningCard({ index, progress }: { index: number; progress: MotionValue<number> }) {
-  const rotate = useTransform(progress, [0.15, 0.55], [0, index * 14]);
-  const x = useTransform(progress, [0.15, 0.55], [0, index * 34]);
-  const y = useTransform(progress, [0.15, 0.55], [0, Math.abs(index) * 10]);
+  const rotate = useTransform(progress, [0.1, 0.5], [0, index * 14]);
+  const x = useTransform(progress, [0.1, 0.5], [0, index * 34]);
+  const y = useTransform(progress, [0.1, 0.5], [0, Math.abs(index) * 10]);
 
   const isCenter = index === 0;
 

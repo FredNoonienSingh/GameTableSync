@@ -31,17 +31,17 @@ export function Section({
   headerSlot,
   children,
 }: SectionProps) {
-  const sectionRef = useRef<HTMLDivElement>(null);
+  const graphicRef = useRef<HTMLDivElement>(null);
 
+  // Track the 360px graphic container directly, not the tall outer section
   const { scrollYProgress } = useScroll({
-    target: sectionRef,
+    target: graphicRef,
     offset: ['start end', 'end start'],
   });
 
   return (
     <Box
       id={id}
-      ref={sectionRef}
       component="section"
       py={{ base: 60, md: 100 }}
       style={{
@@ -54,7 +54,7 @@ export function Section({
     >
       <Container size="lg" w="100%">
         {variant === 'intro' ? (
-          <Stack align="center" ta="center" gap="lg">
+          <Stack ref={graphicRef} align="center" ta="center" gap="lg">
             {headerSlot}
             <Badge color="brandBlue.5" variant="outline" size="lg">
               {badge}
@@ -119,6 +119,7 @@ export function Section({
 
             <Grid.Col span={{ base: 12, md: 5 }} order={{ base: 2, md: reverse ? 1 : 2 }}>
               <Box
+                ref={graphicRef}
                 style={{
                   height: 360,
                   position: 'relative',

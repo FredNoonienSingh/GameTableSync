@@ -223,17 +223,29 @@ export function ContactForm({ labels }: { labels?: ContactFormLabels }) {
                       {t.error}
                     </Notification>
                   )}
-
-                  <Button
-                    type="submit"
-                    size="xl"
-                    color="brandBlue.6"
-                    loading={status === 'loading'}
-                    leftSection={<IconSend size={20} />}
-                    className="brand-logo"
-                    mt="md"
-                    fullWidth
-                  >
+                    <Button
+                      type="submit"
+                      size="xl"
+                      color="brandBlue.6"
+                      loading={status === 'loading'}
+                      leftSection={<IconSend size={20} />}
+                      className="brand-logo"
+                      mt="md"
+                      fullWidth
+                      styles={{
+                        root: {
+                          height: 'auto', // Allows the button to grow vertically if text wraps
+                          minHeight: '3.5rem', // Maintains the "xl" size appearance
+                          padding: '0.75rem 1rem', // Ensures padding if it wraps to two lines
+                        },
+                      label: {
+                        whiteSpace: 'normal', // Prevents clipping by allowing line breaks
+                        textAlign: 'center',
+                        lineHeight: 1.2,
+                        fontSize: 'clamp(0.9rem, 4vw, 1.125rem)', // Scales font down on small screens
+                        },
+                       }}
+>
                     {t.submit}
                   </Button>
                 </Stack>
