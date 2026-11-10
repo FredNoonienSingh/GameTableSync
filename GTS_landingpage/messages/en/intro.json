@@ -1,0 +1,22 @@
+{
+  "intro": {
+    "badge": "PLATFORM LAUNCH 2027",
+    "title": "COMMAND YOUR CLUB",
+    "subtitle": "The all-in-one B2B management engine for Wargaming, RPGs, and Trading Card Games. Built for tournament organizers, tabletop clubs, and local game stores.",
+    "cta": "START FREE TRIAL",
+    "countdown": {
+      "label": "SYSTEM ONLINE IN",
+      "days": "DAYS",
+      "hours": "HRS",
+      "minutes": "MIN",
+      "seconds": "SEC"
+    }
+  },
+  "footer": {
+    "copyright": "© 2027 GameTableSync. All rights reserved.",
+    "imprint": "Imprint",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "contact": "Contact"
+  }
+}

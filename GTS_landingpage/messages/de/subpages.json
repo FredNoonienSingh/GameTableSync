@@ -1,0 +1,27 @@
+{
+  "Imprint": {
+    "title": "IMPRESSUM",
+    "back": "ZURÜCK ZUR STARTSEITE",
+    "placeholder": "Hier folgen die gesetzlich vorgeschriebenen Angaben zum Impressum nach § 5 TMG."
+  },
+  "Privacy": {
+    "title": "DATENSCHUTZ",
+    "back": "ZURÜCK ZUR STARTSEITE",
+    "placeholder": "Hier folgen die Informationen zur Datenverarbeitung und DSGVO-Konformität."
+  },
+  "Terms": {
+    "title": "AGB",
+    "back": "ZURÜCK ZUR STARTSEITE",
+    "placeholder": "Hier folgen die Informationen zur Datenverarbeitung und DSGVO-Konformität."
+  },
+  "Contact": {
+    "title": "KONTAKT",
+    "subtitle": "Fragen zur Plattform oder Early Access? Schreib uns.",
+    "emailLabel": "Deine E-Mail-Adresse",
+    "subjectLabel": "Betreff",
+    "messageLabel": "Nachricht",
+    "submit": "NACHRICHT SENDEN",
+    "success": "Übertragung erfolgreich. Wir melden uns in Kürze.",
+    "error": "Fehler beim Senden. Bitte versuche es später noch einmal."
+  }
+}
