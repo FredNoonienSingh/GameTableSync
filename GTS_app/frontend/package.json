@@ -11,7 +11,7 @@
   "dependencies": {
     "@gts/ui": "*",
     "@mantine/core": "^9.7.4",
-    "@mantine/dates": "^9.7.4",
+    "@mantine/dates": "^7.16.2",
     "@mantine/hooks": "^9.7.4",
     "@tabler/icons-react": "^3.49.0",
     "dayjs": "^1.11.23",

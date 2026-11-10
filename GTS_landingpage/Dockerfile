@@ -6,7 +6,8 @@ RUN apk add --no-cache libc6-compat
 COPY package.json package-lock.json ./
 COPY packages/ui/package.json ./packages/ui/
 COPY GTS_landingpage/package.json ./GTS_landingpage/
-RUN npm ci
+COPY GTS_app/frontend/package.json ./GTS_app/frontend/
+RUN npm install --no-audit --no-fund && npm install nodemailer @types/nodemailer --no-save
 
 FROM base AS builder
 WORKDIR /app
@@ -15,6 +16,7 @@ COPY package.json package-lock.json ./
 COPY packages/ui ./packages/ui
 COPY GTS_landingpage ./GTS_landingpage
 
+RUN rm -rf /app/GTS_landingpage/public && mkdir -p /app/GTS_landingpage/public
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_OPTIONS="--max-old-space-size=1536"

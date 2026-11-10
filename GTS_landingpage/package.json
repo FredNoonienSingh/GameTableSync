@@ -17,14 +17,14 @@
     "framer-motion": "^14.10.1",
     "next": "16.4.5",
     "next-intl": "^4.14.9",
-    "nodemailer": "^10.4.0",
+    "nodemailer": "^6.9.16",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "@gts/ui": "*"
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@types/nodemailer": "^8.0.2",
+    "@types/nodemailer": "^6.4.17",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",

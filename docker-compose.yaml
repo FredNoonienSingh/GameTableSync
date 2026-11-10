@@ -1,4 +1,6 @@
 # docker-compose.yaml
+name: gametablesync
+
 x-logging: &default-logging
   driver: "json-file"
   options:

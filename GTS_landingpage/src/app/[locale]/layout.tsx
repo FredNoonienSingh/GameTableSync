@@ -31,8 +31,6 @@ export default async function RootLayout({
     <html
       lang={locale}
       className={`${orbitron.className} ${orbitron.variable}`}
-      data-mantine-color-scheme="dark"
-      suppressHydrationWarning
       {...mantineHtmlProps}
     >
       <head>
