@@ -1,6 +1,4 @@
 # docker-compose.yaml
-name: gametablesync
-
 x-logging: &default-logging
   driver: "json-file"
   options:
@@ -113,12 +111,12 @@ services:
       seaweedfs:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"] # Update this path to your actual health endpoint
+      test: ["CMD", "python", "-c", "import socket; s = socket.create_connection(('127.0.0.1', 5000), 2); s.close()"] # Update this path to your actual health endpoint
       interval: 15s
       timeout: 5s
       retries: 3
       start_period: 15s
-    logging: *default-logging
+    #logging: *default-logging
 
   app-frontend:
     build:
@@ -137,7 +135,7 @@ services:
     depends_on:
       app-backend:
         condition: service_healthy
-    logging: *default-logging
+    #logging: *default-logging
   
   landingpage:
     build:

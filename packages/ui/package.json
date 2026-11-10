@@ -7,6 +7,7 @@
   "peerDependencies": {
     "@mantine/core": "*",
     "@mantine/hooks": "*",
+    "@mantine/dates": "*",
     "@tabler/icons-react": "*",
     "framer-motion": "*",
     "next": "*",
@@ -15,8 +16,8 @@
     "react-dom": "*"
   },
   "dependencies": {
-    "@mantine/core": "^7.17.8",
-    "@mantine/hooks": "^7.17.8",
-    "@mantine/dates": "^7.16.2"
+    "@mantine/core": "^9.8.0",
+    "@mantine/hooks": "^9.8.0",
+    "@mantine/dates": "^9.8.0"
   }
 }

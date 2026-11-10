@@ -4,7 +4,7 @@ services:
     container_name: gts-db-dev
     restart: unless-stopped
     env_file:
-      - .env
+      - .env.local
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-gts}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gts_dev_pass}
@@ -19,17 +19,17 @@ services:
       timeout: 5s
       retries: 5
 
-  seaweedfs:
-    image: chrislusf/seaweedfs:latest
-    container_name: gts-seaweedfs-dev
-    restart: unless-stopped
-    command: "server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json -filer"
-    ports:
-      - "8333:8333" # S3 API (http://localhost:8333)
-      - "8888:8888" # Filer UI (http://localhost:8888)
-    volumes:
-      - seaweed_dev:/data
-      - ./s3.json:/etc/seaweedfs/s3.json:ro
+#  seaweedfs:
+#    image: chrislusf/seaweedfs:latest
+#    container_name: gts-seaweedfs-dev
+#    restart: unless-stopped
+#    command: "server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json -filer"
+#    ports:
+#      - "8333:8333" # S3 API (http://localhost:8333)
+#      - "8888:8888" # Filer UI (http://localhost:8888)
+#    volumes:
+#      - seaweed_dev:/data
+#      - ./s3.json:/etc/seaweedfs/s3.json:ro
 
   app-backend:
     build:
@@ -38,7 +38,7 @@ services:
     container_name: gts-backend-dev
     restart: unless-stopped
     env_file:
-      - ./GTS_app/.env
+      - ./GTS_app/.env.local
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-gts}:${POSTGRES_PASSWORD:-gts_dev_pass}@db:5432/${POSTGRES_DB:-gts_dev}
       S3_ENDPOINT: http://seaweedfs:8333
@@ -51,25 +51,64 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      seaweedfs:
-        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s = socket.create_connection(('127.0.0.1', 5000), 2); s.close()"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+      #seaweedfs:
+      #  condition: service_started
 
-  discord-bot:
+  app-frontend:
     build:
-      context: ./GTS_discord
-      dockerfile: Dockerfile
-    container_name: gts-discord-dev
+      context: .
+      dockerfile: ./GTS_app/frontend/Dockerfile.dev
+    container_name: gts-app-frontend
     restart: unless-stopped
     env_file:
-      - ./GTS_discord/.env
+      - ./GTS_app/.env
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-gts}:${POSTGRES_PASSWORD:-gts_dev_pass}@db:5432/${POSTGRES_DB:-gts_dev}
-      BACKEND_API_URL: http://app-backend:5000
+      BACKEND_INTERNAL_URL: http://app-backend:5000
+    ports:
+      - "3001:3001" # Accessible at http://localhost:3001
     volumes:
-      - ./GTS_discord:/app
+      - ./GTS_app/frontend:/app/GTS_app/frontend
+      - ./packages/ui:/app/packages/ui
     depends_on:
-      db:
+      app-backend:
         condition: service_healthy
+
+  landingpage:
+    build:
+      context: .
+      dockerfile: ./GTS_landingpage/Dockerfile.dev
+    container_name: gts-landingpage
+    restart: unless-stopped
+    env_file:
+      - ./GTS_landingpage/.env.local
+    ports:
+      - "3000:3000" # Accessible at http://localhost:3000
+    volumes:
+      - ./GTS_landingpage:/app/GTS_landingpage
+      - ./packages/ui:/app/packages/ui
+
+#  discord-bot:
+#    build:
+#      context: ./GTS_discord
+#      dockerfile: Dockerfile
+#    container_name: gts-discord-dev
+#    restart: unless-stopped
+#    env_file:
+#      - ./GTS_discord/.env
+#    environment:
+#      DATABASE_URL: postgresql://${POSTGRES_USER:-gts}:${POSTGRES_PASSWORD:-gts_dev_pass}@db:5432/${POSTGRES_DB:-gts_dev}
+#      BACKEND_API_URL: http://app-backend:5000
+#    volumes:
+#      - ./GTS_discord:/app
+#    depends_on:
+#      db:
+#        condition: service_healthy
 
 volumes:
   pgdata_dev:
