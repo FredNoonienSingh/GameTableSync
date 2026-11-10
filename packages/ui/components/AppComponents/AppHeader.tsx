@@ -82,23 +82,24 @@ export function AppHeader({ logoSrc = defaultPureLogo, locale = 'de', labels }: 
       }}
     >
       <Group justify="space-between" w="100%" align="center">
-        {/* LEFT: Logo & Brand Name */}
-        <Group component={Link} href={p('/')} gap="sm" style={{ textDecoration: 'none' }}>
-          {logoSrc && !imgError && (
-            <Image
-              src={logoSrc}
-              alt="GameTableSync"
-              width={38}
-              height={38}
-              style={{ width: 'auto', height: '38px', objectFit: 'contain' }}
-              onError={() => setImgError(true)}
-              priority
-            />
-          )}
-          <Text c="white" className="brand-logo" size="md" style={{ letterSpacing: '0.1em', fontWeight: 800 }}>
-            GAMETABLESYNC
-          </Text>
-        </Group>
+        <Link href={p('/')} style={{ textDecoration: 'none' }}>
+          <Group gap="sm">
+            {logoSrc && !imgError && (
+              <Image
+                src={logoSrc}
+                alt="GameTableSync"
+                width={38}
+                height={38}
+                style={{ width: 'auto', height: '38px', objectFit: 'contain' }}
+                onError={() => setImgError(true)}
+                priority
+              />
+            )}
+            <Text c="white" className="brand-logo" size="md" style={{ letterSpacing: '0.1em', fontWeight: 800 }}>
+              GAMETABLESYNC
+            </Text>
+          </Group>
+        </Link>
 
         {/* CENTER: Navigation with Dropdowns */}
         <Group gap="lg" visibleFrom="sm">

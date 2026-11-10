@@ -12,7 +12,7 @@ export { CommandHubGraphic } from './components/animations/CommandHubGraphic';
 export { FallingD6Graphic } from './components/animations/FallingD6Graphic';
 export { RotatingD20Graphic } from './components/animations/RotatingD20Graphic';
 export { FanningCardsGraphic } from './components/animations/FanningCardsGraphic';
-export { DrawingCardsGraphic} from './components/animations/DrawingCardsGraphic';
+export { default as DrawingCardsGraphic } from './components/animations/DrawingCardsGraphic';
 export { HexTilePathGraphic } from './components/animations/HexTilePathGraphic';
 export { CardCycloneGraphic } from './components/animations/CardCycloneGraphic';
 export { PortalDiceSummonGraphic } from './components/animations/PortalDiceSummonGraphic';

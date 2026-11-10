@@ -128,13 +128,15 @@ services:
       - gts-net
     env_file:
       - ./GTS_app/.env
+    environment:
+      BACKEND_INTERNAL_URL: http://app-backend:5000
     expose:
-      - "80"
+      - "3000"
     depends_on:
       app-backend:
         condition: service_healthy
     logging: *default-logging
-
+  
   landingpage:
     build:
       context: .
