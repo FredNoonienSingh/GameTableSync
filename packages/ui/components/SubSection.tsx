@@ -14,7 +14,9 @@ export function SubSection({ title, description, icon }: SubSectionProps) {
       p="md"
       radius="sm"
       style={{
-        backgroundColor: 'rgba(15, 16, 12, 0.8)',
+        position: 'relative',
+        zIndex: 3,
+        backgroundColor: 'rgba(15, 16, 12, 0.92)',
         border: '1px solid rgba(24, 100, 255, 0.2)',
         borderLeft: '3px solid #1864ff',
       }}

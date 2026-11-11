@@ -20,7 +20,7 @@ import { BrandHeader } from '@gts/ui';
 import { LaunchCountdown } from '@gts/ui';
 import { ContactForm } from '@gts/ui';
 import { Footer } from '@gts/ui';
-
+import { LandingNavbar } from '@gts/ui';
 
 export default function HomePage() {
   const t = useTranslations('HomePage');
@@ -28,6 +28,7 @@ export default function HomePage() {
 
   return (
     <main style={{ position: 'relative', overflowX: 'hidden' }}>
+      <LandingNavbar/>
       <AnimatedBackground />
 
       {/* 1. Intro Section with Shimmering Logo & Countdown */}

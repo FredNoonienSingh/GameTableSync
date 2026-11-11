@@ -17,8 +17,12 @@ export { HexTilePathGraphic } from './components/animations/HexTilePathGraphic';
 export { CardCycloneGraphic } from './components/animations/CardCycloneGraphic';
 export { PortalDiceSummonGraphic } from './components/animations/PortalDiceSummonGraphic';
 export { HobbyEssentialsGraphic } from './components/animations/HobbyEssentialsGraphic';
+export { CommandForgeGraphic } from './components/animations/CommandForgeGraphic'
 // Landing Page 
 
+export { PriceDetail, type PriceDetailProps } from './components/PriceDetail';
+export { SimpleHeader } from './components/SimpleHeader';
+export { LandingNavbar} from './components/LandingNavbar';
 export { BrandHeader } from './components/BrandHeader';
 export { ContactForm } from './components/ContactForm';
 export { Footer } from './components/Footer';

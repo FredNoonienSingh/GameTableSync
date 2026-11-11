@@ -7,15 +7,19 @@ export default getRequestConfig(async ({ requestLocale }) => {
   const locale = await requestLocale;
   if (!locale || !locales.includes(locale)) notFound();
 
-  const [intro, features, subpages] = await Promise.all([
+  const [intro, features, subpages, common] = await Promise.all([
     import(`../../messages/${locale}/intro.json`),
     import(`../../messages/${locale}/features.json`),
     import(`../../messages/${locale}/subpages.json`),
+    import(`../../messages/${locale}/common.json`),
   ]);
 
   return {
     locale,
     messages: {
+      Common: {
+        ...common.default,
+      },
       HomePage: {
         ...intro.default,
         ...features.default,

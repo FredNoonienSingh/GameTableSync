@@ -1,0 +1,95 @@
+{
+  "Navbar": {
+    "organizers": "Clubs, Stores & TOs",
+    "players": "Spieler",
+    "pricing": "Preise",
+    "cta": "Demo"
+  },
+  "PricingPage": {
+    "badge": "KOMMANDO-LIZENZEN FÜR VEREINE & STORES",
+    "title": "WÄHLE DEIN FESTUNGS-LEVEL",
+    "subtitle": "Skalierbare Infrastruktur für kleine Spielgruppen, etablierte Tabletop-Vereine und große Local Game Stores.",
+    "promoBanner": "EARLY-BIRD DEAL BIS 01.06.: kostenlose System-Einrichtung (statt 49,95 €) bei jährlicher Zahlung!",
+    "tier1": {
+      "badge": "KLEINE CLUBS & TREFFS",
+      "title": "OUTPOST",
+      "price": "15 €",
+      "period": "/ Monat",
+      "promo": "13,50 € / Monat + 0 € Setup bis 01.06. bei Jahresbuchung",
+      "description": "Das solide Fundament für kleine Vereine, private Spieltreffs und aufstrebende Hobby-Gruppen.",
+      "f1": "Scheduling-Helper & Anwesenheitslisten",
+      "f2": "Basis-Tischreservierung & Raum-Kapazitäten",
+      "f3": "Nativer Discord-Bot für Event-Reminder",
+      "f4": "Vereinsinterne ELO-Ranglisten & Matchmaking",
+      "cta": "OUTPOST STARTEN"
+    },
+    "tier2": {
+      "badge": "EMPFOHLEN FÜR VEREINE",
+      "title": "STRONGHOLD",
+      "price": "25 €",
+      "period": "/ Monat",
+      "promo": "22,50 € / Monat + 0 € Setup bis 01.06. bei Jahresbuchung",
+      "description": "Die komplette Kommando-Engine für aktive Tabletop-Vereine, narrative Kampagnen und regelmäßige Turniere.",
+      "f1": "Alle Outpost-Features ohne Einschränkungen",
+      "f2": "Voller Discord-Sync (Pairings, Rollen & Ergebnisse)",
+      "f3": "Crusade-Kampagnen-Editor & RPG West-Marches-Hexkarten",
+      "f4": "Turnier-Engine inkl. Armeelisten- & Deck-Checks",
+      "cta": "STRONGHOLD STARTEN"
+    },
+    "tier3": {
+      "badge": "STORES & GROSSE TOs",
+      "title": "CITADEL",
+      "price": "35 €",
+      "period": "/ Monat",
+      "promo": "31,50 € / Monat + 0 € Setup bis 01.06. bei Jahresbuchung",
+      "description": "Maximale Feuerkraft für Local Game Stores, große Turnier-Serien (GTs) und Multi-System-Arenen.",
+      "f1": "Alle Stronghold-Features für Groß-Events",
+      "f2": "Multi-Pod TCG Drafts, Cube-Tracker & Store-Credit-Ledger",
+      "f3": "Custom Subdomain",
+      "f4": "Prioritäts-Support & Onboarding-Begleitung",
+      "cta": "CITADEL STARTEN"
+    },
+    "playerFree": {
+      "badge": "SPIELER-VERSPRECHEN",
+      "title": "FÜR SPIELER FÜR IMMER KOSTENLOS – IM GESAMTEN UNIVERSUM",
+      "description": "GameTableSync kostet für einzelne Spieler keinen Cent – heute nicht, morgen nicht und auch im 41. Jahrtausend nicht. Armeelisten-Viewer, digitale RPG-Charakterbögen, der Live-TCG-Companion und dein globales ELO-Profil bleiben auf ewig gratis.",
+      "cta": "ZUR SPIELER SEITE"
+    },
+    "services": {
+      "sectionTitle": "ONBOARDING & DATEN-MIGRATION",
+      "setup": {
+        "badge": "TURNKEY ROLLOUT",
+        "title": "SYSTEM-SETUP & KONFIGURATION",
+        "price": "49,95 €",
+        "priceSub": "einmalig (0,00 € bei Jahresbuchung bis 01.06.)",
+        "description": "Wir richten deinen Club oder Store komplett schlüsselfertig ein: Tische, Spielsysteme, Rollenstruktur und die vollständige Kopplung unseres Discord-Bots auf deinem Server."
+      },
+      "migration": {
+        "badge": "LEGACY IMPORT",
+        "title": "DATEN-MIGRATION AUS ALTSYSTEMEN",
+        "price": "ab 99,95 €",
+        "priceSub": "einmalig nach Datenumfang",
+        "description": "Du wechselst von alten Tabellen, Foren oder bestehenden Verwaltungs-Tools? Wir übernehmen den kompletten Transfer deiner Mitgliederdaten, historischen ELO-Rankings, Liga-Tabellen und Kampagnen-Chroniken."
+      }
+    }
+  },
+  "OrganizersPage": {
+    "badge": "B2B CLUB & STORE ENGINE",
+    "title": "FÜR CLUBS, STORES & TURNIER-ORGA",
+    "description": "Hier entsteht die Detailübersicht für Vereine, Hobbyläden und Turnier-Organisatoren: Tische verwalten, Discord-Bot koppeln und Events automatisieren.",
+    "back": "ZURÜCK ZUR STARTSEITE"
+  },
+  "PlayersPage": {
+    "badge": "PLAYER COMPANION",
+    "title": "FÜR SPIELER & KAMPAGNEN",
+    "description": "Hier entsteht der Spieler-Hub: Armeelisten-Viewer, digitale RPG-Charakterbögen, TCG Companion und globale ELO-Profile.",
+    "back": "ZURÜCK ZUR STARTSEITE"
+  },
+  "DemoPage": {
+    "badge": "SYSTEM IM AUFBAU",
+    "title": "DEMO-TERMINAL IN KONSTRUKTION",
+    "description": "Unsere interaktive Live-Sandbox wird gerade kalibriert. Bald kannst du hier Turnier-Bäume, Tisch-Reservierungen und Armeelisten direkt im Browser testen.",
+    "status": "KALIBRIERE KOMMANDO-MODULE...",
+    "back": "ZURÜCK ZUR STARTSEITE"
+  }
+}

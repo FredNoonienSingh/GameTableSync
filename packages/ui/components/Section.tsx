@@ -79,11 +79,17 @@ export function Section({
           </Stack>
         ) : (
           <Grid gap={{ base: 32, md: 60 }} align="center">
-            <Grid.Col span={{ base: 12, md: 7 }} order={{ base: 1, md: reverse ? 2 : 1 }}>
+            <Grid.Col
+              span={{ base: 12, md: 7 }}
+              order={{ base: 1, md: reverse ? 2 : 1 }}
+              style={{ position: 'relative', zIndex: 2 }}
+            >
               <Paper
                 p={{ base: 'lg', sm: 'xl' }}
                 radius="md"
                 style={{
+                  position: 'relative',
+                  zIndex: 2,
                   backgroundColor: 'rgba(20, 22, 27, 0.85)',
                   backdropFilter: 'blur(8px)',
                 }}
@@ -109,7 +115,7 @@ export function Section({
                   </Text>
 
                   {children && (
-                    <Stack gap="sm" mt="sm">
+                    <Stack gap="sm" mt="sm" style={{ position: 'relative', zIndex: 3 }}>
                       {children}
                     </Stack>
                   )}
@@ -117,12 +123,17 @@ export function Section({
               </Paper>
             </Grid.Col>
 
-            <Grid.Col span={{ base: 12, md: 5 }} order={{ base: 2, md: reverse ? 1 : 2 }}>
+            <Grid.Col
+              span={{ base: 12, md: 5 }}
+              order={{ base: 2, md: reverse ? 1 : 2 }}
+              style={{ position: 'relative', zIndex: 1 }}
+            >
               <Box
                 ref={graphicRef}
                 style={{
                   height: 360,
                   position: 'relative',
+                  zIndex: 1,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
