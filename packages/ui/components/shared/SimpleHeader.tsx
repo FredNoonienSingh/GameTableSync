@@ -1,7 +1,7 @@
 'use client';
 
 import { Box, Container, Group, Text, Anchor } from '@mantine/core';
-import gtsPureLogo from '../assets/gametablesync_pure.png';
+import { gtsPureLogo } from '@gts/ui';
 
 export function SimpleHeader({ href = '/' }: { href?: string }) {
   const logoSrc = typeof gtsPureLogo === 'string' ? gtsPureLogo : (gtsPureLogo as { src: string }).src;

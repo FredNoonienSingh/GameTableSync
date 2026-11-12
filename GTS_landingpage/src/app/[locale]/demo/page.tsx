@@ -8,7 +8,7 @@ import { AnimatedBackground, LandingNavbar, SimpleHeader, CommandForgeGraphic, F
 
 export default function DemoPage() {
   const t = useTranslations('Common.DemoPage');
-  const tFooter = useTranslations('HomePage.footer');
+  const tFooter = useTranslations('Common.footer');
   const locale = useLocale();
 
   return (

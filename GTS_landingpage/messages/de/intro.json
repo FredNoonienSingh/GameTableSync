@@ -5,18 +5,11 @@
     "subtitle": "Die All-in-One B2B-Engine für Wargaming, RPGs und Trading Card Games. Entwickelt für Turnier-Organisatoren, Tabletop-Vereine und Hobbyläden.",
     "cta": "KOSTENLOS TESTEN",
     "countdown": {
-      "label": "SYSTEM ONLINE IN",
-      "days": "TAGE",
-      "hours": "STD",
-      "minutes": "MIN",
-      "seconds": "SEK"
+        "label": "SYSTEM ONLINE IN",
+        "days": "TAGE",
+        "hours": "STD",
+        "minutes": "MIN",
+        "seconds": "SEK"
     }
-  },
-  "footer": {
-    "copyright": "© 2027 GameTableSync. Alle Rechte vorbehalten.",
-    "imprint": "Impressum",
-    "privacy": "Datenschutzerklärung",
-    "terms": "AGB",
-    "contact": "Kontakt"
-  }
+    }
 }

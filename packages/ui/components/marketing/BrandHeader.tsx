@@ -4,13 +4,13 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Stack, Text, Box } from '@mantine/core';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import defaultPureLogo from '../assets/gametablesync_pure.png';
+import { gtsPureLogo } from '@gts/ui';
 
 export interface BrandHeaderProps {
   logoSrc?: string | { src: string; height: number; width: number };
 }
 
-export function BrandHeader({ logoSrc = defaultPureLogo }: BrandHeaderProps) {
+export function BrandHeader({ logoSrc = gtsPureLogo }: BrandHeaderProps) {
   const [imgError, setImgError] = useState(false);
   const { scrollY } = useScroll();
 

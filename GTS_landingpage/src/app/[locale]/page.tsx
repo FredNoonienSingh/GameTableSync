@@ -24,6 +24,7 @@ import { LandingNavbar } from '@gts/ui';
 
 export default function HomePage() {
   const t = useTranslations('HomePage');
+  const tFooter = useTranslations('Common.footer');
   const locale = useLocale(); // Grabs 'de' or 'en' from the URL automatically
 
   return (
@@ -170,10 +171,10 @@ export default function HomePage() {
         privacyHref={`/${locale}/privacy`}
         termsHref={`/${locale}/terms`}
         labels={{
-          rights: t('footer.copyright'),
-          imprint: t('footer.imprint'),
-          privacy: t('footer.privacy'),
-          terms: t('footer.terms'),
+          rights: tFooter('copyright'),
+          imprint: tFooter('imprint'),
+          privacy: tFooter('privacy'),
+          terms: tFooter('terms'),
         }}
       />
     </main>

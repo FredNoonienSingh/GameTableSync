@@ -1,0 +1,33 @@
+{
+  "title": "ALLGEMEINE GESCHÄFTS- & NUTZUNGSBEDINGUNGEN (AGB)",
+  "lastUpdated": "Stand: November 2026",
+  "intro": "Diese Allgemeinen Geschäfts- und Nutzungsbedingungen regeln die Nutzung der Plattform GameTableSync, der zugehörigen Web-Applikationen sowie unseres offiziellen Discord-Bots und Community-Servers durch Vereine, Ladengeschäfte (Local Game Stores), Turnierorganisatoren und Einzelspieler.",
+  "scope": {
+    "title": "§ 1 GELTUNGSBEREICH & NUTZERGRUPPEN",
+    "text": "(1) Anbieter der Plattform GameTableSync ist Frederic Baumeister (Einzelunternehmer, Anschrift siehe Impressum).\n\n(2) Unser Leistungsangebot gliedert sich in zwei Bereiche:\na) Kostenpflichtige Software-as-a-Service (SaaS) Lizenzen („Outpost“, „Stronghold“, „Citadel“) sowie Onboarding- und Migrationsdienstleistungen für Tabletop-Vereine, gewerbliche Local Game Stores (LGS) und Turnierorganisatoren.\nb) Dauerhaft kostenlose Basis-Funktionen für einzelne Spieler (z. B. Armeelisten-Viewer, globale ELO-Profile, Turnier-Anmeldungen und Discord-Benachrichtigungen).\n\n(3) Abweichende Bedingungen des Kunden finden keine Anwendung, es sei denn, wir haben ihrer Geltung ausdrücklich schriftlich zugestimmt."
+  },
+  "services": {
+    "title": "§ 2 LEISTUNGSUMFANG, PRE-RELEASE & DISCORD-INTEGRATION",
+    "text": "(1) GameTableSync stellt eine cloudbasierte Verwaltungs-, Turnier- und Kommunikationsinfrastruktur bereit, die eng mit der Drittanbieter-Plattform Discord verknüpft ist.\n\n(2) Soweit Funktionen im Rahmen einer Vorab-, Alpha- oder Beta-Phase (einschließlich der „Keep Me Posted“-Warteliste und Vorab-Demos) unentgeltlich bereitgestellt werden, erfolgt dies ohne Anspruch auf ständige Verfügbarkeit oder Fehlerfreiheit.\n\n(3) Für die Funktionsfähigkeit der Discord-Synchronisation ist die Verfügbarkeit der API der Discord Inc. erforderlich, auf die wir keinen unmittelbaren Einfluss haben."
+  },
+  "conduct": {
+    "title": "§ 3 VERHALTENSREGELN & VERBOTENE NUTZUNG (ACCEPTABLE USE POLICY)",
+    "text": "Um eine faire, sichere und respektvolle Umgebung für alle Tabletop-Communities, Vereine und Spieler zu gewährleisten, verpflichten sich alle Nutzer, folgende Handlungen strikt zu unterlassen:\n\n1. Beleidigung, Belästigung & Hassrede: Jegliche Form von Diffamierung, Bedrohung, Diskriminierung, Belästigung (Harassment) oder rechtswidrigen Äußerungen gegenüber anderen Spielern, Vereinsmitgliedern, Organisatoren oder unserem Team – sowohl innerhalb der Web-Plattform als auch auf gekoppelten Discord-Servern.\n2. Manipulation des Spielbetriebs: Das vorsätzliche Verfälschen von Spielergebnissen, ELO-Boosting, Win-Trading, das Einreichen manipulierter Armee- oder Decklisten sowie das Sabotieren von Turnier-Pairings oder Tischreservierungen.\n3. Rechtswidrige Inhalte & Urheberrechtsverstöße: Das Hochladen oder Verbreiten von strafbaren, extremistischen, gewaltverherrlichenden oder urheberrechtlich geschützten Inhalten Dritter (z. B. unerlaubte Kopien kommerzieller Regelwerke oder Markenverletzungen) ohne entsprechende Berechtigung.\n4. Technischer Missbrauch: Das Ausführen automatisierter Abfragen (Scraping, Bots), das Umgehen von Sicherheitsmechanismen, das Ausnutzen von Software-Schwachstellen (Exploits) oder das vorsätzliche Überlasten unserer Server- und Bot-Infrastruktur."
+  },
+  "suspension": {
+    "title": "§ 4 VIRTUELLES HAUSRECHT, SPERRUNG & AUSSERORDENTLICHE KÜNDIGUNG",
+    "text": "(1) Wir üben auf der Plattform GameTableSync sowie auf unserem offiziellen Discord-Server das virtuelle Hausrecht aus.\n\n(2) Bei einem Verstoß gegen die in § 3 genannten Verhaltensregeln oder bei sonstigem schwerwiegenden Fehlverhalten sind wir berechtigt, nach billigem Ermessen und unter Berücksichtigung der Schwere des Verstoßes folgende Maßnahmen zu ergreifen:\na) Ausspruch einer Verwarnung sowie kommentarlose Löschung rechtswidriger oder unangemessener Inhalte,\nb) Temporäre Stummschaltung (Mute/Timeout) oder Entzug von Rollen auf dem Discord-Server,\nc) Vorübergehende oder dauerhafte Sperrung des Nutzer- bzw. Vereins-Accounts,\nd) Fristlose außerordentliche Kündigung bestehender Nutzungsverträge aus wichtigem Grund gemäß § 314 BGB.\n\n(3) Im Falle einer berechtigten außerordentlichen Kündigung oder Sperrung aufgrund eines schuldhaften Verstoßes des Nutzers gegen § 3 besteht kein Anspruch auf Rückerstattung bereits gezahlter Lizenz- oder Einrichtungsgebühren für den laufenden Abrechnungszeitraum."
+  },
+  "pricing": {
+    "title": "§ 5 PREISE, ABONNEMENTS & ZAHLUNGSBEDINGUNGEN",
+    "text": "(1) Für Einzelspieler ist die Nutzung der ausgewiesenen Spieler-Funktionen dauerhaft kostenlos.\n\n(2) Für Vereine, Stores und Organisatoren gelten die zum Zeitpunkt des Vertragsschlusses auf unserer Preisübersicht ausgewiesenen Tarife (monatliche oder jährliche Abrechnung) sowie etwaige einmalige Gebühren für System-Setup oder Daten-Migration.\n\n(3) Sofern nicht anders angegeben, verstehen sich alle Preise inklusive der gesetzlichen Umsatzsteuer (bzw. gemäß den geltenden steuerlichen Ausweisungen im Checkout)."
+  },
+  "liability": {
+    "title": "§ 6 HAFTUNGSBESCHRÄNKUNG",
+    "text": "(1) Für unentgeltlich bereitgestellte Dienste (insbesondere kostenlose Spieler-Accounts und Beta-Zugänge) haften wir nach den gesetzlichen Vorschriften ausschließlich für Vorsatz und grobe Fahrlässigkeit (§ 599 BGB analog).\n\n(2) Im Übrigen haften wir unbeschränkt bei Vorsatz, grober Fahrlässigkeit sowie bei der Verletzung von Leben, Körper oder Gesundheit. Bei leicht fahrlässiger Verletzung einer wesentlichen Vertragspflicht (Kardinalpflicht) ist unsere Haftung auf den vertragstypischen, bei Vertragsschluss vorhersehbaren Schaden begrenzt. Eine weitergehende Haftung – insbesondere für entgangenen Gewinn oder mittelbare Folgeschäden bei Turnierausfällen – ist ausgeschlossen."
+  },
+  "final": {
+    "title": "§ 7 SCHLUSSBESTIMMUNGEN, ANWENDBARES RECHT & GERICHTSSTAND",
+    "text": "(1) Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts (CISG).\n\n(2) Ist der Kunde Kaufmann, eine juristische Person des öffentlichen Rechts, ein öffentlich-rechtliches Sondervermögen oder ein eingetragener Verein (e.V.) im geschäftlichen Verkehr, ist ausschließlicher Gerichtsstand für alle Streitigkeiten aus diesem Vertragsverhältnis Stuttgart.\n\n(3) Sollten einzelne Bestimmungen dieser AGB unwirksam sein oder werden, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt."
+  }
+}

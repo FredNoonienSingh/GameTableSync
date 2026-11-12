@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Container, Group, Text, Box, Stack, Divider } from '@mantine/core';
 import Link from 'next/link';
 import Image from 'next/image';
-import defaultPureLogo from '../assets/gametablesync_pure.png';
+import {gtsPureLogo} from '@gts/ui';
 
 export interface FooterLabels {
   rights?: string;
@@ -30,7 +30,7 @@ const defaultLabels: Required<FooterLabels> = {
 
 export function Footer({ 
   labels, 
-  logoSrc = defaultPureLogo,
+  logoSrc = gtsPureLogo,
   imprintHref = '/imprint',
   privacyHref = '/privacy',
   termsHref = '/terms'

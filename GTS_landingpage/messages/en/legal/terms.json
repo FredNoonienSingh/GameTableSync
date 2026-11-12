@@ -1,0 +1,33 @@
+{
+  "title": "TERMS OF SERVICE & ACCEPTABLE USE POLICY",
+  "lastUpdated": "Last updated: November 2026",
+  "intro": "These Terms of Service govern the use of the GameTableSync platform, its associated web applications, and our official Discord bot and community server by clubs, local game stores (LGS), tournament organizers, and individual players.",
+  "scope": {
+    "title": "SECTION 1 – SCOPE & USER GROUPS",
+    "text": "(1) The provider of the GameTableSync platform is Frederic Baumeister (sole proprietor, address as stated in the Legal Notice / Impressum).\n\n(2) Our services are divided into two tiers:\na) Paid Software-as-a-Service (SaaS) licenses ('Outpost', 'Stronghold', 'Citadel') as well as onboarding and data migration services for tabletop clubs, commercial Local Game Stores (LGS), and tournament organizers.\nb) Permanently free core features for individual players (e.g., army list viewer, global ELO profiles, tournament registration, and Discord notifications).\n\n(3) Deviating terms and conditions of the customer shall not apply unless we have expressly agreed to their validity in writing."
+  },
+  "services": {
+    "title": "SECTION 2 – SCOPE OF SERVICES, BETA PHASE & DISCORD INTEGRATION",
+    "text": "(1) GameTableSync provides a cloud-based management, tournament, and communication infrastructure tightly integrated with the third-party platform Discord.\n\n(2) To the extent that features are provided free of charge during a pre-release, alpha, or beta phase (including the 'Keep Me Posted' waitlist and preview demos), they are provided 'as-is' without any guarantee of continuous availability or freedom from defects.\n\n(3) The functionality of Discord synchronization depends on the availability of the API operated by Discord Inc., over which we have no direct control."
+  },
+  "conduct": {
+    "title": "SECTION 3 – CODE OF CONDUCT & ACCEPTABLE USE POLICY",
+    "text": "To maintain a fair, safe, and respectful environment for all tabletop communities, clubs, and players, all users strictly agree to refrain from the following activities:\n\n1. Harassment, Abuse & Hate Speech: Any form of defamation, threats, discrimination, harassment, or unlawful statements directed at other players, club members, organizers, or our staff—both within the web platform and on linked Discord servers.\n2. Competitive & System Manipulation: Intentionally falsifying match results, ELO boosting, win-trading, submitting manipulated army or deck lists, or sabotaging tournament pairings and table reservations.\n3. Unlawful Content & Copyright Infringement: Uploading or distributing illegal, extremist, violent, or copyrighted third-party materials (e.g., unauthorized copies of commercial rulebooks or trademark violations) without explicit authorization.\n4. Technical Abuse: Executing automated scraping or bots, bypassing security mechanisms, exploiting software vulnerabilities, or intentionally overloading our server and bot infrastructure."
+  },
+  "suspension": {
+    "title": "SECTION 4 – VIRTUAL HOUSE RIGHTS, SUSPENSION & TERMINATION",
+    "text": "(1) We exercise virtual house rights on the GameTableSync platform and on our official Discord server.\n\n(2) In the event of a violation of the Code of Conduct set forth in Section 3 or other serious misconduct, we reserve the right, at our reasonable discretion and taking into account the severity of the violation, to take the following actions:\na) Issuing a formal warning and immediately deleting unlawful or inappropriate content without prior notice,\nb) Temporarily muting (timeout) users or revoking roles on the Discord server,\nc) Temporarily suspending or permanently banning the user or club account,\nd) Immediate extraordinary termination of existing user agreements for good cause pursuant to Section 314 of the German Civil Code (BGB).\n\n(3) In the event of a justified extraordinary termination or account ban resulting from a culpable violation of Section 3 by the user, there shall be no entitlement to a refund of license or setup fees already paid for the current billing period."
+  },
+  "pricing": {
+    "title": "SECTION 5 – PRICING, SUBSCRIPTIONS & PAYMENT TERMS",
+    "text": "(1) For individual players, use of the designated player features is permanently free of charge.\n\n(2) For clubs, stores, and organizers, the rates displayed on our pricing page at the time of contract conclusion (monthly or annual billing) as well as any one-time fees for system setup or legacy data migration shall apply.\n\n(3) Unless otherwise stated, all prices include statutory German Value Added Tax (or reflect the applicable tax notices at checkout)."
+  },
+  "liability": {
+    "title": "SECTION 6 – LIMITATION OF LIABILITY",
+    "text": "(1) For services provided free of charge (specifically free player accounts and beta access), we are liable under statutory provisions exclusively for intent and gross negligence (Section 599 BGB by analogy).\n\n(2) Otherwise, we are liable without limitation for intent, gross negligence, and injury to life, body, or health. In the case of slightly negligent breaches of an essential contractual obligation (cardinal duty), our liability is limited to the foreseeable damage typical for the contract at the time of conclusion. Any further liability—specifically for lost profits or indirect consequential damages during tournament disruptions—is excluded."
+  },
+  "final": {
+    "title": "SECTION 7 – FINAL PROVISIONS, GOVERNING LAW & JURISDICTION",
+    "text": "(1) The laws of the Federal Republic of Germany shall apply, excluding the UN Convention on Contracts for the International Sale of Goods (CISG).\n\n(2) If the customer is a merchant, a legal entity under public law, or a registered association (e.V.) acting in a commercial capacity, the exclusive place of jurisdiction for all disputes arising from this contractual relationship shall be Stuttgart, Germany.\n\n(3) Should individual provisions of these Terms be or become invalid, the validity of the remaining provisions shall remain unaffected."
+  }
+}

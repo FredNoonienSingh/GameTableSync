@@ -1,0 +1,29 @@
+{
+  "title": "PRIVACY POLICY",
+  "lastUpdated": "Last updated: November 2026",
+  "intro": "Protecting your personal data is a top priority at GameTableSync. In accordance with Art. 13 GDPR, this policy explains what data we collect when you visit our website or use our services (specifically our Discord integration) and how we process it.",
+  "controller": {
+    "title": "1. DATA CONTROLLER",
+    "text": "The controller responsible for data processing on this website within the meaning of the General Data Protection Regulation (GDPR) is:"
+  },
+  "hosting": {
+    "title": "2. HOSTING & SERVER LOG FILES (NETCUP)",
+    "text": "Our infrastructure is hosted on dedicated virtual servers operated by netcup GmbH (Daimlerstraße 25, 76185 Karlsruhe, Germany) located exclusively within the European Union.\n\nWhen you access our website, our system automatically collects technical access data (IP address, timestamp, requested resource, user agent, referrer URL) in server log files. This processing is technically necessary to ensure the stability, security, and delivery of the platform (Art. 6 (1) (f) GDPR). Log data is automatically deleted after a maximum of 14 days. We have concluded a Data Processing Agreement (DPA) with netcup GmbH pursuant to Art. 28 GDPR."
+  },
+  "discord": {
+    "title": "3. DISCORD OAUTH2, BOT INTEGRATION & SERVER JOIN",
+    "text": "When you use the 'Keep Me Posted' feature or log in via Discord on our website, you are authenticated via the official OAuth2 interface of Discord Inc. (444 De Haro Street, Suite 200, San Francisco, CA 94107, USA).\n\nWith your explicit authorization (scopes: identify, email, guilds.join), Discord transmits your unique Discord User ID (Snowflake), username, and verified email address to our backend. Simultaneously, our official GameTableSync bot automatically adds your account to our community Discord server and assigns the relevant notification or beta role.\n\nThe legal basis is your consent pursuant to Art. 6 (1) (a) GDPR and the performance of pre-contractual measures or service delivery pursuant to Art. 6 (1) (b) GDPR. Your data is stored in our secured PostgreSQL database in Germany until you revoke your consent or request deletion. Data transfers to Discord Inc. in the USA are governed by the EU-U.S. Data Privacy Framework (DPF) and EU Standard Contractual Clauses."
+  },
+  "contact": {
+    "title": "4. CONTACT FORMS & DEMO INQUIRIES",
+    "text": "When you contact us via our contact form or email, the details you provide (name, club/store name, email address, message content) are stored to process your inquiry and handle follow-up questions. The legal basis is Art. 6 (1) (b) GDPR (pre-contractual measures) and Art. 6 (1) (f) GDPR (legitimate interest in responding to inquiries). Data is deleted as soon as the purpose of storage ceases to apply and no statutory retention obligations exist."
+  },
+  "cookies": {
+    "title": "5. STRICTLY NECESSARY COOKIES & LOCAL STORAGE",
+    "text": "Our platform does not use any advertising, analytics, or third-party tracking cookies. We only use strictly necessary technical cookies and Local Storage entries (e.g., to store your language preference via NEXT_LOCALE, your cookie banner acknowledgement, and cryptographic session tokens after login).\n\nThe storage of and access to this information is based on Section 25 (2) No. 2 TDDDG in conjunction with Art. 6 (1) (f) GDPR."
+  },
+  "rights": {
+    "title": "6. YOUR RIGHTS UNDER THE GDPR",
+    "text": "Under applicable data protection law, you have the right at any time to obtain free information about your stored personal data (Art. 15 GDPR), its rectification (Art. 16 GDPR), erasure (Art. 17 GDPR), restriction of processing (Art. 18 GDPR), and data portability (Art. 20 GDPR).\n\nYou may revoke any consent granted at any time with effect for the future by emailing contact@gametablesync.com. You also have the right to lodge a complaint with the competent data protection supervisory authority (in Baden-Württemberg: Der Landesbeauftragte für den Datenschutz und die Informationsfreiheit Baden-Württemberg, Lautenschlagerstraße 20, 70173 Stuttgart, Germany)."
+  }
+}

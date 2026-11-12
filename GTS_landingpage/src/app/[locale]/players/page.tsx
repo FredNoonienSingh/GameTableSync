@@ -5,7 +5,7 @@ import { AnimatedBackground, LandingNavbar, SimpleHeader, Footer } from '@gts/ui
 
 export default function PlayersPage() {
   const t = useTranslations('Common.PlayersPage');
-  const tFooter = useTranslations('HomePage.footer');
+  const tFooter = useTranslations('Common.footer');
   const locale = useLocale();
 
   return (

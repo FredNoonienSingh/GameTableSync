@@ -23,8 +23,9 @@ import {
 import { AnimatedBackground, LandingNavbar, SimpleHeader, PriceDetail, Footer } from '@gts/ui';
 
 export default function PricingPage() {
-  const t = useTranslations('Common.PricingPage');
-  const tFooter = useTranslations('HomePage.footer');
+  const t = useTranslations('PricingPage');
+  const tNavbar = useTranslations('HomePage.Navbar')
+  const tFooter = useTranslations('Common.footer');
   const locale = useLocale();
 
   return (

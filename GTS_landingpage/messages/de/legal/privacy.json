@@ -1,0 +1,29 @@
+{
+  "title": "DATENSCHUTZERKLÄRUNG",
+  "lastUpdated": "Stand: November 2026",
+  "intro": "Der Schutz deiner personenbezogenen Daten hat für GameTableSync höchste Priorität. Nachfolgend informieren wir dich gemäß Art. 13 DSGVO transparent darüber, welche Daten beim Besuch unserer Website und bei der Nutzung unserer Dienste (insbesondere der Discord-Integration) erhoben und wie diese verarbeitet werden.",
+  "controller": {
+    "title": "1. VERANTWORTLICHER",
+    "text": "Verantwortlicher für die Datenverarbeitung auf dieser Website im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:"
+  },
+  "hosting": {
+    "title": "2. HOSTING & SERVER-LOG-FILES (NETCUP)",
+    "text": "Unsere Infrastruktur wird auf dedizierten virtuellen Servern der netcup GmbH (Daimlerstraße 25, 76185 Karlsruhe, Deutschland) innerhalb der Europäischen Union betrieben.\n\nBeim Aufruf unserer Website erhebt unser System automatisiert technische Zugriffsdaten (IP-Adresse, Zeitstempel, angefragte Ressource, User-Agent, Referrer-URL) in sogenannten Server-Log-Files. Diese Verarbeitung ist technisch erforderlich, um die Stabilität, Sicherheit und Auslieferung der Plattform zu gewährleisten (Art. 6 Abs. 1 lit. f DSGVO). Die Log-Daten werden nach spätestens 14 Tagen automatisch gelöscht. Wir haben mit der netcup GmbH einen Vertrag zur Auftragsverarbeitung (AVV) gemäß Art. 28 DSGVO geschlossen."
+  },
+  "discord": {
+    "title": "3. DISCORD OAUTH2, BOT-INTEGRATION & COMMUNITY-BEITRITT",
+    "text": "Wenn du auf unserer Website die Funktion „Keep Me Posted“ oder den Login via Discord nutzt, wirst du über die offizielle OAuth2-Schnittstelle der Discord Inc. (444 De Haro Street, Suite 200, San Francisco, CA 94107, USA) authentifiziert.\n\nMit deiner ausdrücklichen Autorisierung (Scopes: identify, email, guilds.join) übermittelt Discord deine eindeutige Discord-User-ID (Snowflake), deinen Benutzernamen sowie deine verifizierte E-Mail-Adresse an unser Backend. Gleichzeitig fügt unser offizieller GameTableSync-Bot deinen Account automatisiert unserem offiziellen Discord-Server hinzu und weist dir die entsprechende Benachrichtigungs- oder Beta-Rolle zu.\n\nRechtsgrundlage ist deine Einwilligung gemäß Art. 6 Abs. 1 lit. a DSGVO sowie die Durchführung vorvertraglicher Maßnahmen bzw. Bereitstellung des Dienstes gemäß Art. 6 Abs. 1 lit. b DSGVO. Deine Daten werden in unserer abgesicherten PostgreSQL-Datenbank in Deutschland gespeichert, bis du deine Einwilligung widerrufst oder deinen Account löschst. Die Datenübermittlung an Discord Inc. in die USA erfolgt auf Grundlage des EU-U.S. Data Privacy Framework (DPF) sowie der Standardvertragsklauseln der EU-Kommission."
+  },
+  "contact": {
+    "title": "4. KONTAKTAUFNAHME & DEMO-ANFRAGEN",
+    "text": "Wenn du uns per Kontaktformular oder E-Mail kontaktierst, werden deine Angaben (Name, Vereins-/Store-Name, E-Mail-Adresse, Nachrichteninhalt) zwecks Bearbeitung der Anfrage und für den Fall von Anschlussfragen bei uns gespeichert. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (vorvertragliche Maßnahmen) bzw. Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der Beantwortung von Anfragen). Die Daten werden gelöscht, sobald der Zweck der Speicherung entfällt und keine gesetzlichen Aufbewahrungspflichten entgegenstehen."
+  },
+  "cookies": {
+    "title": "5. TECHNISCH NOTWENDIGE COOKIES & LOCAL STORAGE",
+    "text": "Unsere Plattform verzichtet vollständig auf Werbe-, Analyse- oder Drittanbieter-Tracking-Cookies. Wir setzen ausschließlich technisch unbedingt erforderliche Cookies und Local-Storage-Einträge ein (z. B. zur Speicherung deiner Sprachpräferenz über NEXT_LOCALE, deiner Cookie-Hinweis-Bestätigung sowie kryptografischer Session-Tokens nach dem Login).\n\nDie Speicherung und der Zugriff auf diese Informationen erfolgen auf Grundlage von § 25 Abs. 2 Nr. 2 TDDDG (Telekommunikation-Digitale-Dienste-Datenschutz-Gesetz) i. V. m. Art. 6 Abs. 1 lit. f DSGVO."
+  },
+  "rights": {
+    "title": "6. DEINE BETROFFENENRECHTE & WIDERRUF",
+    "text": "Du hast im Rahmen der geltenden gesetzlichen Bestimmungen jederzeit das Recht auf unentgeltliche Auskunft über deine gespeicherten personenbezogenen Daten (Art. 15 DSGVO), deren Berichtigung (Art. 16 DSGVO), Löschung (Art. 17 DSGVO), Einschränkung der Verarbeitung (Art. 18 DSGVO) sowie auf Datenübertragbarkeit (Art. 20 DSGVO).\n\nZudem kannst du eine erteilte Einwilligung jederzeit mit Wirkung für die Zukunft per E-Mail an contact@gametablesync.com widerrufen. Darüber hinaus steht dir ein Beschwerderecht bei der zuständigen Datenschutz-Aufsichtsbehörde zu (in Baden-Württemberg: Der Landesbeauftragte für den Datenschutz und die Informationsfreiheit Baden-Württemberg, Lautenschlagerstraße 20, 70173 Stuttgart)."
+  }
+}

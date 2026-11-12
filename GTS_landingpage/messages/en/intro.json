@@ -11,12 +11,5 @@
       "minutes": "MIN",
       "seconds": "SEC"
     }
-  },
-  "footer": {
-    "copyright": "© 2027 GameTableSync. All rights reserved.",
-    "imprint": "Imprint",
-    "privacy": "Privacy Policy",
-    "terms": "Terms of Service",
-    "contact": "Contact"
   }
 }

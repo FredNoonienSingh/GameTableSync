@@ -1,19 +1,5 @@
 {
-  "Imprint": {
-    "title": "IMPRINT",
-    "back": "BACK TO HOME",
-    "placeholder": "Legal imprint (Impressum) details required by German law will be inserted here."
-  },
-  "Privacy": {
-    "title": "PRIVACY POLICY",
-    "back": "BACK TO HOME",
-    "placeholder": "Privacy policy and GDPR compliance details will be inserted here."
-  },
-  "Terms": {
-    "title": "TERMS OF SERVICE",
-    "back": "BACK TO HOME",
-    "placeholder": "Terms of Service and platform usage agreements will be inserted here."
-  },
+
   "Contact": {
     "title": "CONTACT US",
     "subtitle": "Questions about the platform or early access? Drop us a line.",

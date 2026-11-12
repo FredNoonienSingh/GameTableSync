@@ -1,12 +1,12 @@
 'use client';
 
 import { useRef } from 'react';
-import { Container, Title, Text, Badge, Stack, Paper, Grid, Box } from '@mantine/core';
 import { useScroll } from 'framer-motion';
-import { CommandHubGraphic } from './animations/CommandHubGraphic';
-import { FallingD6Graphic } from './animations/FallingD6Graphic';
-import { RotatingD20Graphic } from './animations/RotatingD20Graphic';
-import { FanningCardsGraphic } from './animations/FanningCardsGraphic';
+import { CommandHubGraphic } from '../animations/CommandHubGraphic';
+import { FallingD6Graphic } from '../animations/FallingD6Graphic';
+import { RotatingD20Graphic } from '../animations/RotatingD20Graphic';
+import { FanningCardsGraphic } from '../animations/FanningCardsGraphic';
+import { Container, Title, Text, Badge, Stack, Paper, Grid, Box } from '@mantine/core';
 
 export type AnimationVariant = 'intro' | 'hub' | 'd6' | 'd20' | 'tcg';
 
