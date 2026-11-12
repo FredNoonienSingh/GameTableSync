@@ -118,7 +118,7 @@ export function GameCard({ game, currentUserId, isAuthenticated, onJoinClick, on
       <Stack gap="xs" my="md">
         <Divider color="#354b60" mb={5} />
         <Box p="sm" style={{ backgroundColor: '#16181d', borderRadius: '8px', border: '1px solid #252830' }}>
-          <Grid align="center" gutter="xs">
+          <Grid align="center" gap="xs">
             <Grid.Col span={5}>
               <Stack gap="sm">
                 <Text c="gray.5" fw={800} size="xs" style={{ letterSpacing: '0.08em' }}>TEAM 1</Text>

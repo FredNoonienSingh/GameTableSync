@@ -93,7 +93,7 @@ export default function PricingPage() {
             backdropFilter: 'blur(8px)',
           }}
         >
-          <Grid align="center" gutter="xl">
+          <Grid align="center" gap="xl">
             <Grid.Col span={{ base: 12, md: 8 }}>
               <Stack gap="xs">
                 <Group gap="xs">
@@ -152,7 +152,7 @@ export default function PricingPage() {
         </Paper>
 
         {/* 2. Three Club/Store Pricing Tiers: Outpost, Stronghold, Citadel */}
-        <Grid gutter="xl" align="stretch">
+        <Grid gap="xl" align="stretch">
           {/* Tier 1: OUTPOST (Cyan Border) */}
           <Grid.Col span={{ base: 12, md: 4 }}>
             <PriceDetail
@@ -215,7 +215,7 @@ export default function PricingPage() {
             {t('services.sectionTitle')}
           </Title>
 
-          <Grid gutter="xl" align="stretch">
+          <Grid gap="xl" align="stretch">
             {/* Setup Card (€49.95 or Free with Annual) */}
             <Grid.Col span={{ base: 12, md: 6 }}>
               <Paper
