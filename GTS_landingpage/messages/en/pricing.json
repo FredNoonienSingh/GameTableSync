@@ -1,68 +1,63 @@
- {
-    "badge": "COMMAND LICENSES FOR CLUBS & STORES",
-    "title": "CHOOSE YOUR FORTRESS TIER",
-    "subtitle": "Scalable infrastructure built for local gaming groups, established tabletop clubs, and busy Local Game Stores.",
-    "promoBanner": "EARLY-BIRD DEAL UNTIL JUNE 1ST: FREE System Setup (save €49.95) with annual billing!",
-    "tier1": {
-      "badge": "SMALL GROUPS & CLUBS",
-      "title": "OUTPOST",
-      "price": "€15",
-      "period": "/ month",
-      "promo": "€13.50 / month €0 Setup until 01.06. billed yearly",
-      "description": "The rock-solid foundation for small clubs, regular game nights, and growing hobby communities.",
-      "f1": "Smart Scheduling Helper & RSVP Tracking",
-      "f2": "Core Table Reservations & Room Capacity Limits",
-      "f3": "Native Discord Bot for Event Reminders",
-      "f4": "Internal Club ELO Leaderboards & Matchmaking",
-      "cta": "DEPLOY OUTPOST"
-    },
-    "tier2": {
-      "badge": "MOST POPULAR FOR CLUBS",
-      "title": "STRONGHOLD",
-      "price": "€25",
-      "period": "/ month",
-      "promo": "€22.50 / month €0 Setup until 01.06. billed yearly",
-      "description": "The complete command engine for active tabletop clubs, sprawling campaigns, and weekend tournaments.",
-      "f1": "Everything in Outpost with zero limits",
-      "f2": "Full Two-Way Discord Sync (Pairings, Roles & Results)",
-      "f3": "Crusade Campaign Editor & West Marches Hex Maps",
-      "f4": "Tournament Engine with Army Roster & Deck Checks",
-      "cta": "DEPLOY STRONGHOLD"
-    },
-    "tier3": {
-      "badge": "STORES & MAJOR TOs",
-      "title": "CITADEL",
-      "price": "€35",
-      "period": "/ month",
-      "promo": "€31.50 / month €0 Setup until 01.06. billed yearly",
-      "description": "Maximum firepower for Local Game Stores, Grand Tournament circuits, and multi-system arenas.",
-      "f1": "All Stronghold features scaled for major events",
-      "f2": "Multi-Pod TCG Drafts, Cube Tracker & Store Credit Ledger",
-      "f3": "Custom Store Branding & Dedicated Subdomain",
-      "f4": "Priority Support & Guided Onboarding",
-      "cta": "DEPLOY CITADEL"
-    },
-    "playerFree": {
-      "badge": "PLAYER PLEDGE",
-      "title": "FREE FOR PLAYERS IN PERPETUITY ACROSS THE UNIVERSE",
-      "description": "GameTableSync will never cost individual players a single cent—not today, not tomorrow, and not in the 41st Millennium. Army list viewers, digital RPG character sheets, the live TCG companion app, and your global ELO profile are free forever.",
-      "cta": "EXPLORE PLAYER FEATURES"
-    },
-    "services": {
-      "sectionTitle": "ONBOARDING & LEGACY DATA MIGRATION",
-      "setup": {
-        "badge": "TURNKEY ROLLOUT",
-        "title": "SYSTEM SETUP & CONFIGURATION",
-        "price": "€49.95",
-        "priceSub": "one-time (€0.00 with annual billing until 01.06.)",
-        "description": "We configure your entire club or store environment turnkey-ready: custom table layouts, game systems, role hierarchies, and full Discord bot integration on your server."
-      },
-      "migration": {
-        "badge": "LEGACY IMPORT",
-        "title": "DATA MIGRATION FROM OLDER SYSTEMS",
-        "price": "from €99.95",
-        "priceSub": "one-time based on data volume",
-        "description": "Moving over from spreadsheets, forums, or legacy management tools? Our team migrates your existing member rosters, historical ELO ratings, league standings, and campaign chronicles."
-      }
-    }
+{"tier1": {
+    "badge": "SMALL GROUPS & CLUBS",
+    "title": "OUTPOST",
+    "price": "€15",
+    "period": "/ month",
+    "yearlyPrice": "€13.50",
+    "yearlyPeriod": "/ month",
+    "billingNote": "(billed yearly)",
+    "promo": "€13.50 / month + €0 Setup until 01.06. when billed yearly",
+    "description": "The rock-solid foundation for small clubs, regular game nights, and growing hobby communities.",
+    "f1": "Smart Scheduling Helper & RSVP Tracking",
+    "f2": "Core Table Reservations & Room Capacity Limits",
+    "f3": "Native Discord Bot for Event Reminders",
+    "f4": "Internal Club ELO Leaderboards & Matchmaking",
+    "cta": "DEPLOY OUTPOST"
+  },
+  "tier2": {
+    "badge": "MOST POPULAR FOR CLUBS",
+    "title": "STRONGHOLD",
+    "price": "€25",
+    "period": "/ month",
+    "yearlyPrice": "€22.50",
+    "yearlyPeriod": "/ month",
+    "billingNote": "(billed yearly)",
+    "promo": "€22.50 / month + €0 Setup until 01.06. when billed yearly",
+    "description": "The complete command engine for active clubs, sprawling campaigns, and weekend tournaments.",
+    "f1": "Everything in Outpost with zero limits",
+    "f2": "Full Two-Way Discord Sync (Pairings, Roles & Results)",
+    "f3": "Crusade Campaign Editor & West Marches Hex Maps",
+    "f4": "Tournament Engine with Army Roster & Deck Checks",
+    "cta": "DEPLOY STRONGHOLD"
+  },
+  "tier3": {
+    "badge": "STORES & MAJOR TOs",
+    "title": "CITADEL",
+    "price": "€35",
+    "period": "/ month",
+    "yearlyPrice": "€31.50",
+    "yearlyPeriod": "/ month",
+    "billingNote": "(billed yearly)",
+    "promo": "€31.50 / month + €0 Setup until 01.06. when billed yearly",
+    "description": "Maximum firepower for Local Game Stores, Grand Tournament circuits, and multi-system arenas.",
+    "f1": "All Stronghold features scaled for major events",
+    "f2": "Multi-Pod TCG Drafts, Cube Tracker & Store Credit Ledger",
+    "f3": "Custom Store Branding & Dedicated Subdomain",
+    "f4": "Priority Support & Guided Onboarding",
+    "cta": "DEPLOY CITADEL"
+  },
+  "tier4": {
+    "badge": "CONVENTIONS & FEDERATIONS",
+    "title": "FORTRESS OF TERRA",
+    "price": "€599",
+    "period": "/ year",
+    "billingNote": "MANAGED ENTERPRISE LICENSE",
+    "subNote": "Billed annually incl. SLA & dedicated cloud tenant",
+    "description": "Sovereign infrastructure engineered for major conventions, national federations, and flagship arenas.",
+    "f1": "Managed Dedicated Cloud Tenant (Zero IT setup required)",
+    "f2": "Custom Domain Routing & Full White-Label Theming",
+    "f3": "Guaranteed Uptime SLA & Priority Engineering Support",
+    "f4": "Unlimited Active Players & Multi-System Brackets",
+    "cta": "REQUEST LICENSE"
   }
+}

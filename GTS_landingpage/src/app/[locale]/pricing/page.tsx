@@ -1,6 +1,8 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
+import { animate, useMotionValue } from 'framer-motion';
 import {
   Container,
   Title,
@@ -20,13 +22,37 @@ import {
   IconSettingsAutomation,
   IconDatabaseImport,
 } from '@tabler/icons-react';
-import { AnimatedBackground, LandingNavbar, SimpleHeader, PriceDetail, Footer } from '@gts/ui';
+import {
+  AnimatedBackground,
+  LandingNavbar,
+  SimpleHeader,
+  PriceDetail,
+  Footer,
+  OutpostGraphic,
+  StrongholdGraphic,
+  CitadelGraphic,
+  FortressOfTerraGraphic,
+} from '@gts/ui';
 
 export default function PricingPage() {
   const t = useTranslations('PricingPage');
-  const tNavbar = useTranslations('HomePage.Navbar')
+  const tNavbar = useTranslations('HomePage.Navbar');
   const tFooter = useTranslations('Common.footer');
   const locale = useLocale();
+
+  const tierProgress = useMotionValue(0);
+
+  useEffect(() => {
+    const controls = animate(tierProgress, [0, 1, 0], {
+      duration: 10,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    });
+    return () => controls.stop();
+  }, [tierProgress]);
+
+  const monthlyLabel = t.has('billingToggle.monthly') ? t('billingToggle.monthly') : 'Monthly';
+  const yearlyLabel = t.has('billingToggle.yearly') ? t('billingToggle.yearly') : 'Yearly';
 
   return (
     <main
@@ -42,7 +68,7 @@ export default function PricingPage() {
       <AnimatedBackground />
       <SimpleHeader href={`/${locale}`} />
 
-      <Container size="lg" py={{ base: 40, md: 70 }} style={{ flex: 1, position: 'relative', zIndex: 2 }}>
+      <Container size="xl" py={{ base: 40, md: 70 }} style={{ flex: 1, position: 'relative', zIndex: 2 }}>
         {/* Header */}
         <Stack align="center" ta="center" gap="md" mb={{ base: 35, md: 50 }}>
           <Badge color="brandBlue.5" variant="outline" size="lg">
@@ -63,21 +89,23 @@ export default function PricingPage() {
             {t('subtitle')}
           </Text>
 
-          {/* Early-Bird Promo Banner */}
-          <Paper
-            px="lg"
-            py="xs"
-            radius="xl"
-            mt="xs"
-            style={{
-              backgroundColor: 'rgba(41, 212, 255, 0.1)',
-              border: '1px solid rgba(41, 212, 255, 0.4)',
-            }}
-          >
-            <Text size="sm" c="cyan.3" fw={600} className="brand-logo" style={{ letterSpacing: '0.04em' }}>
-              {t('promoBanner')}
-            </Text>
-          </Paper>
+          {/* Optional Early-Bird Global Promo Banner */}
+          {t.has('promoBanner') && (
+            <Paper
+              px="lg"
+              py="xs"
+              radius="xl"
+              mt="xs"
+              style={{
+                backgroundColor: 'rgba(41, 212, 255, 0.1)',
+                border: '1px solid rgba(41, 212, 255, 0.4)',
+              }}
+            >
+              <Text size="sm" c="cyan.3" fw={600} className="brand-logo" style={{ letterSpacing: '0.04em' }}>
+                {t('promoBanner')}
+              </Text>
+            </Paper>
+          )}
         </Stack>
 
         {/* 1. Free Forever for Players Callout Banner */}
@@ -151,16 +179,29 @@ export default function PricingPage() {
           </Grid>
         </Paper>
 
-        {/* 2. Three Club/Store Pricing Tiers: Outpost, Stronghold, Citadel */}
-        <Grid gap="xl" align="stretch">
+        {/* 2. Four Club/Store Pricing Tiers: Outpost, Stronghold, Citadel, Fortress of Terra */}
+        <Grid gap="lg" align="stretch">
           {/* Tier 1: OUTPOST (Cyan Border) */}
-          <Grid.Col span={{ base: 12, md: 4 }}>
+          <Grid.Col span={{ base: 12, sm: 6, lg: 3 }}>
             <PriceDetail
+              graphic={
+                <OutpostGraphic
+                  progress={tierProgress}
+                  primaryColor="#1864ff"
+                  accentColor="#29d4ff"
+                />
+              }
               badge={t('tier1.badge')}
               title={t('tier1.title')}
               price={t('tier1.price')}
               period={t('tier1.period')}
-              promoNote={t('tier1.promo')}
+              yearlyPrice={t.has('tier1.yearlyPrice') ? t('tier1.yearlyPrice') : undefined}
+              yearlyPeriod={t.has('tier1.yearlyPeriod') ? t('tier1.yearlyPeriod') : undefined}
+              monthlyLabel={monthlyLabel}
+              yearlyLabel={yearlyLabel}
+              billingNote={t.has('tier1.billingNote') ? t('tier1.billingNote') : undefined}
+              promoNote={t.has('tier1.promo') ? t('tier1.promo') : undefined}
+              subNote={t.has('tier1.subNote') ? t('tier1.subNote') : undefined}
               description={t('tier1.description')}
               features={[t('tier1.f1'), t('tier1.f2'), t('tier1.f3'), t('tier1.f4')]}
               borderColor="#29d4ff"
@@ -170,13 +211,26 @@ export default function PricingPage() {
           </Grid.Col>
 
           {/* Tier 2: STRONGHOLD (Brand Blue Border) */}
-          <Grid.Col span={{ base: 12, md: 4 }}>
+          <Grid.Col span={{ base: 12, sm: 6, lg: 3 }}>
             <PriceDetail
+              graphic={
+                <StrongholdGraphic
+                  progress={tierProgress}
+                  primaryColor="#1864ff"
+                  accentColor="#29d4ff"
+                />
+              }
               badge={t('tier2.badge')}
               title={t('tier2.title')}
               price={t('tier2.price')}
               period={t('tier2.period')}
-              promoNote={t('tier2.promo')}
+              yearlyPrice={t.has('tier2.yearlyPrice') ? t('tier2.yearlyPrice') : undefined}
+              yearlyPeriod={t.has('tier2.yearlyPeriod') ? t('tier2.yearlyPeriod') : undefined}
+              monthlyLabel={monthlyLabel}
+              yearlyLabel={yearlyLabel}
+              billingNote={t.has('tier2.billingNote') ? t('tier2.billingNote') : undefined}
+              promoNote={t.has('tier2.promo') ? t('tier2.promo') : undefined}
+              subNote={t.has('tier2.subNote') ? t('tier2.subNote') : undefined}
               description={t('tier2.description')}
               features={[t('tier2.f1'), t('tier2.f2'), t('tier2.f3'), t('tier2.f4')]}
               borderColor="#1864ff"
@@ -185,18 +239,60 @@ export default function PricingPage() {
             />
           </Grid.Col>
 
-          {/* Tier 3: CITADEL (Gold / Amber Border) */}
-          <Grid.Col span={{ base: 12, md: 4 }}>
+          {/* Tier 3: CITADEL (Violet / Arcane Border) */}
+          <Grid.Col span={{ base: 12, sm: 6, lg: 3 }}>
             <PriceDetail
+              graphic={
+                <CitadelGraphic
+                  progress={tierProgress}
+                  primaryColor="#7c3aed"
+                  accentColor="#c084fc"
+                />
+              }
               badge={t('tier3.badge')}
               title={t('tier3.title')}
               price={t('tier3.price')}
               period={t('tier3.period')}
-              promoNote={t('tier3.promo')}
+              yearlyPrice={t.has('tier3.yearlyPrice') ? t('tier3.yearlyPrice') : undefined}
+              yearlyPeriod={t.has('tier3.yearlyPeriod') ? t('tier3.yearlyPeriod') : undefined}
+              monthlyLabel={monthlyLabel}
+              yearlyLabel={yearlyLabel}
+              billingNote={t.has('tier3.billingNote') ? t('tier3.billingNote') : undefined}
+              promoNote={t.has('tier3.promo') ? t('tier3.promo') : undefined}
+              subNote={t.has('tier3.subNote') ? t('tier3.subNote') : undefined}
               description={t('tier3.description')}
               features={[t('tier3.f1'), t('tier3.f2'), t('tier3.f3'), t('tier3.f4')]}
-              borderColor="#f59f00"
+              borderColor="#a855f7"
               ctaLabel={t('tier3.cta')}
+              ctaHref={`/${locale}#contact`}
+            />
+          </Grid.Col>
+
+          {/* Tier 4: FORTRESS OF TERRA (Imperial Gold / Amber Border - No Yearly Toggle or Promo) */}
+          <Grid.Col span={{ base: 12, sm: 6, lg: 3 }}>
+            <PriceDetail
+              graphic={
+                <FortressOfTerraGraphic
+                  progress={tierProgress}
+                  primaryColor="#d97706"
+                  accentColor="#fde047"
+                />
+              }
+              badge={t('tier4.badge')}
+              title={t('tier4.title')}
+              price={t('tier4.price')}
+              period={t('tier4.period')}
+              yearlyPrice={t.has('tier4.yearlyPrice') ? t('tier4.yearlyPrice') : undefined}
+              yearlyPeriod={t.has('tier4.yearlyPeriod') ? t('tier4.yearlyPeriod') : undefined}
+              monthlyLabel={monthlyLabel}
+              yearlyLabel={yearlyLabel}
+              billingNote={t.has('tier4.billingNote') ? t('tier4.billingNote') : undefined}
+              promoNote={t.has('tier4.promo') ? t('tier4.promo') : undefined}
+              subNote={t.has('tier4.subNote') ? t('tier4.subNote') : undefined}
+              description={t('tier4.description')}
+              features={[t('tier4.f1'), t('tier4.f2'), t('tier4.f3'), t('tier4.f4')]}
+              borderColor="#f59f00"
+              ctaLabel={t('tier4.cta')}
               ctaHref={`/${locale}#contact`}
             />
           </Grid.Col>

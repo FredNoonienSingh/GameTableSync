@@ -3,9 +3,9 @@ import { createTheme } from '@mantine/core';
 export const theme = createTheme({
   primaryShade: 6,
   primaryColor: 'brandBlue',
-  fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  fontFamily: 'var(--gts-font-sans)',
   headings: {
-    fontFamily: '"Orbitron", sans-serif',
+    fontFamily: 'var(--gts-font-brand)',
     fontWeight: '700',
   },
 
@@ -26,19 +26,19 @@ export const theme = createTheme({
 
   components: {
     Paper: {
-      defaultProps: {
-        bg: 'dark.7',
-      },
+      // Removed defaultProps: { bg: 'dark.7' } so Papers respect light/dark CSS variables
       styles: {
         root: {
-          border: '1px solid rgba(24, 100, 255, 0.28)',
+          backgroundColor: 'var(--gts-bg-card)',
+          border: '1px solid var(--gts-border-subtle)',
+          color: 'var(--gts-text-body)',
         },
       },
     },
     Title: {
       styles: {
         root: {
-          fontFamily: '"Orbitron", sans-serif',
+          fontFamily: 'var(--gts-font-brand)',
           fontWeight: 700,
           letterSpacing: '0.05em',
         },
@@ -47,7 +47,7 @@ export const theme = createTheme({
     Button: {
       styles: {
         root: {
-          fontFamily: '"Orbitron", sans-serif',
+          fontFamily: 'var(--gts-font-brand)',
           fontWeight: 700,
           letterSpacing: '0.05em',
         },
@@ -56,7 +56,7 @@ export const theme = createTheme({
     Badge: {
       styles: {
         root: {
-          fontFamily: '"Orbitron", sans-serif',
+          fontFamily: 'var(--gts-font-brand)',
           fontWeight: 600,
           letterSpacing: '0.08em',
         },

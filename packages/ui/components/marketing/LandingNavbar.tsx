@@ -13,6 +13,7 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useTranslations, useLocale } from 'next-intl';
+import { ThemeToggle } from '@gts/ui';
 
 export function LandingNavbar() {
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
@@ -25,58 +26,27 @@ export function LandingNavbar() {
     { link: `/${locale}/pricing`, label: t('pricing') },
   ];
 
-  const linkStyles = {
-    color: '#C1C2C5',
-    fontWeight: 500,
-    fontSize: '0.9rem',
-    letterSpacing: '0.05em',
-    textDecoration: 'none',
-    padding: '8px 12px',
-    borderRadius: '4px',
-    transition: 'color 0.2s, background-color 0.2s',
-  };
-
   const items = navLinks.map((item) => (
     <UnstyledButton
       key={item.label}
       component="a"
       href={item.link}
       onClick={closeDrawer}
-      style={linkStyles}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.color = '#fff';
-        e.currentTarget.style.backgroundColor = 'rgba(24, 100, 255, 0.1)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.color = '#C1C2C5';
-        e.currentTarget.style.backgroundColor = 'transparent';
-      }}
+      className="gts-nav-link"
     >
       {item.label}
     </UnstyledButton>
   ));
 
   return (
-    <Box
-      component="header"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 70,
-        zIndex: 1000,
-        backgroundColor: 'rgba(10, 11, 8, 0.85)',
-        backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgba(24, 100, 255, 0.15)',
-      }}
-    >
+    <Box component="header" className="gts-landing-navbar">
       <Group justify="space-between" h="100%" px={{ base: 'md', lg: 'xl' }}>
         <Group gap="lg" visibleFrom="sm">
           {items}
         </Group>
 
-        <Group visibleFrom="sm">
+        <Group gap="sm" visibleFrom="sm">
+          <ThemeToggle />
           <Button
             component="a"
             href={`/${locale}/demo`}
@@ -88,14 +58,15 @@ export function LandingNavbar() {
           </Button>
         </Group>
 
-        <Burger
-          opened={drawerOpened}
-          onClick={toggleDrawer}
-          hiddenFrom="sm"
-          color="#C1C2C5"
-          size="sm"
-          ml="auto"
-        />
+        <Group gap="xs" hiddenFrom="sm" ml="auto">
+          <ThemeToggle />
+          <Burger
+            opened={drawerOpened}
+            onClick={toggleDrawer}
+            color="var(--gts-text-secondary)"
+            size="sm"
+          />
+        </Group>
       </Group>
 
       <Drawer
@@ -104,30 +75,30 @@ export function LandingNavbar() {
         size="100%"
         padding="md"
         title={
-          <Text className="brand-logo" size="lg" c="white">
+          <Text className="brand-logo" size="lg">
             Navigation
           </Text>
         }
         hiddenFrom="sm"
         zIndex={1000000}
-        styles={{
-          content: { backgroundColor: '#0a0b08' },
-          header: { backgroundColor: '#0a0b08', borderBottom: '1px solid #1a1b1e' },
-          close: { color: '#C1C2C5' },
+        classNames={{
+          content: 'gts-drawer-content',
+          header: 'gts-drawer-header',
+          close: 'gts-drawer-close',
         }}
       >
         <ScrollArea h="calc(100vh - 80px)" mx="-md">
-          <Divider my="sm" color="#1a1b1e" />
+          <Divider my="sm" color="dark.6" />
 
           <Box px="md">
             {items.map((item, index) => (
-              <div key={index} style={{ marginBottom: '1rem' }}>
+              <div key={index} className="gts-drawer-item">
                 {item}
               </div>
             ))}
           </Box>
 
-          <Divider my="sm" color="#1a1b1e" />
+          <Divider my="sm" color="dark.6" />
 
           <Group justify="center" pb="xl" px="md">
             <Button

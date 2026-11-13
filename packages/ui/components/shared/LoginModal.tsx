@@ -14,12 +14,20 @@ export interface LoginModalProps {
   successMsg?: string | null;
 }
 
-const inputStyles = { 
-  input: { backgroundColor: '#101113', color: 'white', borderColor: '#354b60' }, 
-  label: { color: 'white' } 
+const inputClassNames = {
+  input: 'gts-input-field',
+  label: 'gts-input-label',
 };
 
-export function LoginModal({ opened, onClose, onLogin, onRegister, isLoading, errorMsg, successMsg }: LoginModalProps) {
+export function LoginModal({
+  opened,
+  onClose,
+  onLogin,
+  onRegister,
+  isLoading,
+  errorMsg,
+  successMsg,
+}: LoginModalProps) {
   const [isRegister, setIsRegister] = useState(false);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -33,7 +41,7 @@ export function LoginModal({ opened, onClose, onLogin, onRegister, isLoading, er
     setTimeout(() => {
       setIsRegister(false);
       setLocalError('');
-    }, 200); 
+    }, 200);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -54,16 +62,16 @@ export function LoginModal({ opened, onClose, onLogin, onRegister, isLoading, er
   const displayError = localError || errorMsg;
 
   return (
-    <Modal 
-      opened={opened} 
-      onClose={handleModalClose} 
-      title={isRegister ? "ACCOUNT ERSTELLEN" : "LOGIN"}
+    <Modal
+      opened={opened}
+      onClose={handleModalClose}
+      title={isRegister ? 'ACCOUNT ERSTELLEN' : 'LOGIN'}
       centered
-      styles={{
-        content: { backgroundColor: '#1a1d24', color: 'white', border: '1px solid #354b60' },
-        header: { backgroundColor: '#1a1d24', color: 'white' },
-        title: { fontFamily: 'Impact, "Arial Black", sans-serif', letterSpacing: '0.05em', fontSize: '1.25rem' },
-        close: { color: 'white', '&:hover': { backgroundColor: '#e0282b' } }
+      classNames={{
+        content: 'gts-modal-content',
+        header: 'gts-modal-header',
+        title: 'gts-modal-title',
+        close: 'gts-modal-close',
       }}
     >
       <form onSubmit={handleSubmit}>
@@ -73,66 +81,73 @@ export function LoginModal({ opened, onClose, onLogin, onRegister, isLoading, er
 
           {isRegister && (
             <>
-              <TextInput 
-                label="Benutzername" 
-                placeholder="TabletopGeneral" 
+              <TextInput
+                label="Benutzername"
+                placeholder="TabletopGeneral"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                styles={inputStyles} 
+                classNames={inputClassNames}
               />
-              <TextInput 
-                label="Discord-Account / User-ID (Optional)" 
-                placeholder="z.B. @deinname oder 123456789012345678" 
+              <TextInput
+                label="Discord-Account / User-ID (Optional)"
+                placeholder="z.B. @deinname oder 123456789012345678"
                 value={discordAccount}
                 onChange={(e) => setDiscordAccount(e.target.value)}
-                styles={inputStyles} 
+                classNames={inputClassNames}
               />
             </>
           )}
-          <TextInput 
-            label="E-Mail" 
+          <TextInput
+            label="E-Mail"
             type="email"
-            placeholder="deine@email.de" 
+            placeholder="deine@email.de"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            styles={inputStyles} 
+            classNames={inputClassNames}
           />
-          <PasswordInput 
-            label="Passwort" 
-            placeholder="********" 
+          <PasswordInput
+            label="Passwort"
+            placeholder="********"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            styles={inputStyles} 
+            classNames={inputClassNames}
           />
           {isRegister && (
-            <PasswordInput 
-              label="Passwort bestätigen" 
-              placeholder="********" 
+            <PasswordInput
+              label="Passwort bestätigen"
+              placeholder="********"
               value={passwordConfirm}
               onChange={(e) => setPasswordConfirm(e.target.value)}
               required
-              styles={inputStyles} 
+              classNames={inputClassNames}
             />
           )}
-          
-          <Button type="submit" loading={isLoading} fullWidth color="red" leftSection={isRegister ? <IconUserPlus size={18} /> : <IconShieldLock size={18} />} style={{ fontFamily: 'Impact', letterSpacing: '0.05em' }}>
-            {isRegister ? "REGISTRIEREN" : "ANMELDEN"}
+
+          <Button
+            type="submit"
+            loading={isLoading}
+            fullWidth
+            color="red"
+            leftSection={isRegister ? <IconUserPlus size={18} /> : <IconShieldLock size={18} />}
+            className="impact-font"
+          >
+            {isRegister ? 'REGISTRIEREN' : 'ANMELDEN'}
           </Button>
-          
-          <Text 
-            size="xs" 
-            c="gray.4" 
-            ta="center" 
-            style={{ cursor: 'pointer', textDecoration: 'underline' }}
+
+          <Text
+            size="xs"
+            c="gray.4"
+            ta="center"
+            className="gts-modal-toggle-link"
             onClick={() => {
               setIsRegister(!isRegister);
               setLocalError('');
             }}
           >
-            {isRegister ? "Bereits einen Account? Hier einloggen." : "Noch kein Account? Hier registrieren."}
+            {isRegister ? 'Bereits einen Account? Hier einloggen.' : 'Noch kein Account? Hier registrieren.'}
           </Text>
         </Stack>
       </form>

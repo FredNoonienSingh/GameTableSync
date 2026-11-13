@@ -2,7 +2,7 @@
 
 import { motion, MotionValue, useTransform } from 'framer-motion';
 
-export default function CardDrawGraphic({ progress }: { progress: MotionValue<number> }) {
+export function CardDrawGraphic({ progress }: { progress: MotionValue<number> }) {
   // Card slides out from the deck, lifts upward, tilts, and hovers prominently like a summoned TCG card
   const x = useTransform(progress, [0, 0.4, 0.8, 1], [0, 0, -50, -50]);
   const y = useTransform(progress, [0, 0.3, 0.7, 1], [0, 15, -100, -100]);

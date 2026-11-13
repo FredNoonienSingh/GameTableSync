@@ -42,6 +42,10 @@ const defaultLabels: Required<ContactFormLabels> = {
   submit: 'Send Transmission',
 };
 
+const inputClassNames = {
+  input: 'gts-contact-input',
+  label: 'gts-contact-label',
+};
 
 export function ContactForm({ labels }: { labels?: ContactFormLabels }) {
   const t = { ...defaultLabels, ...labels };
@@ -77,42 +81,16 @@ export function ContactForm({ labels }: { labels?: ContactFormLabels }) {
     }
   };
 
-  const inputStyles = {
-    input: {
-      backgroundColor: '#0a0b08',
-      borderColor: 'rgba(24, 100, 255, 0.2)',
-      color: '#fff',
-      padding: '1.25rem 1rem',
-    },
-    label: {
-      color: '#C1C2C5',
-      marginBottom: '0.5rem',
-      fontFamily: '"Orbitron", sans-serif',
-      letterSpacing: '0.05em',
-      fontSize: '0.85rem',
-    },
-  };
-
   return (
-    <Box component="section" py={{ base: 80, md: 140 }} style={{ position: 'relative', zIndex: 1 }}>
+    <Box component="section" py={{ base: 80, md: 140 }} className="gts-contact-section">
       <Container size="lg" w="100%">
         <Grid gap={{ base: 50, md: 80 }} align="center">
-          {/* Linke Spalte: Kommando-Text & Alternative Kontaktwege */}
           <Grid.Col span={{ base: 12, md: 5 }}>
             <Stack gap="lg">
-              <Badge color="brandBlue.5" variant="outline" size="lg" style={{ letterSpacing: '0.1em' }}>
+              <Badge color="brandBlue.5" variant="outline" size="lg" className="gts-contact-badge">
                 SECURE CHANNEL
               </Badge>
-              <Title
-                order={2}
-                c="white"
-                className="brand-logo"
-                style={{
-                  fontSize: 'clamp(2rem, 4vw, 3.25rem)',
-                  lineHeight: 1.1,
-                  textShadow: '0 4px 25px rgba(24, 100, 255, 0.35)',
-                }}
-              >
+              <Title order={2} c="white" className="brand-logo gts-contact-title">
                 {t.title}
               </Title>
               <Text size="lg" c="gray.4" lh={1.6}>
@@ -121,21 +99,17 @@ export function ContactForm({ labels }: { labels?: ContactFormLabels }) {
 
               <Stack gap="lg" mt="xl">
                 <Anchor href="mailto:info@GameTableSync.com" underline="never">
-                  <Group
-                    style={{ transition: 'opacity 0.2s' }}
-                    onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.8')}
-                    onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-                  >
+                  <Group className="gts-contact-mail-group">
                     <ThemeIcon
                       size="xl"
                       variant="light"
                       color="brandBlue.5"
                       radius="md"
-                      style={{ backgroundColor: 'rgba(24, 100, 255, 0.15)' }}
+                      className="gts-contact-mail-icon"
                     >
                       <IconMail size={22} />
                     </ThemeIcon>
-                    <Text c="gray.3" className="brand-logo" size="sm" style={{ letterSpacing: '0.05em' }}>
+                    <Text c="gray.3" className="brand-logo gts-contact-mail-text" size="sm">
                       info@GameTableSync.com
                     </Text>
                   </Group>
@@ -149,13 +123,7 @@ export function ContactForm({ labels }: { labels?: ContactFormLabels }) {
                   size="lg"
                   radius="md"
                   leftSection={<IconBrandDiscord size={22} />}
-                  className="brand-logo"
-                  style={{
-                    backgroundColor: discordUrl ? '#5865F2' : undefined,
-                    color: '#fff',
-                    letterSpacing: '0.05em',
-                    width: 'fit-content',
-                  }}
+                  className="brand-logo gts-contact-discord-btn"
                 >
                   Official Community Server
                 </Button>
@@ -163,18 +131,11 @@ export function ContactForm({ labels }: { labels?: ContactFormLabels }) {
             </Stack>
           </Grid.Col>
 
-          {/* Rechte Spalte: Das Terminal-Formular */}
           <Grid.Col span={{ base: 12, md: 7 }}>
             <Paper
               p={{ base: 'xl', sm: 'clamp(2rem, 4vw, 3rem)' }}
               radius="md"
-              style={{
-                backgroundColor: 'rgba(15, 16, 12, 0.85)',
-                border: '1px solid rgba(24, 100, 255, 0.25)',
-                borderTop: '3px solid #1864ff',
-                boxShadow: '0 12px 40px rgba(0, 0, 0, 0.5)',
-                backdropFilter: 'blur(8px)',
-              }}
+              className="gts-contact-card"
             >
               <form onSubmit={handleSubmit}>
                 <Stack gap="lg">
@@ -185,7 +146,7 @@ export function ContactForm({ labels }: { labels?: ContactFormLabels }) {
                     placeholder="commander@club.com"
                     value={email}
                     onChange={(e) => setEmail(e.currentTarget.value)}
-                    styles={inputStyles}
+                    classNames={inputClassNames}
                   />
 
                   <TextInput
@@ -194,7 +155,7 @@ export function ContactForm({ labels }: { labels?: ContactFormLabels }) {
                     placeholder="Early Access / Support"
                     value={subject}
                     onChange={(e) => setSubject(e.currentTarget.value)}
-                    styles={inputStyles}
+                    classNames={inputClassNames}
                   />
 
                   <Textarea
@@ -204,7 +165,7 @@ export function ContactForm({ labels }: { labels?: ContactFormLabels }) {
                     minRows={5}
                     value={message}
                     onChange={(e) => setMessage(e.currentTarget.value)}
-                    styles={inputStyles}
+                    classNames={inputClassNames}
                   />
 
                   {status === 'success' && (
@@ -223,29 +184,21 @@ export function ContactForm({ labels }: { labels?: ContactFormLabels }) {
                       {t.error}
                     </Notification>
                   )}
-                    <Button
-                      type="submit"
-                      size="xl"
-                      color="brandBlue.6"
-                      loading={status === 'loading'}
-                      leftSection={<IconSend size={20} />}
-                      className="brand-logo"
-                      mt="md"
-                      fullWidth
-                      styles={{
-                        root: {
-                          height: 'auto', // Allows the button to grow vertically if text wraps
-                          minHeight: '3.5rem', // Maintains the "xl" size appearance
-                          padding: '0.75rem 1rem', // Ensures padding if it wraps to two lines
-                        },
-                      label: {
-                        whiteSpace: 'normal', // Prevents clipping by allowing line breaks
-                        textAlign: 'center',
-                        lineHeight: 1.2,
-                        fontSize: 'clamp(0.9rem, 4vw, 1.125rem)', // Scales font down on small screens
-                        },
-                       }}
->
+
+                  <Button
+                    type="submit"
+                    size="xl"
+                    color="brandBlue.6"
+                    loading={status === 'loading'}
+                    leftSection={<IconSend size={20} />}
+                    className="brand-logo"
+                    mt="md"
+                    fullWidth
+                    classNames={{
+                      root: 'gts-contact-submit-root',
+                      label: 'gts-contact-submit-label',
+                    }}
+                  >
                     {t.submit}
                   </Button>
                 </Stack>

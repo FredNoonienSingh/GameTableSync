@@ -58,12 +58,7 @@ export function LaunchCountdown({ labels }: { labels: CountdownLabels }) {
 
   return (
     <Stack align="center" gap="sm" mt="lg">
-      <Text
-        size="xs"
-        c="brandCyan.4"
-        className="brand-logo"
-        style={{ letterSpacing: '0.2em' }}
-      >
+      <Text size="xs" c="brandCyan.4" className="brand-logo gts-countdown-header">
         {labels.label} — 01.01.2027
       </Text>
 
@@ -74,31 +69,13 @@ export function LaunchCountdown({ labels }: { labels: CountdownLabels }) {
             px={{ base: 'md', sm: 'lg' }}
             py="sm"
             radius="md"
-            style={{
-              minWidth: 'clamp(74px, 18vw, 105px)',
-              backgroundColor: 'rgba(15, 16, 12, 0.85)',
-              border: '1px solid rgba(24, 100, 255, 0.45)',
-              boxShadow: '0 0 20px rgba(24, 100, 255, 0.18)',
-              backdropFilter: 'blur(8px)',
-            }}
+            className="gts-countdown-box"
           >
             <Stack gap={2} align="center">
-              <Text
-                className="brand-logo"
-                c="white"
-                style={{
-                  fontSize: 'clamp(1.6rem, 4vw, 2.5rem)',
-                  lineHeight: 1.1,
-                }}
-              >
+              <Text className="brand-logo gts-countdown-value" c="white">
                 {mounted ? String(unit.value).padStart(2, '0') : '--'}
               </Text>
-              <Text
-                size="xs"
-                c="brandBlue.4"
-                className="brand-logo"
-                style={{ fontSize: '0.7rem', letterSpacing: '0.12em' }}
-              >
+              <Text size="xs" c="brandBlue.4" className="brand-logo gts-countdown-unit">
                 {unit.label}
               </Text>
             </Stack>

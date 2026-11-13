@@ -2,6 +2,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Container, Title, Text, Badge, Stack, Paper, Button } from '@mantine/core';
 import { IconArrowLeft } from '@tabler/icons-react';
 import { AnimatedBackground, LandingNavbar, SimpleHeader, Footer } from '@gts/ui';
+import {ProfileSmall} from '@gts/ui';
 
 export default function PlayersPage() {
   const t = useTranslations('Common.PlayersPage');
@@ -15,6 +16,7 @@ export default function PlayersPage() {
       <SimpleHeader href={`/${locale}`} />
 
       <Container size="md" py={{ base: 60, md: 100 }} style={{ flex: 1, position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center' }}>
+        <ProfileSmall/>
         <Paper
           p={{ base: 'xl', sm: '3rem' }}
           radius="md"

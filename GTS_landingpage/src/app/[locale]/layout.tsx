@@ -3,7 +3,7 @@ import { routing } from '@/i18n/routing';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { MantineProvider, mantineHtmlProps } from '@mantine/core';
+import { MantineProvider, ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
 import { theme } from '@gts/ui';
 import { Orbitron } from 'next/font/google';
 
@@ -34,15 +34,23 @@ export default async function RootLayout({
       {...mantineHtmlProps}
     >
       <head>
+        <ColorSchemeScript defaultColorScheme="dark" />
         <style>{`
           .brand-logo {
             font-family: var(--font-orbitron), 'Orbitron', sans-serif;
           }
         `}</style>
       </head>
-      <body style={{ backgroundColor: '#0f100c', color: '#ffffff', margin: 0 }}>
+      <body
+        style={{
+          backgroundColor: 'var(--gts-bg-canvas)',
+          color: 'var(--gts-text-body)',
+          margin: 0,
+          transition: 'background-color 0.25s ease, color 0.25s ease',
+        }}
+      >
         <NextIntlClientProvider messages={messages}>
-          <MantineProvider theme={theme} defaultColorScheme="dark" forceColorScheme="dark">
+          <MantineProvider theme={theme} defaultColorScheme="dark">
             {children}
           </MantineProvider>
         </NextIntlClientProvider>

@@ -1,3 +1,4 @@
+// Privacy page
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';

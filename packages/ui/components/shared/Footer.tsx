@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Container, Group, Text, Box, Stack, Divider } from '@mantine/core';
 import Link from 'next/link';
 import Image from 'next/image';
-import {gtsPureLogo} from '@gts/ui';
+import { gtsPureLogo } from '@gts/ui';
 
 export interface FooterLabels {
   rights?: string;
@@ -28,27 +28,18 @@ const defaultLabels: Required<FooterLabels> = {
   terms: 'Terms of Service',
 };
 
-export function Footer({ 
-  labels, 
+export function Footer({
+  labels,
   logoSrc = gtsPureLogo,
   imprintHref = '/imprint',
   privacyHref = '/privacy',
-  termsHref = '/terms'
+  termsHref = '/terms',
 }: FooterProps) {
   const [imgError, setImgError] = useState(false);
   const t = { ...defaultLabels, ...labels };
 
   return (
-    <Box
-      component="footer"
-      py="xl"
-      style={{
-        backgroundColor: '#0a0b08',
-        borderTop: '1px solid rgba(24, 100, 255, 0.15)',
-        zIndex: 1,
-        position: 'relative',
-      }}
-    >
+    <Box component="footer" py="xl" className="gts-footer">
       <Container size="lg">
         <Stack gap="md">
           <Group justify="space-between" align="center">
@@ -59,22 +50,22 @@ export function Footer({
                   alt="GameTableSync"
                   width={28}
                   height={28}
-                  style={{ width: 'auto', height: '28px' }}
+                  className="gts-footer-logo"
                   onError={() => setImgError(true)}
                 />
               )}
-              <Text c="white" className="brand-logo" size="sm" style={{ letterSpacing: '0.1em' }}>
+              <Text c="white" className="brand-logo gts-footer-brand" size="sm">
                 GAMETABLESYNC
               </Text>
             </Group>
             <Group gap="xl">
-              <Link href={imprintHref} style={{ color: '#909296', textDecoration: 'none', fontSize: '0.85rem' }}>
+              <Link href={imprintHref} className="gts-footer-link">
                 {t.imprint}
               </Link>
-              <Link href={privacyHref} style={{ color: '#909296', textDecoration: 'none', fontSize: '0.85rem' }}>
+              <Link href={privacyHref} className="gts-footer-link">
                 {t.privacy}
               </Link>
-              <Link href={termsHref} style={{ color: '#909296', textDecoration: 'none', fontSize: '0.85rem' }}>
+              <Link href={termsHref} className="gts-footer-link">
                 {t.terms}
               </Link>
             </Group>

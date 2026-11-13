@@ -4,7 +4,14 @@ import './styles.css';
 
 export { theme } from './theme';
 export * as Assets from "./assets";
-// Add this line to packages/ui/index.ts
+
+// Interfaces
+export {UUID, DateRange, AvatarResource, Status} from './components/types';
+export {Badge, Player} from './components/player/interfaces';
+export {Tournament,Trophy, Round, Team,MatchingAlgo} from './components/tournament/interfaces'
+export {Club} from './components/club/interfaces'
+export {Game} from './components/game/interfaces'
+
 export { MantineProvider, mantineHtmlProps, ColorSchemeScript } from '@mantine/core';
 export { Section, type AnimationVariant } from './components/shared/Section';
 
@@ -14,14 +21,19 @@ export { CommandHubGraphic } from './components/animations/CommandHubGraphic';
 export { FallingD6Graphic } from './components/animations/FallingD6Graphic';
 export { RotatingD20Graphic } from './components/animations/RotatingD20Graphic';
 export { FanningCardsGraphic } from './components/animations/FanningCardsGraphic';
-export { default as DrawingCardsGraphic } from './components/animations/DrawingCardsGraphic';
+export { DrawingCardGraphic } from './components/animations/DrawingCardGraphic';
 export { HexTilePathGraphic } from './components/animations/HexTilePathGraphic';
 export { CardCycloneGraphic } from './components/animations/CardCycloneGraphic';
 export { PortalDiceSummonGraphic } from './components/animations/PortalDiceSummonGraphic';
 export { HobbyEssentialsGraphic } from './components/animations/HobbyEssentialsGraphic';
 export { CommandForgeGraphic } from './components/animations/CommandForgeGraphic'
-// Landing Page 
+// ---- Price 
+export {OutpostGraphic} from './components/animations/pricedetail/OutpostGraphic';
+export {StrongholdGraphic} from './components/animations/pricedetail/StrongholdGraphic';
+export {CitadelGraphic} from './components/animations/pricedetail/CitadelGraphic';
+export {FortressOfTerraGraphic} from './components/animations/pricedetail/FortressOfTerraGraphic';
 
+// Landing Page 
 export { PriceDetail, type PriceDetailProps } from './components/marketing/PriceDetail';
 export { SimpleHeader } from './components/shared/SimpleHeader';
 export { LandingNavbar} from './components/marketing/LandingNavbar';
@@ -32,9 +44,17 @@ export { LaunchCountdown } from './components/marketing/LaunchCountdown';
 export { SubSection } from './components/shared/SubSection';
 export * from './components/army-viewer/ArmyListView';
 
+// Functional Component
+export {ThemeToggle} from './components/shared/ThemeToggle'
+
+
+// Player Components
+export {ProfileSmall} from "./components/player/ProfileSmall"
+
 // App Components
 export { AppHeader } from './components/app/AppHeader';
 
+// Logos/Images
 export { default as gtsPureLogo } from './assets/gametablesync_pure.png';
 export { default as gtsLogo2048 } from './assets/gametablesync-2048.png';
 export { default as gtsLogoSvg } from './assets/gametablesync.svg';

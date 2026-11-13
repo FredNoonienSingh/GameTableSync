@@ -58,31 +58,20 @@ const defaultLabels: Required<AppHeaderLabels> = {
   account: 'Benutzerkonto',
 };
 
+const menuClassNames = {
+  dropdown: 'gts-app-menu-dropdown',
+  item: 'gts-app-menu-item',
+};
+
 export function AppHeader({ logoSrc = defaultPureLogo, locale = 'de', labels }: AppHeaderProps) {
   const [imgError, setImgError] = useState(false);
   const t = { ...defaultLabels, ...labels };
   const p = (path: string) => `/${locale}${path === '/' ? '' : path}`;
 
   return (
-    <Box
-      component="header"
-      style={{
-        height: 80,
-        backgroundColor: 'rgba(15, 16, 12, 0.88)',
-        backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgba(24, 100, 255, 0.25)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 100,
-        display: 'flex',
-        alignItems: 'center',
-        paddingLeft: '2rem',
-        paddingRight: '2rem',
-        width: '100%',
-      }}
-    >
+    <Box component="header" className="gts-app-header">
       <Group justify="space-between" w="100%" align="center">
-        <Link href={p('/')} style={{ textDecoration: 'none' }}>
+        <Link href={p('/')} className="gts-app-header-brand-link">
           <Group gap="sm">
             {logoSrc && !imgError && (
               <Image
@@ -90,12 +79,12 @@ export function AppHeader({ logoSrc = defaultPureLogo, locale = 'de', labels }: 
                 alt="GameTableSync"
                 width={38}
                 height={38}
-                style={{ width: 'auto', height: '38px', objectFit: 'contain' }}
+                className="gts-app-header-logo"
                 onError={() => setImgError(true)}
                 priority
               />
             )}
-            <Text c="white" className="brand-logo" size="md" style={{ letterSpacing: '0.1em', fontWeight: 800 }}>
+            <Text c="white" className="brand-logo gts-app-header-title" size="md">
               GAMETABLESYNC
             </Text>
           </Group>
@@ -103,71 +92,139 @@ export function AppHeader({ logoSrc = defaultPureLogo, locale = 'de', labels }: 
 
         {/* CENTER: Navigation with Dropdowns */}
         <Group gap="lg" visibleFrom="sm">
-          <Button component={Link} href={p('/')} variant="subtle" color="gray" size="sm" style={{ color: '#C1C2C5' }}>
+          <Button
+            component={Link}
+            href={p('/')}
+            variant="subtle"
+            color="gray"
+            size="sm"
+            className="gts-app-nav-btn"
+          >
             {t.dashboard}
           </Button>
 
           {/* Tabletop Dropdown */}
-          <Menu shadow="md" width={230} position="bottom-start" transitionProps={{ transition: 'pop' }}>
+          <Menu
+            shadow="md"
+            width={230}
+            position="bottom-start"
+            transitionProps={{ transition: 'pop' }}
+            classNames={menuClassNames}
+          >
             <Menu.Target>
-              <UnstyledButton style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#C1C2C5', fontSize: '0.875rem', fontWeight: 600 }}>
+              <UnstyledButton className="gts-app-menu-trigger">
                 {t.tabletop} <IconChevronDown size={14} />
               </UnstyledButton>
             </Menu.Target>
-            <Menu.Dropdown style={{ backgroundColor: '#14161b', borderColor: 'rgba(24, 100, 255, 0.25)' }}>
-              <Menu.Item component={Link} href={p('/tabletop/systems')} leftSection={<IconSwords size={16} color="#1864ff" />} style={{ color: 'white' }}>
+            <Menu.Dropdown>
+              <Menu.Item
+                component={Link}
+                href={p('/tabletop/systems')}
+                leftSection={<IconSwords size={16} color="var(--gts-primary)" />}
+              >
                 {t.ttSystems}
               </Menu.Item>
-              <Menu.Item component={Link} href={p('/tabletop/campaign')} leftSection={<IconTrophy size={16} color="#1864ff" />} style={{ color: 'white' }}>
+              <Menu.Item
+                component={Link}
+                href={p('/tabletop/campaign')}
+                leftSection={<IconTrophy size={16} color="var(--gts-primary)" />}
+              >
                 {t.ttCampaign}
               </Menu.Item>
-              <Menu.Item component={Link} href={p('/tabletop/roster')} leftSection={<IconShield size={16} color="#1864ff" />} style={{ color: 'white' }}>
+              <Menu.Item
+                component={Link}
+                href={p('/tabletop/roster')}
+                leftSection={<IconShield size={16} color="var(--gts-primary)" />}
+              >
                 {t.ttRoster}
               </Menu.Item>
             </Menu.Dropdown>
           </Menu>
 
           {/* RPG Dropdown */}
-          <Menu shadow="md" width={230} position="bottom-start" transitionProps={{ transition: 'pop' }}>
+          <Menu
+            shadow="md"
+            width={230}
+            position="bottom-start"
+            transitionProps={{ transition: 'pop' }}
+            classNames={menuClassNames}
+          >
             <Menu.Target>
-              <UnstyledButton style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#C1C2C5', fontSize: '0.875rem', fontWeight: 600 }}>
+              <UnstyledButton className="gts-app-menu-trigger">
                 {t.rpg} <IconChevronDown size={14} />
               </UnstyledButton>
             </Menu.Target>
-            <Menu.Dropdown style={{ backgroundColor: '#14161b', borderColor: 'rgba(24, 100, 255, 0.25)' }}>
-              <Menu.Item component={Link} href={p('/rpg/sheets')} leftSection={<IconShield size={16} color="#29d4ff" />} style={{ color: 'white' }}>
+            <Menu.Dropdown>
+              <Menu.Item
+                component={Link}
+                href={p('/rpg/sheets')}
+                leftSection={<IconShield size={16} color="var(--gts-accent)" />}
+              >
                 {t.rpgSheets}
               </Menu.Item>
-              <Menu.Item component={Link} href={p('/rpg/worldmap')} leftSection={<IconCompass size={16} color="#29d4ff" />} style={{ color: 'white' }}>
+              <Menu.Item
+                component={Link}
+                href={p('/rpg/worldmap')}
+                leftSection={<IconCompass size={16} color="var(--gts-accent)" />}
+              >
                 {t.rpgWorldmap}
               </Menu.Item>
-              <Menu.Item component={Link} href={p('/rpg/sessions')} leftSection={<IconSwords size={16} color="#29d4ff" />} style={{ color: 'white' }}>
+              <Menu.Item
+                component={Link}
+                href={p('/rpg/sessions')}
+                leftSection={<IconSwords size={16} color="var(--gts-accent)" />}
+              >
                 {t.rpgSessions}
               </Menu.Item>
             </Menu.Dropdown>
           </Menu>
 
           {/* TCG Dropdown */}
-          <Menu shadow="md" width={230} position="bottom-start" transitionProps={{ transition: 'pop' }}>
+          <Menu
+            shadow="md"
+            width={230}
+            position="bottom-start"
+            transitionProps={{ transition: 'pop' }}
+            classNames={menuClassNames}
+          >
             <Menu.Target>
-              <UnstyledButton style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#C1C2C5', fontSize: '0.875rem', fontWeight: 600 }}>
+              <UnstyledButton className="gts-app-menu-trigger">
                 {t.tcg} <IconChevronDown size={14} />
               </UnstyledButton>
             </Menu.Target>
-            <Menu.Dropdown style={{ backgroundColor: '#14161b', borderColor: 'rgba(24, 100, 255, 0.25)' }}>
-              <Menu.Item component={Link} href={p('/tcg/decks')} leftSection={<IconCards size={16} color="#4080ff" />} style={{ color: 'white' }}>
+            <Menu.Dropdown>
+              <Menu.Item
+                component={Link}
+                href={p('/tcg/decks')}
+                leftSection={<IconCards size={16} color="var(--gts-primary)" />}
+              >
                 {t.tcgDecks}
               </Menu.Item>
-              <Menu.Item component={Link} href={p('/tcg/companion')} leftSection={<IconDeviceMobile size={16} color="#4080ff" />} style={{ color: 'white' }}>
+              <Menu.Item
+                component={Link}
+                href={p('/tcg/companion')}
+                leftSection={<IconDeviceMobile size={16} color="var(--gts-primary)" />}
+              >
                 {t.tcgCompanion}
               </Menu.Item>
-              <Menu.Item component={Link} href={p('/tcg/pods')} leftSection={<IconTrophy size={16} color="#4080ff" />} style={{ color: 'white' }}>
+              <Menu.Item
+                component={Link}
+                href={p('/tcg/pods')}
+                leftSection={<IconTrophy size={16} color="var(--gts-primary)" />}
+              >
                 {t.tcgPods}
               </Menu.Item>
             </Menu.Dropdown>
           </Menu>
 
-          <Button component={Link} href={p('/game-finder')} variant="subtle" color="gray" size="sm" style={{ color: '#C1C2C5' }}>
+          <Button
+            component={Link}
+            href={p('/game-finder')}
+            variant="subtle"
+            color="gray"
+            size="sm"
+            className="gts-app-nav-btn"
+          >
             {t.gameFinder}
           </Button>
         </Group>
@@ -178,13 +235,12 @@ export function AppHeader({ logoSrc = defaultPureLogo, locale = 'de', labels }: 
             component={Link}
             href={p('/account')}
             variant="light"
-            color="brandBlue.5"
             size="lg"
             radius="md"
-            style={{ backgroundColor: 'rgba(24, 100, 255, 0.15)', border: '1px solid rgba(24, 100, 255, 0.3)' }}
+            className="gts-app-account-btn"
             title={t.account}
           >
-            <IconUser size={20} color="#29d4ff" />
+            <IconUser size={20} />
           </ActionIcon>
         </Group>
       </Group>

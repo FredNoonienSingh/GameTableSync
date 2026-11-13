@@ -33,25 +33,13 @@ export function Section({
 }: SectionProps) {
   const graphicRef = useRef<HTMLDivElement>(null);
 
-  // Track the 360px graphic container directly, not the tall outer section
   const { scrollYProgress } = useScroll({
     target: graphicRef,
     offset: ['start end', 'end start'],
   });
 
   return (
-    <Box
-      id={id}
-      component="section"
-      py={{ base: 60, md: 100 }}
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        position: 'relative',
-        zIndex: 1,
-      }}
-    >
+    <Box id={id} component="section" py={{ base: 60, md: 100 }} className="gts-section">
       <Container size="lg" w="100%">
         {variant === 'intro' ? (
           <Stack ref={graphicRef} align="center" ta="center" gap="lg">
@@ -59,17 +47,7 @@ export function Section({
             <Badge color="brandBlue.5" variant="outline" size="lg">
               {badge}
             </Badge>
-            <Title
-              order={1}
-              c="white"
-              className="brand-logo"
-              style={{
-                fontSize: 'clamp(1.4rem, 3.8vw, 2.6rem)',
-                lineHeight: 1.15,
-                textShadow: '0 4px 25px rgba(24, 100, 255, 0.35)',
-                wordBreak: 'break-word',
-              }}
-            >
+            <Title order={1} c="white" className="brand-logo gts-section-intro-title">
               {title}
             </Title>
             <Text size="lg" c="gray.4" maw={650} px={{ base: 'xs', sm: 0 }}>
@@ -82,32 +60,14 @@ export function Section({
             <Grid.Col
               span={{ base: 12, md: 7 }}
               order={{ base: 1, md: reverse ? 2 : 1 }}
-              style={{ position: 'relative', zIndex: 2 }}
+              className="gts-section-col-content"
             >
-              <Paper
-                p={{ base: 'lg', sm: 'xl' }}
-                radius="md"
-                style={{
-                  position: 'relative',
-                  zIndex: 2,
-                  backgroundColor: 'rgba(20, 22, 27, 0.85)',
-                  backdropFilter: 'blur(8px)',
-                }}
-              >
+              <Paper p={{ base: 'lg', sm: 'xl' }} radius="md" className="gts-section-paper">
                 <Stack gap="md">
                   <Badge color="brandBlue.6" variant="filled" size="md" w="fit-content">
                     {badge}
                   </Badge>
-                  <Title
-                    order={2}
-                    c="brandBlue.4"
-                    className="brand-logo"
-                    style={{
-                      fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
-                      lineHeight: 1.15,
-                      wordBreak: 'break-word',
-                    }}
-                  >
+                  <Title order={2} c="brandBlue.4" className="brand-logo gts-section-title">
                     {title}
                   </Title>
                   <Text size="md" c="gray.3" lh={1.6}>
@@ -115,7 +75,7 @@ export function Section({
                   </Text>
 
                   {children && (
-                    <Stack gap="sm" mt="sm" style={{ position: 'relative', zIndex: 3 }}>
+                    <Stack gap="sm" mt="sm" className="gts-section-children">
                       {children}
                     </Stack>
                   )}
@@ -126,19 +86,9 @@ export function Section({
             <Grid.Col
               span={{ base: 12, md: 5 }}
               order={{ base: 2, md: reverse ? 1 : 2 }}
-              style={{ position: 'relative', zIndex: 1 }}
+              className="gts-section-col-graphic"
             >
-              <Box
-                ref={graphicRef}
-                style={{
-                  height: 360,
-                  position: 'relative',
-                  zIndex: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
+              <Box ref={graphicRef} className="gts-section-graphic-box">
                 {variant === 'hub' && <CommandHubGraphic progress={scrollYProgress} />}
                 {variant === 'd6' && <FallingD6Graphic progress={scrollYProgress} />}
                 {variant === 'd20' && <RotatingD20Graphic progress={scrollYProgress} />}
