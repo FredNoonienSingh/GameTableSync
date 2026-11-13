@@ -45,7 +45,8 @@ export { SubSection } from './components/shared/SubSection';
 export * from './components/army-viewer/ArmyListView';
 
 // Functional Component
-export {ThemeToggle} from './components/shared/ThemeToggle'
+export {ThemeToggle} from './components/shared/ThemeToggle';
+export {LanguageSwitcher} from './components/shared/LanguageSwitcher';
 
 
 // Player Components

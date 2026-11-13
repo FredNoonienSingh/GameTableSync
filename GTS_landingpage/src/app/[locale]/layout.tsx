@@ -1,4 +1,5 @@
 import '@mantine/core/styles.css';
+import '@gts/ui/styles.css'; // Ensure global tokens load in SSR head, not lazily via client components
 import { routing } from '@/i18n/routing';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
@@ -29,26 +30,39 @@ export default async function RootLayout({
 
   return (
     <html
+      {...mantineHtmlProps}
       lang={locale}
       data-mantine-color-scheme="dark"
+      data-locales={routing.locales.join(',')}
       className={`${orbitron.className} ${orbitron.variable}`}
-      {...mantineHtmlProps}
+      style={{ backgroundColor: '#0f100c', colorScheme: 'dark' }}
     >
       <head>
+        {/* Critical First-Paint Style: Guarantees #0f100c before external CSS chunks parse */}
         <style>{`
+          :root, html[data-mantine-color-scheme="dark"], html:not([data-mantine-color-scheme="light"]) {
+            --gts-bg-canvas: #0f100c;
+            --gts-text-body: #e9ecef;
+            background-color: #0f100c;
+            color-scheme: dark;
+          }
+          html[data-mantine-color-scheme="light"] {
+            --gts-bg-canvas: #f4f6fb;
+            --gts-text-body: #1e293b;
+            background-color: #f4f6fb;
+            color-scheme: light;
+          }
+          body {
+            background-color: var(--gts-bg-canvas) !important;
+            color: var(--gts-text-body) !important;
+            margin: 0;
+          }
           .brand-logo {
             font-family: var(--font-orbitron), 'Orbitron', sans-serif;
           }
         `}</style>
       </head>
-      <body
-        style={{
-          backgroundColor: 'var(--gts-bg-canvas)',
-          color: 'var(--gts-text-body)',
-          margin: 0,
-          transition: 'background-color 0.25s ease, color 0.25s ease',
-        }}
-      >
+      <body>
         <NextIntlClientProvider messages={messages}>
           <MantineProvider theme={theme} defaultColorScheme="dark">
             {children}

@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import {
   Group,
   Button,
@@ -13,7 +14,8 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useTranslations, useLocale } from 'next-intl';
-import { ThemeToggle } from '@gts/ui';
+import { ThemeToggle } from '../shared/ThemeToggle';
+import { LanguageSwitcher } from '../shared/LanguageSwitcher';
 
 export function LandingNavbar() {
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
@@ -46,6 +48,9 @@ export function LandingNavbar() {
         </Group>
 
         <Group gap="sm" visibleFrom="sm">
+          <Suspense fallback={null}>
+            <LanguageSwitcher />
+          </Suspense>
           <ThemeToggle />
           <Button
             component="a"
@@ -59,6 +64,9 @@ export function LandingNavbar() {
         </Group>
 
         <Group gap="xs" hiddenFrom="sm" ml="auto">
+          <Suspense fallback={null}>
+            <LanguageSwitcher />
+          </Suspense>
           <ThemeToggle />
           <Burger
             opened={drawerOpened}

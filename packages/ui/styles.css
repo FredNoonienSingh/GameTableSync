@@ -1545,6 +1545,37 @@
 }
 
 /* ==========================================================================
+   18. DYNAMIC LANGUAGE SWITCHER
+   ========================================================================== */
+.gts-lang-trigger {
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background-color: var(--gts-bg-glass-subtle);
+  border: 1px solid var(--gts-border-subtle);
+  color: var(--gts-text-heading);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
+}
+
+.gts-lang-trigger:hover {
+  background-color: color-mix(in srgb, var(--gts-primary) 18%, transparent);
+  border-color: var(--gts-primary);
+  transform: translateY(-1px);
+}
+
+.gts-lang-item-active {
+  background-color: color-mix(in srgb, var(--gts-primary) 22%, transparent);
+  color: var(--gts-accent);
+  font-weight: 700;
+}
+
+/* ==========================================================================
    17. PLAYER FREE CALLOUT BUTTON & TIER FORTIFICATION GRAPHICS
    ========================================================================== */
 .gts-player-free-btn,

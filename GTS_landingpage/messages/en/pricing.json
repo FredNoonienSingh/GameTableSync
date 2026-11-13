@@ -1,4 +1,13 @@
-{"tier1": {
+{
+  "badge": "COMMAND LICENSES FOR CLUBS & STORES",
+  "title": "CHOOSE YOUR FORTRESS TIER",
+  "subtitle": "Scalable infrastructure for small gaming groups, established tabletop clubs, and major Local Game Stores.",
+  "promoBanner": "EARLY-BIRD DEAL UNTIL 01.06.: Free system setup (instead of €49.95) with annual billing!",
+  "billingToggle": {
+    "monthly": "Monthly",
+    "yearly": "Yearly (-10%)"
+  },
+  "tier1": {
     "badge": "SMALL GROUPS & CLUBS",
     "title": "OUTPOST",
     "price": "€15",
@@ -59,5 +68,28 @@
     "f3": "Guaranteed Uptime SLA & Priority Engineering Support",
     "f4": "Unlimited Active Players & Multi-System Brackets",
     "cta": "REQUEST LICENSE"
+  },
+  "playerFree": {
+    "badge": "PLAYER PROMISE",
+    "title": "FREE FOR PLAYERS FOREVER – ACROSS THE ENTIRE UNIVERSE",
+    "description": "GameTableSync costs individual players nothing—not today, not tomorrow, and not even in the 41st Millennium. Army list viewers, digital RPG character sheets, the live TCG companion, and your global ELO profile remain free forever.",
+    "cta": "GO TO PLAYER PAGE"
+  },
+  "services": {
+    "sectionTitle": "ONBOARDING & DATA MIGRATION",
+    "setup": {
+      "badge": "TURNKEY ROLLOUT",
+      "title": "SYSTEM SETUP & CONFIGURATION",
+      "price": "€49.95",
+      "priceSub": "one-time (€0.00 with annual billing until 01.06.)",
+      "description": "We set up your club or store completely turnkey-ready: tables, game systems, role structure, and full integration of our Discord bot on your server."
+    },
+    "migration": {
+      "badge": "LEGACY IMPORT",
+      "title": "LEGACY SYSTEM DATA MIGRATION",
+      "price": "from €99.95",
+      "priceSub": "one-time based on data volume",
+      "description": "Switching from old spreadsheets, forums, or existing management tools? We handle the complete transfer of your member data, historical ELO rankings, league standings, and campaign chronicles."
+    }
   }
 }
