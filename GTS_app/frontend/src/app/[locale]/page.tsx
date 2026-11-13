@@ -69,7 +69,7 @@ export default function AppPage() {
 
             <Title
               order={1}
-              c="white"
+               
               style={{
                 fontSize: 'clamp(2rem, 5vw, 3.5rem)',
                 lineHeight: 1.1,
@@ -152,7 +152,7 @@ function HomeCard({ icon, title, description }: { icon: React.ReactNode; title: 
         >
           {icon}
         </ThemeIcon>
-        <Title order={3} c="white" style={{ fontSize: '1.25rem' }}>
+        <Title order={3}   style={{ fontSize: '1.25rem' }}>
           {title}
         </Title>
         <Text size="sm" c="gray.4" lh={1.5}>

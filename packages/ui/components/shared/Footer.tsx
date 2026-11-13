@@ -54,7 +54,7 @@ export function Footer({
                   onError={() => setImgError(true)}
                 />
               )}
-              <Text c="white" className="brand-logo gts-footer-brand" size="sm">
+              <Text   className="brand-logo gts-footer-brand" size="sm">
                 GAMETABLESYNC
               </Text>
             </Group>

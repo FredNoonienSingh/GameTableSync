@@ -29,7 +29,7 @@ export default function ImprintPage() {
         <Stack gap="xl">
           <Title
             order={1}
-            c="white"
+             
             className="brand-logo"
             style={{
               fontSize: 'clamp(1.75rem, 4vw, 2.5rem)',
@@ -52,7 +52,7 @@ export default function ImprintPage() {
             <Stack gap="lg">
               {/* 1. § 5 DDG Provider Identification */}
               <Box>
-                <Title order={3} c="white" size="h4" mb="xs" className="brand-logo">
+                <Title order={3}   size="h4" mb="xs" className="brand-logo">
                   {t('ddgTitle')}
                 </Title>
                 <Text c="gray.3" lh={1.6}>
@@ -69,7 +69,7 @@ export default function ImprintPage() {
 
               {/* 2. Contact */}
               <Box>
-                <Title order={3} c="white" size="h4" mb="xs" className="brand-logo">
+                <Title order={3}   size="h4" mb="xs" className="brand-logo">
                   {t('contactTitle')}
                 </Title>
                 <Text c="gray.3" lh={1.6}>
@@ -85,7 +85,7 @@ export default function ImprintPage() {
 
               {/*
               <Box>
-                <Title order={3} c="white" size="h4" mb="xs" className="brand-logo">
+                <Title order={3}   size="h4" mb="xs" className="brand-logo">
                   {t('vatTitle')}
                 </Title>
                 <Text c="gray.3" size="sm" lh={1.6}>
@@ -97,7 +97,7 @@ export default function ImprintPage() {
               */}
 
               <Box>
-                <Title order={3} c="white" size="h4" mb="xs" className="brand-logo">
+                <Title order={3}   size="h4" mb="xs" className="brand-logo">
                   {t('editorialTitle')}
                 </Title>
                 <Text c="gray.3" size="sm" lh={1.6}>
@@ -111,7 +111,7 @@ export default function ImprintPage() {
 
               {/* 5. Dispute Resolution */}
               <Box>
-                <Title order={3} c="white" size="h4" mb="xs" className="brand-logo">
+                <Title order={3}   size="h4" mb="xs" className="brand-logo">
                   {t('disputeTitle')}
                 </Title>
                 <Text c="gray.4" size="sm" lh={1.6}>
@@ -123,7 +123,7 @@ export default function ImprintPage() {
 
               {/* 6. Liability for Content & Links */}
               <Box>
-                <Title order={3} c="white" size="h4" mb="xs" className="brand-logo">
+                <Title order={3}   size="h4" mb="xs" className="brand-logo">
                   {t('liabilityTitle')}
                 </Title>
                 <Text c="gray.4" size="sm" lh={1.6}>

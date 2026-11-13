@@ -90,7 +90,7 @@ export function ContactForm({ labels }: { labels?: ContactFormLabels }) {
               <Badge color="brandBlue.5" variant="outline" size="lg" className="gts-contact-badge">
                 SECURE CHANNEL
               </Badge>
-              <Title order={2} c="white" className="brand-logo gts-contact-title">
+              <Title order={2}   className="brand-logo gts-contact-title">
                 {t.title}
               </Title>
               <Text size="lg" c="gray.4" lh={1.6}>

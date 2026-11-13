@@ -1,194 +1,195 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import { motion, useTransform } from 'framer-motion';
 import type { PricingTierGraphicProps } from './types';
 
 export function FortressOfTerraGraphic({
   progress,
-  primaryColor = '#d97706', // Defaults to Imperial Amber/Gold, overrideable via props
+  primaryColor = '#d97706',
   accentColor = '#fde047',
+  surfaceColor,
 }: PricingTierGraphicProps) {
-  const rotateHalo = useTransform(progress, [0, 1], [0, 360]);
-  const rotateMatrix = useTransform(progress, [0, 1], [180, -180]);
-  const rotateInner = useTransform(progress, [0, 1], [-90, 270]);
-  const scaleMaster = useTransform(progress, [0, 0.5, 1], [0.85, 1.16, 0.92]);
-  const coreGlow = useTransform(progress, [0, 0.5, 1], [0.7, 1, 0.8]);
+  const rotateSolarHalo = useTransform(progress, [0, 1], [0, 360]);
+  const thronePulse = useTransform(progress, [0, 0.5, 1], [0.92, 1.18, 0.92]);
+  const solarRays = Array.from({ length: 12 }, (_, i) => i * 30);
 
-  const solarSpikes = Array.from({ length: 12 }, (_, i) => i * 30);
+  const customVars = {
+    ...(primaryColor ? { '--gfx-primary': primaryColor } : {}),
+    ...(accentColor ? { '--gfx-accent': accentColor } : {}),
+    ...(surfaceColor ? { '--gfx-surface': surfaceColor } : {}),
+  } as CSSProperties;
 
   return (
-    <motion.div
-      style={{
-        scale: scaleMaster,
-        position: 'relative',
-        width: 280,
-        height: 280,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      {/* Ambient Radial Aura */}
-      <motion.div
-        style={{
-          opacity: coreGlow,
-          position: 'absolute',
-          width: 220,
-          height: 220,
-          borderRadius: '50%',
-          background: `radial-gradient(circle, ${accentColor}35 0%, ${primaryColor}15 50%, transparent 75%)`,
-          filter: 'blur(8px)',
-        }}
-      />
-
-      {/* Outer Solar Armada Ring (12 Lance Vectors) */}
-      <motion.svg
-        width="280"
-        height="280"
-        viewBox="0 0 280 280"
-        style={{
-          rotate: rotateHalo,
-          position: 'absolute',
-          inset: 0,
-          filter: `drop-shadow(0 0 28px ${primaryColor}90)`,
-        }}
-      >
-        <circle
-          cx="140"
-          cy="140"
-          r="128"
-          fill="none"
-          stroke={primaryColor}
-          strokeWidth="1.5"
-          strokeDasharray="6 6"
-        />
-        <circle
-          cx="140"
-          cy="140"
-          r="116"
-          fill="none"
-          stroke={accentColor}
-          strokeWidth="2.5"
-          strokeDasharray="32 10 8 10"
-        />
-        {solarSpikes.map((angle, idx) => {
-          const rad = (angle * Math.PI) / 180;
-          const isMajor = idx % 3 === 0;
-          const rOuter = isMajor ? 134 : 124;
-          const rInner = isMajor ? 88 : 102;
-          const x1 = 140 + Math.cos(rad) * rOuter;
-          const y1 = 140 + Math.sin(rad) * rOuter;
-          const x2 = 140 + Math.cos(rad) * rInner;
-          const y2 = 140 + Math.sin(rad) * rInner;
-
-          return (
-            <g key={angle}>
+    <div className="gts-graphic-scope gts-tier-fort-wrap" style={customVars}>
+      <svg width="280" height="280" viewBox="0 0 280 280" className="gts-tier-fort-svg">
+        {/* Rotating Imperial Solar Halo Behind the Palace */}
+        <motion.g style={{ rotate: rotateSolarHalo, transformOrigin: '140px 115px' }}>
+          <circle
+            cx="140"
+            cy="115"
+            r="96"
+            fill="none"
+            stroke="var(--gfx-primary)"
+            strokeWidth="1.5"
+            strokeDasharray="6 6"
+          />
+          <circle
+            cx="140"
+            cy="115"
+            r="84"
+            fill="none"
+            stroke="var(--gfx-accent)"
+            strokeWidth="2"
+            strokeDasharray="24 8 6 8"
+          />
+          {solarRays.map((angle, idx) => {
+            const rad = (angle * Math.PI) / 180;
+            const rIn = 84;
+            const rOut = idx % 2 === 0 ? 108 : 96;
+            const x1 = 140 + Math.cos(rad) * rIn;
+            const y1 = 115 + Math.sin(rad) * rIn;
+            const x2 = 140 + Math.cos(rad) * rOut;
+            const y2 = 115 + Math.sin(rad) * rOut;
+            return (
               <line
+                key={angle}
                 x1={x1}
                 y1={y1}
                 x2={x2}
                 y2={y2}
-                stroke={isMajor ? accentColor : primaryColor}
-                strokeWidth={isMajor ? '3' : '1.5'}
+                stroke={idx % 2 === 0 ? 'var(--gfx-accent)' : 'var(--gfx-primary)'}
+                strokeWidth={idx % 2 === 0 ? '2.5' : '1.5'}
               />
-              {isMajor && (
-                <circle
-                  cx={x1}
-                  cy={y1}
-                  r="6"
-                  fill="#0f100c"
-                  stroke={accentColor}
-                  strokeWidth="3"
-                />
-              )}
-            </g>
-          );
-        })}
-      </motion.svg>
+            );
+          })}
+        </motion.g>
 
-      {/* Mid-Layer Imperial Octagon Matrix */}
-      <motion.svg
-        width="200"
-        height="200"
-        viewBox="0 0 200 200"
-        style={{
-          rotate: rotateMatrix,
-          position: 'absolute',
-          filter: `drop-shadow(0 0 20px ${accentColor}75)`,
-        }}
-      >
-        {/* Double Interlocking Hexagons */}
+        {/* Outer Wing Bastion Spires (Far Left & Far Right) */}
         <polygon
-          points="100,12 176,56 176,144 100,188 24,144 24,56"
-          fill="#0f100c"
-          stroke={accentColor}
+          points="24,220 28,136 52,136 56,220"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-primary)"
+          strokeWidth="2.2"
+        />
+        <polygon
+          points="24,136 40,94 56,136"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-accent)"
+          strokeWidth="2"
+        />
+        <polygon
+          points="224,220 228,136 252,136 256,220"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-primary)"
+          strokeWidth="2.2"
+        />
+        <polygon
+          points="224,136 240,94 256,136"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-accent)"
+          strokeWidth="2"
+        />
+
+        {/* Secondary Inner Spires */}
+        <polygon
+          points="58,220 62,108 92,108 96,220"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-primary)"
+          strokeWidth="2.4"
+        />
+        <polygon
+          points="58,108 77,58 96,108"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-accent)"
+          strokeWidth="2.2"
+        />
+        <polygon
+          points="184,220 188,108 218,108 222,220"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-primary)"
+          strokeWidth="2.4"
+        />
+        <polygon
+          points="184,108 203,58 222,108"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-accent)"
+          strokeWidth="2.2"
+        />
+
+        {/* Grand Imperial Palace Dome & Central Sanctum Spire */}
+        <polygon
+          points="94,220 100,88 180,88 186,220"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-primary)"
+          strokeWidth="2.8"
+        />
+        {/* Sovereign Palace Dome */}
+        <path
+          d="M 100 88 A 40 42 0 0 1 180 88 Z"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-accent)"
           strokeWidth="2.5"
         />
+        {/* Apex Imperial Needle */}
         <polygon
-          points="100,12 176,56 176,144 100,188 24,144 24,56"
-          fill="none"
-          stroke={primaryColor}
-          strokeWidth="2"
-          transform="rotate(30 100 100)"
-        />
-        <circle
-          cx="100"
-          cy="100"
-          r="64"
-          fill="none"
-          stroke={accentColor}
-          strokeWidth="1.5"
-          strokeDasharray="16 8"
-        />
-      </motion.svg>
-
-      {/* Inner Sanctum Shield */}
-      <motion.svg
-        width="120"
-        height="120"
-        viewBox="0 0 120 120"
-        style={{ rotate: rotateInner, position: 'absolute' }}
-      >
-        <polygon
-          points="60,8 112,60 60,112 8,60"
-          fill="#0f100c"
-          stroke={accentColor}
+          points="126,50 140,14 154,50"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-accent)"
           strokeWidth="2.5"
         />
-        <polygon
-          points="60,8 112,60 60,112 8,60"
-          fill="none"
-          stroke={primaryColor}
-          strokeWidth="2"
-          transform="rotate(45 60 60)"
-        />
-      </motion.svg>
 
-      {/* The Golden Throne Core */}
-      <motion.div
-        style={{
-          width: 48,
-          height: 48,
-          borderRadius: '50%',
-          backgroundColor: '#0f100c',
-          border: `3px solid ${accentColor}`,
-          boxShadow: `0 0 40px ${accentColor}, 0 0 15px #ffffff, inset 0 0 20px ${primaryColor}`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          position: 'relative',
-        }}
-      >
-        <div
-          style={{
-            width: 20,
-            height: 20,
-            backgroundColor: '#ffffff',
-            transform: 'rotate(45deg)',
-            boxShadow: `0 0 20px ${accentColor}, 0 0 8px #ffffff`,
-          }}
+        {/* Stepped Monumental Curtain Wall (Front Rampart) */}
+        <polygon
+          points="42,220 50,166 230,166 238,220"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-primary)"
+          strokeWidth="2.5"
         />
-      </motion.div>
-    </motion.div>
+        {/* Rampart Battlements */}
+        {[56, 78, 100, 164, 186, 208].map((x) => (
+          <rect
+            key={x}
+            x={x}
+            y="158"
+            width="14"
+            height="8"
+            fill="var(--gfx-surface)"
+            stroke="var(--gfx-accent)"
+            strokeWidth="1.8"
+          />
+        ))}
+
+        {/* The Golden Throne Core & Eternity Gate */}
+        <path
+          d="M 114 220 L 114 162 L 140 140 L 166 162 L 166 220 Z"
+          fill="color-mix(in srgb, var(--gfx-primary) 22%, var(--gfx-surface))"
+          stroke="var(--gfx-accent)"
+          strokeWidth="2.5"
+        />
+
+        <motion.g style={{ scale: thronePulse, transformOrigin: '140px 120px' }}>
+          <polygon
+            points="140,96 162,120 140,144 118,120"
+            fill="var(--gfx-surface)"
+            stroke="var(--gfx-accent)"
+            strokeWidth="2.5"
+          />
+          <polygon
+            points="140,106 152,120 140,134 128,120"
+            fill="var(--gfx-accent)"
+          />
+        </motion.g>
+
+        {/* Eternity Gate Pillars */}
+        <line x1="128" y1="162" x2="128" y2="220" stroke="var(--gfx-accent)" strokeWidth="2" />
+        <line x1="140" y1="152" x2="140" y2="220" stroke="var(--gfx-accent)" strokeWidth="2.5" />
+        <line x1="152" y1="162" x2="152" y2="220" stroke="var(--gfx-accent)" strokeWidth="2" />
+
+        {/* Monumental Plinth Base */}
+        <line x1="14" y1="220" x2="266" y2="220" stroke="var(--gfx-accent)" strokeWidth="4" />
+        <line x1="28" y1="228" x2="252" y2="228" stroke="var(--gfx-primary)" strokeWidth="2" strokeDasharray="20 8" />
+      </svg>
+    </div>
   );
 }

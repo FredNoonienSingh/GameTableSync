@@ -32,7 +32,7 @@ export default function PlayersPage() {
             <Badge color="cyan" variant="outline" size="lg">
               {t('badge')}
             </Badge>
-            <Title order={1} c="white" className="brand-logo" style={{ fontSize: 'clamp(1.6rem, 4vw, 2.5rem)' }}>
+            <Title order={1}   className="brand-logo" style={{ fontSize: 'clamp(1.6rem, 4vw, 2.5rem)' }}>
               {t('title')}
             </Title>
             <Text size="lg" c="gray.3" lh={1.6}>

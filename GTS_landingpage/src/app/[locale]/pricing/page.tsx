@@ -76,7 +76,7 @@ export default function PricingPage() {
           </Badge>
           <Title
             order={1}
-            c="white"
+             
             className="brand-logo"
             style={{
               fontSize: 'clamp(1.6rem, 4vw, 2.75rem)',
@@ -138,7 +138,7 @@ export default function PricingPage() {
                 </Group>
                 <Title
                   order={3}
-                  c="white"
+                   
                   className="brand-logo"
                   style={{ fontSize: 'clamp(1.15rem, 2.5vw, 1.5rem)' }}
                 >
@@ -302,7 +302,7 @@ export default function PricingPage() {
         <Box mt={{ base: 50, md: 80 }}>
           <Title
             order={2}
-            c="white"
+             
             ta="center"
             mb="xl"
             className="brand-logo"
@@ -339,12 +339,12 @@ export default function PricingPage() {
                     </ThemeIcon>
                   </Group>
 
-                  <Title order={3} c="white" className="brand-logo" style={{ fontSize: '1.25rem' }}>
+                  <Title order={3}   className="brand-logo" style={{ fontSize: '1.25rem' }}>
                     {t('services.setup.title')}
                   </Title>
 
                   <Box>
-                    <Text component="span" c="white" fw={700} className="brand-logo" style={{ fontSize: '1.75rem' }}>
+                    <Text component="span"   fw={700} className="brand-logo" style={{ fontSize: '1.75rem' }}>
                       {t('services.setup.price')}
                     </Text>
                     <Text component="span" size="xs" c="cyan.3" ml="sm" fw={600}>
@@ -386,12 +386,12 @@ export default function PricingPage() {
                     </ThemeIcon>
                   </Group>
 
-                  <Title order={3} c="white" className="brand-logo" style={{ fontSize: '1.25rem' }}>
+                  <Title order={3}   className="brand-logo" style={{ fontSize: '1.25rem' }}>
                     {t('services.migration.title')}
                   </Title>
 
                   <Box>
-                    <Text component="span" c="white" fw={700} className="brand-logo" style={{ fontSize: '1.75rem' }}>
+                    <Text component="span"   fw={700} className="brand-logo" style={{ fontSize: '1.75rem' }}>
                       {t('services.migration.price')}
                     </Text>
                     <Text component="span" size="xs" c="gray.4" ml="sm">

@@ -72,7 +72,7 @@ export function LaunchCountdown({ labels }: { labels: CountdownLabels }) {
             className="gts-countdown-box"
           >
             <Stack gap={2} align="center">
-              <Text className="brand-logo gts-countdown-value" c="white">
+              <Text className="brand-logo gts-countdown-value"  >
                 {mounted ? String(unit.value).padStart(2, '0') : '--'}
               </Text>
               <Text size="xs" c="brandBlue.4" className="brand-logo gts-countdown-unit">

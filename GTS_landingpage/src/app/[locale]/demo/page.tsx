@@ -39,7 +39,7 @@ export default function DemoPage() {
 
             <Title
               order={1}
-              c="white"
+               
               className="brand-logo"
               style={{
                 fontSize: 'clamp(1.5rem, 4vw, 2.4rem)',

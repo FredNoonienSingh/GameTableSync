@@ -18,7 +18,7 @@ export function ArmyHeaderCard({ metadata }: { metadata: ArmyMetadata }) {
       <Group justify="space-between" align="flex-start">
         <div>
           <Group gap="sm" align="center">
-            <Title order={1} c="white" className="brand-logo" style={{ letterSpacing: '0.05em' }}>
+            <Title order={1}   className="brand-logo" style={{ letterSpacing: '0.05em' }}>
               {(metadata.name || 'ARMY ROSTER').toUpperCase()}
             </Title>
             <Badge color="gray" variant="light" size="lg">
@@ -68,7 +68,7 @@ export function ArmyRosterTable({
     <Paper p="md" mb="xl" style={{ backgroundColor: '#121418', border: '1px solid #354b60' }}>
       <Group gap="xs" mb="sm">
         <IconListDetails size={18} color="#e0282b" />
-        <Title order={4} c="white" className="brand-logo" style={{ letterSpacing: '0.05em' }}>
+        <Title order={4}   className="brand-logo" style={{ letterSpacing: '0.05em' }}>
           ARMY ROSTER ÜBERSICHT ({units.length} EINHEITEN)
         </Title>
       </Group>
@@ -97,7 +97,7 @@ export function ArmyRosterTable({
             >
               <Table.Td fw={700}>
                 <Group gap="xs">
-                  <Text size="sm" fw={700} c="white">
+                  <Text size="sm" fw={700}  >
                     {unit.totalModels > 1 ? `(${unit.totalModels}) ` : ''}
                     {unit.name}
                   </Text>

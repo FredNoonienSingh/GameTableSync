@@ -1,87 +1,132 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import { motion, useTransform } from 'framer-motion';
-import type { PricingTierGraphicProps } from './types'; // Or keep inline
+import type { PricingTierGraphicProps } from './types';
 
 export function OutpostGraphic({
   progress,
-  primaryColor = '#1864ff',
-  accentColor = '#29d4ff',
+  primaryColor,
+  accentColor,
+  surfaceColor,
 }: PricingTierGraphicProps) {
-  const rotateScanner = useTransform(progress, [0, 1], [0, 120]);
-  const scaleBeacon = useTransform(progress, [0, 0.5, 1], [0.92, 1.05, 0.92]);
-  const radarOpacity = useTransform(progress, [0, 0.5, 1], [0.4, 0.9, 0.4]);
+  const dishAngle = useTransform(progress, [0, 0.5, 1], [-22, 22, -22]);
+  const pulseScale = useTransform(progress, [0, 0.5, 1], [0.85, 1.35, 0.85]);
+  const pulseOpacity = useTransform(progress, [0, 0.5, 1], [0.85, 0.15, 0.85]);
+  const shutterY = useTransform(progress, [0, 0.5, 1], [0, -3, 0]);
+
+  const customVars = {
+    ...(primaryColor ? { '--gfx-primary': primaryColor } : {}),
+    ...(accentColor ? { '--gfx-accent': accentColor } : {}),
+    ...(surfaceColor ? { '--gfx-surface': surfaceColor } : {}),
+  } as CSSProperties;
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        width: 260,
-        height: 260,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      {/* Outer Recon Perimeter */}
-      <motion.svg
-        width="260"
-        height="260"
-        viewBox="0 0 260 260"
-        style={{
-          rotate: rotateScanner,
-          position: 'absolute',
-          inset: 0,
-          filter: `drop-shadow(0 0 12px ${primaryColor}40)`,
-        }}
-      >
-        <circle
-          cx="130"
-          cy="130"
-          r="95"
+    <div className="gts-graphic-scope gts-tier-fort-wrap" style={customVars}>
+      <svg width="260" height="260" viewBox="0 0 260 260" className="gts-tier-fort-svg">
+        {/* Tactical Radar Horizon Arc */}
+        <path
+          d="M 45 205 A 95 95 0 0 1 215 205"
           fill="none"
-          stroke={primaryColor}
+          stroke="var(--gfx-primary)"
           strokeWidth="1.5"
-          strokeDasharray="12 16"
+          strokeDasharray="6 6"
+          opacity="0.55"
         />
-        {/* Single Recon Pylon */}
-        <line x1="130" y1="35" x2="130" y2="65" stroke={primaryColor} strokeWidth="2" />
-        <circle cx="130" cy="35" r="6" fill="#0f100c" stroke={accentColor} strokeWidth="2.5" />
-      </motion.svg>
 
-      {/* Static Crosshair Grid */}
-      <motion.svg
-        width="180"
-        height="180"
-        viewBox="0 0 180 180"
-        style={{ opacity: radarOpacity, position: 'absolute' }}
-      >
-        <line x1="90" y1="20" x2="90" y2="160" stroke={primaryColor} strokeWidth="1" strokeDasharray="4 4" />
-        <line x1="20" y1="90" x2="160" y2="90" stroke={primaryColor} strokeWidth="1" strokeDasharray="4 4" />
-      </motion.svg>
+        {/* Expanding Sonar Recon Pulse */}
+        <motion.circle
+          cx="130"
+          cy="64"
+          r="26"
+          fill="none"
+          stroke="var(--gfx-accent)"
+          strokeWidth="2"
+          strokeDasharray="5 4"
+          style={{ scale: pulseScale, opacity: pulseOpacity, transformOrigin: '130px 64px' }}
+        />
 
-      {/* Central Outpost Core */}
-      <motion.svg
-        width="120"
-        height="120"
-        viewBox="0 0 120 120"
-        style={{ scale: scaleBeacon, position: 'absolute' }}
-      >
+        {/* Side Palisade Walls */}
         <polygon
-          points="60,20 100,60 60,100 20,60"
-          fill="#0f100c"
-          stroke={accentColor}
+          points="56,205 64,168 96,168 96,205"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-primary)"
+          strokeWidth="2"
+        />
+        <polygon
+          points="164,205 164,168 196,168 204,205"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-primary)"
+          strokeWidth="2"
+        />
+        {/* Side Crenelations */}
+        <rect x="66" y="160" width="8" height="8" fill="var(--gfx-surface)" stroke="var(--gfx-primary)" strokeWidth="1.8" />
+        <rect x="80" y="160" width="8" height="8" fill="var(--gfx-surface)" stroke="var(--gfx-primary)" strokeWidth="1.8" />
+        <rect x="172" y="160" width="8" height="8" fill="var(--gfx-surface)" stroke="var(--gfx-primary)" strokeWidth="1.8" />
+        <rect x="186" y="160" width="8" height="8" fill="var(--gfx-surface)" stroke="var(--gfx-primary)" strokeWidth="1.8" />
+
+        {/* Central Watchtower Shaft */}
+        <polygon
+          points="94,205 104,116 156,116 166,205"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-primary)"
           strokeWidth="2.5"
         />
-        <rect
-          x="52"
-          y="52"
-          width="16"
-          height="16"
-          fill={primaryColor}
-          transform="rotate(45 60 60)"
+
+        {/* Structural Armor Ribs */}
+        <line x1="100" y1="158" x2="160" y2="158" stroke="var(--gfx-primary)" strokeWidth="1.5" opacity="0.6" />
+        <line x1="112" y1="116" x2="106" y2="205" stroke="var(--gfx-primary)" strokeWidth="1.2" opacity="0.4" />
+        <line x1="148" y1="116" x2="154" y2="205" stroke="var(--gfx-primary)" strokeWidth="1.2" opacity="0.4" />
+
+        {/* Upper Observation Deck / Battlement */}
+        <polygon
+          points="94,116 166,116 172,96 88,96"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-accent)"
+          strokeWidth="2.5"
         />
-      </motion.svg>
+        {/* Tower Crenelations */}
+        <rect x="92" y="88" width="12" height="8" fill="var(--gfx-surface)" stroke="var(--gfx-accent)" strokeWidth="2" />
+        <rect x="114" y="88" width="12" height="8" fill="var(--gfx-surface)" stroke="var(--gfx-accent)" strokeWidth="2" />
+        <rect x="134" y="88" width="12" height="8" fill="var(--gfx-surface)" stroke="var(--gfx-accent)" strokeWidth="2" />
+        <rect x="156" y="88" width="12" height="8" fill="var(--gfx-surface)" stroke="var(--gfx-accent)" strokeWidth="2" />
+
+        {/* Illuminated Recon Visor Slit */}
+        <motion.rect
+          x="108"
+          y="103"
+          width="44"
+          height="6"
+          rx="2"
+          fill="var(--gfx-accent)"
+          style={{ y: shutterY }}
+        />
+
+        {/* Outpost Blast Door */}
+        <path
+          d="M 116 205 L 116 176 L 124 168 L 136 168 L 144 176 L 144 205 Z"
+          fill="color-mix(in srgb, var(--gfx-primary) 18%, var(--gfx-surface))"
+          stroke="var(--gfx-accent)"
+          strokeWidth="2"
+        />
+
+        {/* Rotating Comms Array & Beacon Dish */}
+        <motion.g style={{ rotate: dishAngle, transformOrigin: '130px 88px' }}>
+          <line x1="130" y1="88" x2="130" y2="64" stroke="var(--gfx-primary)" strokeWidth="2.5" />
+          <path
+            d="M 114 68 Q 130 80 146 68"
+            fill="none"
+            stroke="var(--gfx-accent)"
+            strokeWidth="2.5"
+          />
+          <line x1="130" y1="68" x2="130" y2="52" stroke="var(--gfx-accent)" strokeWidth="2" />
+          <circle cx="130" cy="50" r="4.5" fill="var(--gfx-accent)" />
+        </motion.g>
+
+        {/* Ground Foundation Line */}
+        <line x1="36" y1="205" x2="224" y2="205" stroke="var(--gfx-primary)" strokeWidth="3" />
+        <line x1="56" y1="212" x2="204" y2="212" stroke="var(--gfx-accent)" strokeWidth="1.5" strokeDasharray="8 6" />
+      </svg>
     </div>
   );
 }

@@ -47,7 +47,7 @@ export function Section({
             <Badge color="brandBlue.5" variant="outline" size="lg">
               {badge}
             </Badge>
-            <Title order={1} c="white" className="brand-logo gts-section-intro-title">
+            <Title order={1}   className="brand-logo gts-section-intro-title">
               {title}
             </Title>
             <Text size="lg" c="gray.4" maw={650} px={{ base: 'xs', sm: 0 }}>

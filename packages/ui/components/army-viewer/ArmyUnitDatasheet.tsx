@@ -18,7 +18,7 @@ export function ArmyUnitDatasheet({ unit }: { unit: ParsedUnit }) {
       {/* Unit Header */}
       <Group justify="space-between" mb="xs" pb="xs" style={{ borderBottom: '1px solid #1a1d24' }}>
         <Group gap="xs">
-          <Title order={3} c="white">
+          <Title order={3}  >
             {unit.totalModels > 1 ? `(${unit.totalModels}) ` : ''}
             {unit.name}
           </Title>
@@ -111,7 +111,7 @@ export function ArmyUnitDatasheet({ unit }: { unit: ParsedUnit }) {
               return (
                 <div key={`${ab.typeName}-${ab.id || ab.name}`}>
                   <Group gap={6} align="center">
-                    <Text c="white" size="sm" fw={700}>
+                    <Text   size="sm" fw={700}>
                       {ab.name}
                     </Text>
                     {ab.typeName && ab.typeName !== 'Abilities' && ab.typeName !== 'Special Rule' && (
@@ -136,7 +136,7 @@ export function ArmyUnitDatasheet({ unit }: { unit: ParsedUnit }) {
 
             {unit.rules.length > 0 && (
               <div style={{ marginTop: '6px' }}>
-                <Text c="white" size="sm" fw={700}>
+                <Text   size="sm" fw={700}>
                   Special Rules
                 </Text>
                 <Text c="gray.4" size="xs">
@@ -167,13 +167,13 @@ export function ArmyRulesGlossary({ rules }: { rules: { name: string; descriptio
 
   return (
     <Paper p="xl" mt="xl" style={{ backgroundColor: '#121418', border: '1px solid #354b60' }}>
-      <Title order={3} c="white" mb="md" className="brand-logo" style={{ letterSpacing: '0.05em' }}>
+      <Title order={3}   mb="md" className="brand-logo" style={{ letterSpacing: '0.05em' }}>
         ARMY & CORE RULES GLOSSAR
       </Title>
       <Grid gap="lg">
         {rules.map(({ name, description }) => (
           <Grid.Col span={{ base: 12, md: 6 }} key={name}>
-            <Text c="white" fw={700} size="sm" mb={2}>
+            <Text   fw={700} size="sm" mb={2}>
               {name}
             </Text>
             <FormattedRuleText text={description} />

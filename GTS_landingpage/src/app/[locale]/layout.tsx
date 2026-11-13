@@ -3,7 +3,7 @@ import { routing } from '@/i18n/routing';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { MantineProvider, ColorSchemeScript, mantineHtmlProps } from '@mantine/core';
+import { MantineProvider, mantineHtmlProps } from '@mantine/core';
 import { theme } from '@gts/ui';
 import { Orbitron } from 'next/font/google';
 
@@ -30,11 +30,11 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
+      data-mantine-color-scheme="dark"
       className={`${orbitron.className} ${orbitron.variable}`}
       {...mantineHtmlProps}
     >
       <head>
-        <ColorSchemeScript defaultColorScheme="dark" />
         <style>{`
           .brand-logo {
             font-family: var(--font-orbitron), 'Orbitron', sans-serif;

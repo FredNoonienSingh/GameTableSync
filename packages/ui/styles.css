@@ -73,7 +73,7 @@
 
 /* ==========================================================================
    LIGHT MODE GLOBAL SAFETY OVERRIDES
-   Automatically flips leftover c="white", c="gray.3/4" & dark Paper backgrounds
+   Automatically flips leftover  , c="gray.3/4" & dark Paper backgrounds
    ========================================================================== */
 [data-mantine-color-scheme="light"] .mantine-Paper-root {
   --paper-bg: var(--gts-bg-card) !important;
@@ -1000,4 +1000,591 @@
   background-color: color-mix(in srgb, var(--card-color) 28%, transparent);
   border-color: var(--card-color);
   color: var(--gts-text-heading);
+}
+
+/* ==========================================================================
+   16. ANIMATION GRAPHICS (THEME-AWARE + OPTIONAL PROP OVERRIDES)
+   ========================================================================== */
+.gts-graphic-scope {
+  --gfx-primary: var(--gts-primary);
+  --gfx-accent: var(--gts-accent);
+  --gfx-surface: var(--gts-bg-canvas);
+  --gfx-card: var(--gts-bg-card);
+  --gfx-text: var(--gts-text-heading);
+  --gfx-muted: color-mix(in srgb, var(--gts-text-muted) 45%, transparent);
+}
+
+/* --- Shared Graphic Containers --- */
+.gts-gfx-container-260 {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gts-gfx-container-col-260 {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+/* --- 1. CardCycloneGraphic --- */
+.gts-cyclone-root {
+  position: relative;
+  width: 240px;
+  height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gts-cyclone-card {
+  position: absolute;
+  width: 140px;
+  height: 200px;
+  border-radius: 12px;
+  background-color: var(--gfx-surface);
+  border: 2px solid var(--gfx-primary);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transform-origin: center center;
+}
+
+.gts-cyclone-card[data-highlighted="true"] {
+  border-color: var(--gfx-accent);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--gfx-accent) 35%, transparent);
+}
+
+.gts-cyclone-art {
+  width: 100%;
+  height: 60%;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--gfx-primary) 35%, transparent);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--gfx-primary) 22%, transparent) 0%,
+    var(--gfx-surface) 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gts-cyclone-card[data-highlighted="true"] .gts-cyclone-art {
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--gfx-accent) 30%, transparent) 0%,
+    var(--gfx-surface) 100%
+  );
+}
+
+.gts-cyclone-ring {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--gfx-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gts-cyclone-card[data-highlighted="true"] .gts-cyclone-ring {
+  border-color: var(--gfx-accent);
+}
+
+.gts-cyclone-diamond {
+  width: 8px;
+  height: 8px;
+  background-color: var(--gfx-primary);
+  transform: rotate(45deg);
+}
+
+.gts-cyclone-card[data-highlighted="true"] .gts-cyclone-diamond {
+  background-color: var(--gfx-accent);
+}
+
+.gts-cyclone-bar-title {
+  height: 6px;
+  width: 80%;
+  background-color: var(--gfx-primary);
+  border-radius: 3px;
+  margin-bottom: 6px;
+}
+
+.gts-cyclone-card[data-highlighted="true"] .gts-cyclone-bar-title {
+  background-color: var(--gfx-accent);
+}
+
+.gts-cyclone-bar-line {
+  height: 4px;
+  background-color: var(--gfx-muted);
+  border-radius: 2px;
+}
+
+/* --- 2. CommandForgeGraphic --- */
+.gts-forge-root {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gts-forge-ring-outer {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px dashed color-mix(in srgb, var(--gfx-accent) 45%, transparent);
+}
+
+.gts-forge-ring-inner {
+  position: absolute;
+  inset: 18px;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--gfx-primary) 35%, transparent);
+  border-top-color: var(--gfx-accent);
+}
+
+.gts-forge-core {
+  width: 68px;
+  height: 68px;
+  border-radius: 16px;
+  background-color: color-mix(in srgb, var(--gfx-primary) 18%, transparent);
+  border: 1px solid var(--gfx-accent);
+  box-shadow: 0 0 25px color-mix(in srgb, var(--gfx-accent) 40%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gfx-accent);
+}
+
+/* --- 3. CommandHubGraphic --- */
+.gts-hub-svg-outer {
+  position: absolute;
+  inset: 0;
+  filter: drop-shadow(0 0 20px color-mix(in srgb, var(--gfx-primary) 35%, transparent));
+}
+
+.gts-hub-svg-inner {
+  position: absolute;
+}
+
+.gts-hub-label {
+  position: relative;
+  letter-spacing: 0.15em;
+  color: var(--gfx-text);
+}
+
+/* --- 4. DrawingCardGraphic (CardDrawGraphic) --- */
+.gts-draw-root {
+  position: relative;
+  width: 220px;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gts-draw-deck-back-1 {
+  position: absolute;
+  width: 180px;
+  height: 256px;
+  border-radius: 12px;
+  background-color: var(--gfx-surface);
+  border: 2px solid color-mix(in srgb, var(--gfx-primary) 25%, transparent);
+  transform: translate(8px, 8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.gts-draw-deck-back-2 {
+  position: absolute;
+  width: 180px;
+  height: 256px;
+  border-radius: 12px;
+  background-color: var(--gfx-surface);
+  border: 2px solid color-mix(in srgb, var(--gfx-primary) 40%, transparent);
+  transform: translate(4px, 4px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.45);
+}
+
+.gts-draw-deck-top {
+  position: absolute;
+  width: 180px;
+  height: 256px;
+  border-radius: 12px;
+  background-color: var(--gfx-surface);
+  border: 2px solid var(--gfx-primary);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.gts-draw-deck-pattern {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  border: 1px dashed color-mix(in srgb, var(--gfx-primary) 40%, transparent);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--gfx-primary) 20%, transparent) 0%,
+    var(--gfx-surface) 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gts-draw-deck-emblem-ring {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--gfx-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gts-draw-deck-emblem-core {
+  width: 16px;
+  height: 16px;
+  background-color: var(--gfx-primary);
+  transform: rotate(45deg);
+}
+
+.gts-draw-active-card {
+  position: absolute;
+  width: 180px;
+  height: 256px;
+  border-radius: 12px;
+  background-color: var(--gfx-surface);
+  border: 2.5px solid var(--gfx-accent);
+  box-shadow:
+    0 15px 35px color-mix(in srgb, var(--gfx-accent) 30%, transparent),
+    inset 0 0 15px color-mix(in srgb, var(--gfx-accent) 15%, transparent);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transform-origin: bottom right;
+}
+
+.gts-draw-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid color-mix(in srgb, var(--gfx-accent) 30%, transparent);
+  padding-bottom: 6px;
+}
+
+.gts-draw-card-title {
+  color: var(--gfx-text);
+  font-weight: 700;
+  font-size: 12px;
+  font-family: var(--gts-font-brand);
+  letter-spacing: 0.05em;
+}
+
+.gts-draw-mana-orb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--gfx-primary);
+  border: 1.5px solid var(--gfx-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.gts-draw-art-box {
+  height: 110px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--gfx-accent) 40%, transparent);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--gfx-accent) 30%, transparent) 0%,
+    var(--gfx-surface) 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.gts-draw-art-ring {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--gfx-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--gfx-accent) 50%, transparent);
+}
+
+.gts-draw-art-core {
+  width: 22px;
+  height: 22px;
+  background-color: var(--gfx-accent);
+  transform: rotate(45deg);
+}
+
+.gts-draw-lore-box {
+  background-color: color-mix(in srgb, var(--gfx-primary) 10%, transparent);
+  border-radius: 6px;
+  padding: 6px;
+  border: 1px solid color-mix(in srgb, var(--gfx-primary) 20%, transparent);
+}
+
+.gts-draw-lore-lead {
+  height: 5px;
+  width: 90%;
+  background-color: var(--gfx-accent);
+  border-radius: 2px;
+  margin-bottom: 4px;
+  opacity: 0.85;
+}
+
+.gts-draw-stat-pill {
+  padding: 2px 8px;
+  border-radius: 4px;
+  background-color: color-mix(in srgb, var(--gfx-primary) 20%, transparent);
+  border: 1px solid var(--gfx-primary);
+}
+
+.gts-draw-stat-text {
+  color: var(--gfx-accent);
+  font-size: 10px;
+  font-family: var(--gts-font-brand);
+  font-weight: 700;
+}
+
+/* --- 5. FallingD6Graphic --- */
+.gts-d6-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.gts-d6-svg {
+  filter: drop-shadow(0px 10px 20px color-mix(in srgb, var(--gfx-primary) 25%, transparent));
+}
+
+/* --- 6. FanningCardsGraphic --- */
+.gts-fan-root {
+  position: relative;
+  width: 200px;
+  height: 280px;
+}
+
+.gts-fan-card {
+  transform-origin: bottom center;
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  background-color: var(--gfx-surface);
+  border: 2px solid var(--gfx-primary);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.gts-fan-card[data-center="true"] {
+  border-color: var(--gfx-accent);
+}
+
+.gts-fan-art {
+  height: 55%;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--gfx-primary) 35%, transparent);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--gfx-primary) 25%, transparent) 0%,
+    var(--gfx-surface) 100%
+  );
+}
+
+.gts-fan-card[data-center="true"] .gts-fan-art {
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--gfx-accent) 30%, transparent) 0%,
+    var(--gfx-surface) 100%
+  );
+}
+
+.gts-fan-bar-title {
+  height: 8px;
+  width: 75%;
+  background-color: var(--gfx-primary);
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.gts-fan-card[data-center="true"] .gts-fan-bar-title {
+  background-color: var(--gfx-accent);
+}
+
+.gts-fan-bar-line {
+  height: 6px;
+  background-color: var(--gfx-muted);
+  border-radius: 3px;
+}
+
+/* --- 7. HexTilePathGraphic --- */
+.gts-hex-svg {
+  filter: drop-shadow(0 0 15px color-mix(in srgb, var(--gfx-primary) 30%, transparent));
+}
+
+/* --- 8. HobbyEssentialsGraphic --- */
+.gts-hobby-die-wrap {
+  filter: drop-shadow(0 10px 20px color-mix(in srgb, var(--gfx-accent) 30%, transparent));
+}
+
+.gts-hobby-tape-track {
+  width: 220px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  height: 36px;
+  background-color: var(--gfx-card);
+  border-radius: 8px;
+  border: 1.5px solid var(--gfx-primary);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  padding: 0 6px;
+}
+
+.gts-hobby-tape-housing {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background-color: var(--gfx-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  zIndex: 2;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--gfx-primary) 60%, transparent);
+}
+
+.gts-hobby-tape-core {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--gfx-surface);
+  border: 1.5px solid var(--gfx-accent);
+}
+
+.gts-hobby-tape-blade {
+  position: absolute;
+  left: 36px;
+  height: 12px;
+  background-color: color-mix(in srgb, var(--gfx-accent) 20%, transparent);
+  border-top: 1.5px dashed var(--gfx-accent);
+  border-bottom: 1.5px dashed var(--gfx-accent);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 6px;
+}
+
+.gts-hobby-tape-label {
+  color: var(--gfx-accent);
+  font-size: 9px;
+  font-family: var(--gts-font-brand);
+  font-weight: 700;
+}
+
+/* --- 9. PortalDiceSummonGraphic & RotatingD20Graphic --- */
+.gts-portal-glow {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--gfx-accent) 20%, transparent) 0%,
+    color-mix(in srgb, var(--gfx-primary) 5%, transparent) 70%,
+    transparent 100%
+  );
+  filter: blur(10px);
+}
+
+.gts-portal-rings-svg {
+  position: absolute;
+  filter: drop-shadow(0 0 20px color-mix(in srgb, var(--gfx-accent) 40%, transparent));
+}
+
+.gts-portal-die-wrap {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 25px color-mix(in srgb, var(--gfx-accent) 60%, transparent));
+}
+
+.gts-d20-svg {
+  filter: drop-shadow(0 0 25px color-mix(in srgb, var(--gfx-primary) 35%, transparent));
+}
+
+/* ==========================================================================
+   17. PLAYER FREE CALLOUT BUTTON & TIER FORTIFICATION GRAPHICS
+   ========================================================================== */
+.gts-player-free-btn,
+.gts-player-free-btn[data-variant] {
+  background-color: color-mix(in srgb, var(--gts-accent) 16%, transparent);
+  border: 1px solid var(--gts-accent);
+  color: var(--gts-text-heading);
+  height: auto;
+  min-height: 3rem;
+  padding: 0.6rem 1rem;
+  transition: background-color 0.18s ease, box-shadow 0.18s ease, transform 0.15s ease;
+}
+
+.gts-player-free-btn:hover,
+.gts-player-free-btn[data-variant]:hover {
+  background-color: color-mix(in srgb, var(--gts-accent) 28%, transparent);
+  border-color: var(--gts-accent);
+  color: var(--gts-text-heading);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--gts-accent) 35%, transparent);
+  transform: translateY(-1px);
+}
+
+/* Global safety catch for inline white buttons in Light Mode */
+[data-mantine-color-scheme="light"] .mantine-Button-root[style*="color: rgb(255, 255, 255)"][style*="rgba(41, 212, 255"] {
+  color: var(--gts-text-heading) !important;
+  background-color: color-mix(in srgb, var(--gts-accent) 18%, transparent) !important;
+  border-color: var(--gts-accent) !important;
+}
+
+/* Tier Fortification SVG Wrapper */
+.gts-tier-fort-wrap {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gts-tier-fort-svg {
+  overflow: visible;
+  filter: drop-shadow(0 6px 18px color-mix(in srgb, var(--gfx-primary) 30%, transparent));
 }

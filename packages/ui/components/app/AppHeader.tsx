@@ -84,7 +84,7 @@ export function AppHeader({ logoSrc = defaultPureLogo, locale = 'de', labels }: 
                 priority
               />
             )}
-            <Text c="white" className="brand-logo gts-app-header-title" size="md">
+            <Text   className="brand-logo gts-app-header-title" size="md">
               GAMETABLESYNC
             </Text>
           </Group>

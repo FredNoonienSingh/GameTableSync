@@ -37,7 +37,7 @@ export function SubSection({ title, description, icon }: SubSectionProps) {
         <Stack gap={4}>
           <Title
             order={4}
-            c="white"
+             
             className="brand-logo"
             style={{
               fontSize: 'clamp(0.95rem, 2.2vw, 1.15rem)',

@@ -95,7 +95,7 @@ export function GameCard({
             size={16}
             className={isMe ? 'gts-game-player-icon-me' : 'gts-game-player-icon'}
           />
-          <Text c="white" fw={700} size="sm" lineClamp={1}>
+          <Text   fw={700} size="sm" lineClamp={1}>
             {p.display_name}
           </Text>
         </Group>
@@ -144,7 +144,7 @@ export function GameCard({
         </Group>
 
         <Group justify="space-between" align="center" wrap="wrap" gap="xs">
-          <Text fw={700} c="white" className="brand-logo gts-game-system-title">
+          <Text fw={700}   className="brand-logo gts-game-system-title">
             {game.system}
           </Text>
 

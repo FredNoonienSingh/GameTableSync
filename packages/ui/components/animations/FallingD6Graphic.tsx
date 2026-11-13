@@ -1,8 +1,23 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import { motion, MotionValue, useTransform } from 'framer-motion';
 
-export function FallingD6Graphic({ progress }: { progress: MotionValue<number> }) {
+export interface FallingD6GraphicProps {
+  progress: MotionValue<number>;
+  primaryColor?: string;
+  accentColor?: string;
+  tertiaryColor?: string;
+  surfaceColor?: string;
+}
+
+export function FallingD6Graphic({
+  progress,
+  primaryColor,
+  accentColor,
+  tertiaryColor,
+  surfaceColor,
+}: FallingD6GraphicProps) {
   const y1 = useTransform(progress, [0, 1], [-140, 160]);
   const r1 = useTransform(progress, [0, 1], [0, 360]);
 
@@ -12,16 +27,25 @@ export function FallingD6Graphic({ progress }: { progress: MotionValue<number> }
   const y3 = useTransform(progress, [0, 1], [-90, 130]);
   const r3 = useTransform(progress, [0, 1], [-30, 190]);
 
+  const customVars = {
+    ...(primaryColor ? { '--gfx-primary': primaryColor } : {}),
+    ...(accentColor ? { '--gfx-accent': accentColor } : {}),
+    ...(surfaceColor ? { '--gfx-surface': surfaceColor } : {}),
+  } as CSSProperties;
+
+  const die3Color =
+    tertiaryColor ?? 'color-mix(in srgb, var(--gfx-primary) 65%, var(--gfx-accent))';
+
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div className="gts-graphic-scope gts-d6-stage" style={customVars}>
       <motion.div style={{ y: y1, rotate: r1, position: 'absolute', left: '12%', top: '28%' }}>
-        <D6Svg pips={6} color="#1864ff" size={86} />
+        <D6Svg pips={6} color="var(--gfx-primary)" size={86} />
       </motion.div>
       <motion.div style={{ y: y2, rotate: r2, position: 'absolute', left: '50%', top: '18%' }}>
-        <D6Svg pips={1} color="#29d4ff" size={104} />
+        <D6Svg pips={1} color="var(--gfx-accent)" size={104} />
       </motion.div>
       <motion.div style={{ y: y3, rotate: r3, position: 'absolute', left: '32%', top: '54%' }}>
-        <D6Svg pips={5} color="#4080ff" size={74} />
+        <D6Svg pips={5} color={die3Color} size={74} />
       </motion.div>
     </div>
   );
@@ -29,13 +53,17 @@ export function FallingD6Graphic({ progress }: { progress: MotionValue<number> }
 
 function D6Svg({ pips, color, size }: { pips: 1 | 5 | 6; color: string; size: number }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 100 100"
-      style={{ filter: 'drop-shadow(0px 10px 20px rgba(24, 100, 255, 0.25))' }}
-    >
-      <rect x="8" y="8" width="84" height="84" rx="16" fill="#0f100c" stroke={color} strokeWidth="3" />
+    <svg width={size} height={size} viewBox="0 0 100 100" className="gts-d6-svg">
+      <rect
+        x="8"
+        y="8"
+        width="84"
+        height="84"
+        rx="16"
+        fill="var(--gfx-surface)"
+        stroke={color}
+        strokeWidth="3"
+      />
       {pips === 1 && <circle cx="50" cy="50" r="9" fill={color} />}
       {pips === 5 && (
         <>

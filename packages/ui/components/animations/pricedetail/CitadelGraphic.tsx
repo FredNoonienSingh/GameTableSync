@@ -1,144 +1,163 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import { motion, useTransform } from 'framer-motion';
 import type { PricingTierGraphicProps } from './types';
 
 export function CitadelGraphic({
   progress,
-  primaryColor = '#1864ff',
-  accentColor = '#29d4ff',
+  primaryColor = '#7c3aed',
+  accentColor = '#c084fc',
+  surfaceColor,
 }: PricingTierGraphicProps) {
-  const rotateOuter = useTransform(progress, [0, 1], [0, 240]);
-  const rotateStarA = useTransform(progress, [0, 1], [0, -180]);
-  const rotateStarB = useTransform(progress, [0, 1], [45, 225]);
-  const scalePulse = useTransform(progress, [0, 0.5, 1], [0.85, 1.12, 0.9]);
+  const haloRotate = useTransform(progress, [0, 1], [0, 180]);
+  const spireGlow = useTransform(progress, [0, 0.5, 1], [0.85, 1.15, 0.85]);
+
+  const customVars = {
+    ...(primaryColor ? { '--gfx-primary': primaryColor } : {}),
+    ...(accentColor ? { '--gfx-accent': accentColor } : {}),
+    ...(surfaceColor ? { '--gfx-surface': surfaceColor } : {}),
+  } as CSSProperties;
 
   return (
-    <motion.div
-      style={{
-        scale: scalePulse,
-        position: 'relative',
-        width: 260,
-        height: 260,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      {/* Orbital Defense Ring */}
-      <motion.svg
-        width="260"
-        height="260"
-        viewBox="0 0 260 260"
-        style={{
-          rotate: rotateOuter,
-          position: 'absolute',
-          inset: 0,
-          filter: `drop-shadow(0 0 24px ${primaryColor}70)`,
-        }}
-      >
-        <circle
-          cx="130"
-          cy="130"
-          r="116"
+    <div className="gts-graphic-scope gts-tier-fort-wrap" style={customVars}>
+      <svg width="260" height="260" viewBox="0 0 260 260" className="gts-tier-fort-svg">
+        {/* Rotating Orbital Command Halo */}
+        <motion.g style={{ rotate: haloRotate, transformOrigin: '130px 115px' }}>
+          <circle
+            cx="130"
+            cy="115"
+            r="92"
+            fill="none"
+            stroke="var(--gfx-primary)"
+            strokeWidth="1.5"
+            strokeDasharray="18 8 4 8"
+            opacity="0.7"
+          />
+          <circle cx="130" cy="23" r="4" fill="var(--gfx-accent)" />
+          <circle cx="222" cy="115" r="4" fill="var(--gfx-accent)" />
+          <circle cx="38" cy="115" r="4" fill="var(--gfx-accent)" />
+        </motion.g>
+
+        {/* Flying Buttress Wings */}
+        <path
+          d="M 66 145 Q 88 145 96 112"
           fill="none"
-          stroke={primaryColor}
+          stroke="var(--gfx-primary)"
+          strokeWidth="2.5"
+        />
+        <path
+          d="M 194 145 Q 172 145 164 112"
+          fill="none"
+          stroke="var(--gfx-primary)"
+          strokeWidth="2.5"
+        />
+        <path
+          d="M 60 175 Q 84 175 94 142"
+          fill="none"
+          stroke="var(--gfx-accent)"
           strokeWidth="2"
-          strokeDasharray="8 8 24 8"
         />
-        <circle
-          cx="130"
-          cy="130"
-          r="102"
+        <path
+          d="M 200 175 Q 176 175 166 142"
           fill="none"
-          stroke={accentColor}
-          strokeWidth="1"
-          strokeOpacity="0.5"
+          stroke="var(--gfx-accent)"
+          strokeWidth="2"
         />
-        {[0, 60, 120, 180, 240, 300].map((angle) => {
-          const rad = (angle * Math.PI) / 180;
-          const x1 = 130 + Math.cos(rad) * 116;
-          const y1 = 130 + Math.sin(rad) * 116;
-          const x2 = 130 + Math.cos(rad) * 88;
-          const y2 = 130 + Math.sin(rad) * 88;
-          return (
-            <g key={angle}>
-              <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={primaryColor} strokeWidth="2" />
-              <circle cx={x1} cy={y1} r="6" fill="#0f100c" stroke={accentColor} strokeWidth="2.5" />
-            </g>
-          );
-        })}
-      </motion.svg>
 
-      {/* Star Fortress Layer A */}
-      <motion.svg
-        width="170"
-        height="170"
-        viewBox="0 0 170 170"
-        style={{ rotate: rotateStarA, position: 'absolute' }}
-      >
+        {/* Outer Flanking Lance Towers */}
+        <polygon
+          points="36,210 40,126 66,126 70,210"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-primary)"
+          strokeWidth="2.2"
+        />
+        <polygon
+          points="36,126 53,82 70,126"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-accent)"
+          strokeWidth="2.2"
+        />
+        <line x1="53" y1="82" x2="53" y2="66" stroke="var(--gfx-accent)" strokeWidth="2" />
+
+        <polygon
+          points="190,210 194,126 220,126 224,210"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-primary)"
+          strokeWidth="2.2"
+        />
+        <polygon
+          points="190,126 207,82 224,126"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-accent)"
+          strokeWidth="2.2"
+        />
+        <line x1="207" y1="82" x2="207" y2="66" stroke="var(--gfx-accent)" strokeWidth="2" />
+
+        {/* Mid-Tier Inner Bastions */}
         <rect
-          x="25"
-          y="25"
+          x="70"
+          y="138"
           width="120"
-          height="120"
-          rx="8"
-          fill="#0f100c"
-          stroke={primaryColor}
+          height="72"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-primary)"
           strokeWidth="2.5"
         />
-      </motion.svg>
 
-      {/* Star Fortress Layer B (Interlocking 8-Point Star) */}
-      <motion.svg
-        width="170"
-        height="170"
-        viewBox="0 0 170 170"
-        style={{
-          rotate: rotateStarB,
-          position: 'absolute',
-          filter: `drop-shadow(0 0 20px ${accentColor}55)`,
-        }}
-      >
-        <rect
-          x="25"
-          y="25"
-          width="120"
-          height="120"
-          rx="8"
-          fill="#0f100c"
-          fillOpacity="0.85"
-          stroke={accentColor}
+        {/* Central Grand Cathedral Spire */}
+        <polygon
+          points="92,210 98,92 162,92 168,210"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-primary)"
           strokeWidth="2.5"
         />
-        <circle cx="85" cy="85" r="44" fill="none" stroke={primaryColor} strokeWidth="2" strokeDasharray="12 6" />
-      </motion.svg>
-
-      {/* Citadel Spire Reactor */}
-      <div
-        style={{
-          position: 'relative',
-          width: 56,
-          height: 56,
-          borderRadius: '50%',
-          backgroundColor: '#0f100c',
-          border: `3px solid ${accentColor}`,
-          boxShadow: `0 0 30px ${accentColor}80, inset 0 0 15px ${accentColor}60`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <div
-          style={{
-            width: 22,
-            height: 22,
-            borderRadius: '50%',
-            backgroundColor: accentColor,
-            boxShadow: `0 0 16px #ffffff`,
-          }}
+        {/* High Gothic Steeple */}
+        <polygon
+          points="94,92 130,26 166,92"
+          fill="var(--gfx-surface)"
+          stroke="var(--gfx-accent)"
+          strokeWidth="2.5"
         />
-      </div>
-    </motion.div>
+        <line x1="130" y1="26" x2="130" y2="12" stroke="var(--gfx-accent)" strokeWidth="2.5" />
+
+        {/* Gothic Rose Window Reactor */}
+        <motion.g style={{ scale: spireGlow, transformOrigin: '130px 124px' }}>
+          <circle
+            cx="130"
+            cy="124"
+            r="18"
+            fill="color-mix(in srgb, var(--gfx-accent) 20%, var(--gfx-surface))"
+            stroke="var(--gfx-accent)"
+            strokeWidth="2.5"
+          />
+          <circle cx="130" cy="124" r="8" fill="var(--gfx-accent)" />
+        </motion.g>
+
+        {/* Triple Gothic Archways */}
+        <path
+          d="M 114 210 L 114 174 Q 130 156 146 174 L 146 210 Z"
+          fill="color-mix(in srgb, var(--gfx-primary) 24%, var(--gfx-surface))"
+          stroke="var(--gfx-accent)"
+          strokeWidth="2.2"
+        />
+        <path
+          d="M 78 210 L 78 182 Q 86 172 94 182 L 94 210 Z"
+          fill="color-mix(in srgb, var(--gfx-primary) 18%, var(--gfx-surface))"
+          stroke="var(--gfx-primary)"
+          strokeWidth="1.8"
+        />
+        <path
+          d="M 166 210 L 166 182 Q 174 172 182 182 L 182 210 Z"
+          fill="color-mix(in srgb, var(--gfx-primary) 18%, var(--gfx-surface))"
+          stroke="var(--gfx-primary)"
+          strokeWidth="1.8"
+        />
+
+        {/* Citadel Foundation */}
+        <line x1="20" y1="210" x2="240" y2="210" stroke="var(--gfx-primary)" strokeWidth="3.5" />
+        <line x1="36" y1="218" x2="224" y2="218" stroke="var(--gfx-accent)" strokeWidth="1.5" strokeDasharray="16 6" />
+      </svg>
+    </div>
   );
 }

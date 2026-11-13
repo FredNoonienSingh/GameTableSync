@@ -38,7 +38,7 @@ export default function PrivacyPage() {
           <Box>
             <Title
               order={1}
-              c="white"
+               
               className="brand-logo"
               style={{
                 fontSize: 'clamp(1.75rem, 4vw, 2.5rem)',
@@ -72,7 +72,7 @@ export default function PrivacyPage() {
 
               {/* 1. Controller (Hardcoded address + translated labels) */}
               <Box>
-                <Title order={3} c="white" size="h4" mb="xs" className="brand-logo">
+                <Title order={3}   size="h4" mb="xs" className="brand-logo">
                   {t('controller.title')}
                 </Title>
                 <Text c="gray.3" size="sm" lh={1.7} mb="xs">
@@ -94,7 +94,7 @@ export default function PrivacyPage() {
               {sections.slice(1).map((key) => (
                 <Box key={key}>
                   <Divider color="rgba(255, 255, 255, 0.08)" mb="lg" />
-                  <Title order={3} c="white" size="h4" mb="xs" className="brand-logo">
+                  <Title order={3}   size="h4" mb="xs" className="brand-logo">
                     {t(`${key}.title`)}
                   </Title>
                   <Text c="gray.3" size="sm" lh={1.7} style={{ whiteSpace: 'pre-line' }}>
