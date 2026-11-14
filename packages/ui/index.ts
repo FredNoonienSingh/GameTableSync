@@ -101,6 +101,7 @@ export {
   type MtgPlayerInput,
   type BattleCompanionMtgProps,
 } from './components/game/BattleCompanionMtg';
+export * from './components/game/mtg-hud';
 
 // ==========================================
 // 7. TOURNAMENTS & LEADERBOARDS

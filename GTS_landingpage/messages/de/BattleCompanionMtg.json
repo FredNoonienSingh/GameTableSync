@@ -50,5 +50,18 @@
     "trackCommanderDamage": "21 Commander-Schaden Matrix aktivieren",
     "trackMonarch": "Monarch & Initiative Buttons anzeigen",
     "applyAndReturn": "ÜBERNEHMEN & ZURÜCK ZUM SPIEL"
+  },
+  "diceRoller": {
+    "title": "TACTICAL DICE ROLLER",
+    "diceType": "DICE TYPE",
+    "diceCount": "NUMBER OF DICE",
+    "totalSum": "TOTAL SUM",
+    "highest": "HIGHEST",
+    "crits": "CRITS",
+    "ones": "ONES (1)",
+    "critBadge": "CRITICAL MAX!",
+    "rolling": "ROLLING...",
+    "ready": "READY",
+    "rollBtn": "ROLL"
   }
 }

@@ -90,5 +90,18 @@
     "fixed": "Fixed",
     "firstTurn": "ROUND 1 FIRST TURN",
     "applyAndReturn": "APPLY & RETURN TO BATTLE"
+  },
+  "diceRoller": {
+    "title": "TAKTISCHER WÜRFELBECHER",
+    "diceType": "WÜRFELTYP",
+    "diceCount": "ANZAHL DER WÜRFEL",
+    "totalSum": "SUMME",
+    "highest": "HÖCHSTER",
+    "crits": "KRITISCH",
+    "ones": "EINSEN (1)",
+    "critBadge": "KRITISCHES MAXIMUM!",
+    "rolling": "WÜRFELT...",
+    "ready": "BEREIT",
+    "rollBtn": "WÜRFELN"
   }
 }

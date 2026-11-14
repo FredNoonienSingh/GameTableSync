@@ -3188,3 +3188,95 @@
 .gts-mtg-mana-dot[data-mana="R"] { background-color: #d3202a; color: #fff; }
 .gts-mtg-mana-dot[data-mana="G"] { background-color: #00733e; color: #fff; }
 .gts-mtg-mana-dot[data-mana="C"] { background-color: #908c8a; color: #111; }
+
+/* ==========================================================================
+   25. REUSABLE ANIMATED DICE ROLLER MODAL (ALL SYSTEMS)
+   ========================================================================== */
+.gts-dice-modal-content {
+  max-height: 94dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.gts-dice-tray {
+  min-height: clamp(80px, 15dvh, 120px);
+  max-height: clamp(160px, 40dvh, 260px);
+  height: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: var(--gts-bg-subcard);
+  background-image: radial-gradient(
+    circle at 50% 50%,
+    color-mix(in srgb, var(--gts-primary) 14%, transparent),
+    transparent 75%
+  );
+  border: 1px solid var(--gts-border-subtle);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  /* 'flex-start' forces overflow to go DOWN into the scrollable area, never up out of bounds */
+  align-content: flex-start; 
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  perspective: 800px;
+  box-sizing: border-box;
+}
+
+.gts-die-cube {
+  width: clamp(46px, 11dvh, 58px);
+  height: clamp(46px, 11dvh, 58px);
+  border-radius: 10px;
+  background-color: var(--gts-bg-card);
+  border: 2px solid var(--gts-border-subtle);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  font-variant-numeric: tabular-nums;
+  position: relative;
+}
+
+.gts-die-cube[data-rolling="true"] {
+  border-color: var(--gts-accent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--gts-accent) 45%, transparent);
+}
+
+.gts-die-cube[data-crit="true"] {
+  border-color: #fcc419;
+  background-color: color-mix(in srgb, #fcc419 16%, var(--gts-bg-card));
+  box-shadow: 0 0 20px rgba(252, 196, 25, 0.45);
+}
+
+.gts-die-cube[data-fumble="true"] {
+  border-color: var(--gts-danger);
+  background-color: color-mix(in srgb, var(--gts-danger) 14%, var(--gts-bg-card));
+}
+
+.gts-die-val {
+  font-family: var(--gts-font-brand);
+  font-size: clamp(1.1rem, 2.8dvh, 1.4rem);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--gts-text-heading);
+}
+
+.gts-die-cube[data-crit="true"] .gts-die-val {
+  color: #fcc419;
+}
+
+.gts-die-cube[data-fumble="true"] .gts-die-val {
+  color: var(--gts-danger);
+}
+
+.gts-die-type-tag {
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--gts-text-muted);
+  margin-top: 1px;
+}
