@@ -31,7 +31,7 @@ export function CookieBanner({ opened, onAccept }: CookieBannerProps) {
           variant="outline"
           color="red"
           mt={{ base: 'md', sm: 0 }}
-          fullWidth={{ base: true, sm: false }}
+          w={{ base: '100%', sm: 'auto' }} 
           className="gts-cookie-btn"
         >
           AKZEPTIEREN & VERSCHWINDEN

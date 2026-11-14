@@ -17,7 +17,7 @@ export { default as gtsLogoSvg } from './assets/gametablesync.svg';
 // ==========================================
 // 2. SHARED TYPES & INTERFACES
 // ==========================================
-export type { UUID, DateRange, Status } from './components/types';
+export type { UUID, DateRange, Status, AvatarResource } from './components/types';
 export type { Badge, Player } from './components/player/interfaces';
 export type { Tournament, Trophy, Round, Team, MatchingAlgo } from './components/tournament/interfaces';
 export type { Club } from './components/club/interfaces';
@@ -55,8 +55,9 @@ export { LaunchCountdown } from './components/marketing/LaunchCountdown';
 export { PriceDetail, type PriceDetailProps } from './components/marketing/PriceDetail';
 export { ContactForm } from './components/marketing/ContactForm';
 
+
 // ==========================================
-// 6. GAME FINDER, LFG & 40K BATTLE COMPANION
+// 6. GAME FINDER, LFG & BATTLE COMPANION
 // ==========================================
 export { GameCard, type UIGame } from './components/gamefinder/GameCard';
 export { GameFilterBar, type GameFilterValues, type GameFilterBarProps } from './components/game/GameFilterBar';
@@ -74,31 +75,33 @@ export {
   type BattleCompanionArmyInput,
   type BattleCompanion40kProps,
 } from './components/game/BattleCompanion40k';
+export * from './components/game/battle-hud';
 
 
 // ==========================================
 // 7. TOURNAMENTS & LEADERBOARDS
 // ==========================================
 export { TournamentCard, type UITournament, type TournamentCardProps } from './components/tournament/TournamentCard';
-export { 
-  TournamentMatchupGraphic, 
-  type UITournamentParticipant, 
-  type UITournamentMatch, 
-  type TournamentMatchupGraphicProps 
+export {
+  TournamentMatchupGraphic,
+  type UITournamentParticipant,
+  type UITournamentMatch,
+  type TournamentMatchupGraphicProps,
 } from './components/tournament/TournamentMatchupGraphic';
-export { 
-  TournamentStandingsTable, 
-  type UITournamentStanding, 
-  type TournamentStandingsTableProps 
+export {
+  TournamentStandingsTable,
+  type UITournamentStanding,
+  type TournamentStandingsTableProps,
 } from './components/tournament/TournamentStandingsTable';
-export { 
-  LeaderboardTable, 
-  PodiumIcons, 
-  type UIPodiumCounts, 
-  type UILeaderboardPlayer, 
-  type UILeaderboardSystemBoard, 
-  type LeaderboardTableProps 
+export {
+  LeaderboardTable,
+  PodiumIcons,
+  type UIPodiumCounts,
+  type UILeaderboardPlayer,
+  type UILeaderboardSystemBoard,
+  type LeaderboardTableProps,
 } from './components/tournament/LeaderboardTable';
+
 
 // ==========================================
 // 8. ARMY VIEWER & PARSERS

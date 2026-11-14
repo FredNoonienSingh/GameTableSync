@@ -48,7 +48,7 @@ export interface ParsedUnit {
   modelsText: string;
   wargearText: string;
   totalModels: number;
-  totalWounds: number;
+  totalWounds?: number;
   leadsNames: string[];
   ledByNames: string[];
   keywords: string[];

@@ -2,85 +2,40 @@
 'use client';
 
 import { useState, useEffect, useMemo, type ReactNode } from 'react';
-import {
-  Paper,
-  Grid,
-  Group,
-  Stack,
-  Title,
-  Text,
-  Badge,
-  Button,
-  ActionIcon,
-  Progress,
-  SegmentedControl,
-  Switch,
-  ScrollArea,
-  Box,
-  Tooltip,
-  Modal,
-  Select,
-} from '@mantine/core';
+import { Box, Group, SegmentedControl, Text } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
-import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
 import {
   IconSwords,
-  IconShield,
   IconBolt,
-  IconClock,
-  IconPlayerPlay,
-  IconPlayerPause,
-  IconPlus,
-  IconMinus,
-  IconAlertTriangle,
-  IconRefresh,
-  IconTrash,
-  IconCheck,
-  IconChevronLeft,
-  IconChevronRight,
   IconChevronsRight,
-  IconChevronDown,
-  IconChevronUp,
-  IconLayoutSidebarLeftCollapse,
-  IconLayoutSidebarLeftExpand,
-  IconArrowsLeftRight,
   IconCrown,
   IconCrosshair,
   IconFlame,
-  IconListDetails,
-  IconSettings,
-  IconArrowLeft,
-  IconDeviceMobileRotated,
-  IconMaximize,
-  IconMinimize,
   IconTrophy,
-  IconUsers,
-  IconHeartFilled,
 } from '@tabler/icons-react';
 import { useTranslations } from 'next-intl';
-import type { ArmyMetadata, ParsedUnit } from '../army-viewer/armyParser';
-import { ArmyHeaderCard, ArmyRosterTable } from '../army-viewer/ArmyRosterOverview';
-import { ArmyUnitDatasheet, ArmyRulesGlossary } from '../army-viewer/ArmyUnitDatasheet';
+import type { ParsedUnit } from '../army-viewer/armyParser';
 import { DEFAULT_40K_SETTINGS, type Game40kSettings } from './Game40kSetupModal';
+import {
+  BattleLandscapeGuard,
+  BattleTopBar,
+  BattleScoreboard,
+  BattleRosterSidebar,
+  BattleUnitInspector,
+  BattleStratagemsLog,
+  BattleCompareModal,
+  BattleArmyViewerModal,
+  createInitialUnitStatus,
+  type MobileHudTab,
+  type SecondaryMissionCard,
+  type BattleCompanionArmyInput,
+  type UnitLiveStatus,
+  type QuickActionItem,
+  type CommanderScoreState,
+} from './battle-hud';
 
 export type BattlePhase40k = 'Command' | 'Movement' | 'Shooting' | 'Charge' | 'Fight';
-type MobileHudTab = 'units' | 'score' | 'strats';
-
-export interface SecondaryMissionCard {
-  id: string;
-  name: string;
-  maxVp: number;
-  scoredVp: number;
-  completed?: boolean;
-}
-
-export interface BattleCompanionArmyInput {
-  playerName: string;
-  metadata: ArmyMetadata;
-  units: ParsedUnit[];
-  armyRules?: { name: string; description: string }[];
-  initialSecondaries?: SecondaryMissionCard[];
-}
+export type { SecondaryMissionCard, BattleCompanionArmyInput };
 
 export interface BattleCompanion40kProps {
   playerArmy: BattleCompanionArmyInput;
@@ -90,16 +45,6 @@ export interface BattleCompanion40kProps {
   backLabel?: string;
   onOpenSettings?: () => void;
   onInspectFullArmy?: (side: 'player' | 'opponent') => void;
-}
-
-interface UnitLiveStatus {
-  currentModels: number;
-  maxModels: number;
-  currentWounds: number;
-  maxWounds: number;
-  woundsPerModel: number;
-  battleShocked: boolean;
-  destroyed: boolean;
 }
 
 const PHASES: BattlePhase40k[] = ['Command', 'Movement', 'Shooting', 'Charge', 'Fight'];
@@ -112,7 +57,7 @@ const PHASE_ICONS: Record<BattlePhase40k, ReactNode> = {
   Fight: <IconSwords size={14} />,
 };
 
-const CORE_STRATAGEMS = [
+const CORE_STRATAGEMS: QuickActionItem[] = [
   { id: 'reroll', name: 'Command Re-roll', cost: 1, phase: 'Any' },
   { id: 'overwatch', name: 'Fire Overwatch', cost: 1, phase: 'Move / Charge' },
   { id: 'interrupt', name: 'Counter-Offensive', cost: 2, phase: 'Fight' },
@@ -136,9 +81,6 @@ const TACTICAL_DECK_POOL: Omit<SecondaryMissionCard, 'scoredVp'>[] = [
   { id: 'marked-for-death', name: 'Marked for Death', maxVp: 5 },
 ];
 
-const SWIPE_CONFIDENCE_THRESHOLD = 8000;
-const swipePower = (offset: number, velocity: number) => Math.abs(offset) * velocity;
-
 function calculateWtcDifferential(p1Total: number, p2Total: number): [number, number] {
   const diff = Math.abs(p1Total - p2Total);
   let winnerWtc = 10;
@@ -155,36 +97,6 @@ function calculateWtcDifferential(p1Total: number, p2Total: number): [number, nu
 
   const loserWtc = 20 - winnerWtc;
   return p1Total >= p2Total ? [winnerWtc, loserWtc] : [loserWtc, winnerWtc];
-}
-
-function formatClock(seconds: number): string {
-  const safe = Math.max(0, seconds);
-  const h = Math.floor(safe / 3600);
-  const m = Math.floor((safe % 3600) / 60);
-  const s = safe % 60;
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
-
-function createInitialUnitStatus(unit: ParsedUnit): UnitLiveStatus {
-  const maxModels = Math.max(1, unit.totalModels || 1);
-  let maxWounds = unit.totalWounds || 0;
-  if (maxWounds <= 0) {
-    const wChar = unit.statProfiles?.[0]?.characteristics?.find(
-      (c) => c.name.toUpperCase() === 'W' || c.name.toUpperCase() === 'WOUNDS'
-    );
-    const parsedW = Math.max(1, parseInt(String(wChar?.$text || '1'), 10) || 1);
-    maxWounds = maxModels * parsedW;
-  }
-  const woundsPerModel = Math.max(1, Math.round(maxWounds / maxModels));
-  return {
-    currentModels: maxModels,
-    maxModels,
-    currentWounds: maxWounds,
-    maxWounds,
-    woundsPerModel,
-    battleShocked: false,
-    destroyed: false,
-  };
 }
 
 export function BattleCompanion40k({
@@ -322,7 +234,6 @@ export function BattleCompanion40k({
     opponentArmy.units[0]?.id ?? ''
   );
 
-  // Sync selected IDs if rosters change (e.g. when swapping sides)
   useEffect(() => {
     if (!playerArmy.units.some((u) => u.id === selectedPlayerUnitId)) {
       setSelectedPlayerUnitId(playerArmy.units[0]?.id ?? '');
@@ -363,20 +274,22 @@ export function BattleCompanion40k({
     [p1TotalVp, p2TotalVp]
   );
 
-  const phaseLabels: Record<BattlePhase40k, string> = {
-    Command: t('phases.command'),
-    Movement: t('phases.movement'),
-    Shooting: t('phases.shooting'),
-    Charge: t('phases.charge'),
-    Fight: t('phases.fight'),
-  };
+  const phaseItems = useMemo(
+    () =>
+      PHASES.map((p) => ({
+        id: p,
+        label: t(`phases.${p.toLowerCase()}` as any),
+        icon: PHASE_ICONS[p],
+      })),
+    [t]
+  );
 
   const handleAdvancePhase = () => {
     if (phaseIdx < PHASES.length - 1) {
       const nextPhase = phaseIdx + 1;
       setPhaseIdx(nextPhase);
       appendLog(
-        `[R${battleRound}] ${activeSide === 'player' ? playerArmy.playerName : opponentArmy.playerName} → ${phaseLabels[PHASES[nextPhase]]}`
+        `[R${battleRound}] ${activeSide === 'player' ? playerArmy.playerName : opponentArmy.playerName} → ${phaseItems[nextPhase].label}`
       );
     } else {
       setPhaseIdx(0);
@@ -526,7 +439,6 @@ export function BattleCompanion40k({
     }
   };
 
-  // SEPARATE, INDEPENDENT INDEXES FOR OWN UNITS AND ENEMY UNITS
   const playerUnitIndex = Math.max(
     0,
     playerArmy.units.findIndex((u) => u.id === selectedPlayerUnitId)
@@ -555,10 +467,8 @@ export function BattleCompanion40k({
     }
   };
 
-  const selectedPlayerUnit =
-    playerArmy.units[playerUnitIndex] ?? playerArmy.units[0];
-  const selectedOpponentUnit =
-    opponentArmy.units[opponentUnitIndex] ?? opponentArmy.units[0];
+  const selectedPlayerUnit = playerArmy.units[playerUnitIndex] ?? playerArmy.units[0];
+  const selectedOpponentUnit = opponentArmy.units[opponentUnitIndex] ?? opponentArmy.units[0];
 
   const activeInspectedUnit =
     inspectorSide === 'player' ? selectedPlayerUnit : selectedOpponentUnit;
@@ -588,356 +498,164 @@ export function BattleCompanion40k({
     [opponentArmy.units]
   );
 
-  const renderSidebarUnitRow = (side: 'player' | 'opponent', unit: ParsedUnit) => {
-    const key = `${side}:${unit.id}`;
-    const st = unitStatuses[key] ?? createInitialUnitStatus(unit);
-    const isSelected =
-      inspectorSide === side &&
-      (side === 'player'
-        ? selectedPlayerUnit?.id === unit.id
-        : selectedOpponentUnit?.id === unit.id);
-    const badgeColor = side === 'player' ? 'brandBlue.4' : 'red.4';
+  const renderFactionStanceBar = (army: BattleCompanionArmyInput) => {
+    const isAdMech = army.metadata.faction.toLowerCase().includes('mechanicus');
+    const isChaos = army.metadata.faction.toLowerCase().includes('chaos');
 
-    return (
-      <div
-        key={unit.id}
-        className="gts-battle-unit-row"
-        data-side={side}
-        data-selected={isSelected ? 'true' : undefined}
-        data-destroyed={st.destroyed ? 'true' : undefined}
-        data-shocked={st.battleShocked ? 'true' : undefined}
-        onClick={() => {
-          setInspectorSide(side);
-          if (side === 'player') setSelectedPlayerUnitId(unit.id);
-          else setSelectedOpponentUnitId(unit.id);
-        }}
-      >
-        <Group justify="space-between" wrap="nowrap" mb={4}>
-          <Group gap={5} wrap="nowrap" miw={0}>
-            {unit.isWarlord && <IconCrown size={12} color="#ffd43b" />}
-            <Text
-              size="xs"
-              fw={700}
-              td={st.destroyed ? 'line-through' : undefined}
-              truncate
-            >
-              {unit.name}
+    if (isAdMech) {
+      return (
+        <Group justify="space-between" wrap="wrap" gap={4}>
+          <div className="gts-stance-pill-group">
+            {(['Protector', 'Conqueror'] as const).map((doc) => (
+              <button
+                key={doc}
+                type="button"
+                className="gts-stance-pill"
+                data-active={activeDoctrina === doc ? 'true' : undefined}
+                onClick={() => {
+                  setActiveDoctrina(doc);
+                  appendLog(`${army.playerName}: [${doc} Imperative]`);
+                }}
+              >
+                {doc === 'Protector' ? 'Protector (+1 BS)' : 'Conqueror (+1 WS)'}
+              </button>
+            ))}
+          </div>
+          <div className="gts-stance-pill-group">
+            {['Shroudpsalm', 'Mantra (+1 OC)', 'Vengeance'].map((cant) => (
+              <button
+                key={cant}
+                type="button"
+                className="gts-stance-pill"
+                data-active={activeCanticle === cant ? 'true' : undefined}
+                onClick={() => {
+                  setActiveCanticle(cant);
+                  appendLog(`${army.playerName}: [${cant}]`);
+                }}
+              >
+                {cant}
+              </button>
+            ))}
+          </div>
+        </Group>
+      );
+    }
+
+    if (isChaos) {
+      return (
+        <Group justify="space-between" wrap="wrap" gap={4}>
+          <Group gap={4}>
+            <IconFlame size={12} color="var(--gts-danger)" />
+            <Text size="10px" fw={700} className="brand-logo">
+              DARK PACTS:
             </Text>
           </Group>
-
-          <Group gap={4} wrap="nowrap">
-            {st.destroyed ? (
-              <Badge size="xs" color="red" variant="filled" miw={74} ta="center">
-                {t('destroyed')}
-              </Badge>
-            ) : st.battleShocked ? (
-              <Badge size="xs" color="yellow" variant="filled" miw={74} ta="center">
-                {t('shocked')}
-              </Badge>
-            ) : (
-              <Badge
-                size="xs"
-                variant="outline"
-                className="gts-game-meta-tag"
-                miw={74}
-                ta="center"
-              >
-                {unit.points} PTS
-              </Badge>
-            )}
-          </Group>
+          <div className="gts-stance-pill-group">
+            <button
+              type="button"
+              className="gts-stance-pill"
+              onClick={() => appendLog(`${army.playerName}: [Dark Pact: Lethal Hits]`)}
+            >
+              Lethal Hits
+            </button>
+            <button
+              type="button"
+              className="gts-stance-pill"
+              onClick={() => appendLog(`${army.playerName}: [Dark Pact: Sustained 1]`)}
+            >
+              Sustained 1
+            </button>
+            <button
+              type="button"
+              className="gts-stance-pill"
+              onClick={() => appendLog(`${army.playerName}: [Debt to Soulforge]`)}
+            >
+              Soulforge (+1W/+2A)
+            </button>
+          </div>
         </Group>
+      );
+    }
 
-        <Group
-          justify="space-between"
-          wrap="nowrap"
-          gap={4}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {st.maxModels > 1 ? (
-            <Group gap={2} wrap="nowrap">
-              <ActionIcon
-                size="xs"
-                variant="default"
-                onClick={() => adjustUnitModels(side, unit, -1)}
-              >
-                <IconMinus size={10} />
-              </ActionIcon>
-              <Badge size="xs" variant="light" color="gray" miw={52} ta="center">
-                {st.currentModels}/{st.maxModels} M
-              </Badge>
-              <ActionIcon
-                size="xs"
-                variant="default"
-                onClick={() => adjustUnitModels(side, unit, 1)}
-              >
-                <IconPlus size={10} />
-              </ActionIcon>
-            </Group>
-          ) : (
-            <Badge size="xs" variant="outline" color="gray" miw={52} ta="center">
-              1 M
-            </Badge>
-          )}
-
-          <Group gap={2} wrap="nowrap">
-            <ActionIcon
-              size="xs"
-              variant="default"
-              onClick={() => adjustUnitWounds(side, unit, -1)}
-            >
-              <IconMinus size={10} />
-            </ActionIcon>
-            <Badge
-              size="xs"
-              variant="outline"
-              color={
-                st.destroyed
-                  ? 'gray'
-                  : st.currentWounds <= st.maxWounds / 2
-                    ? 'orange'
-                    : badgeColor
-              }
-              miw={58}
-              ta="center"
-            >
-              {st.currentWounds}/{st.maxWounds} W
-            </Badge>
-            <ActionIcon
-              size="xs"
-              variant="default"
-              onClick={() => adjustUnitWounds(side, unit, 1)}
-            >
-              <IconPlus size={10} />
-            </ActionIcon>
-          </Group>
-
-          <ActionIcon
-            size="xs"
-            disabled={st.destroyed}
-            color={st.battleShocked ? 'yellow' : 'gray'}
-            variant={st.battleShocked ? 'filled' : 'default'}
-            onClick={() => toggleUnitBattleShock(side, unit)}
-            title={t('shocked')}
-          >
-            <IconAlertTriangle size={11} />
-          </ActionIcon>
-        </Group>
-
-        <Progress
-          mt={4}
-          size={3}
-          value={(st.currentWounds / st.maxWounds) * 100}
-          color={st.destroyed ? 'gray' : side === 'player' ? 'brandBlue.5' : 'red.5'}
-        />
-      </div>
-    );
+    return null;
   };
+
+  const commanders: [CommanderScoreState, CommanderScoreState] = [
+    {
+      side: 'player',
+      army: playerArmy,
+      cp: p1Cp,
+      onChangeCp: setP1Cp,
+      primaryVp: p1PrimaryVp,
+      onChangePrimaryVp: setP1PrimaryVp,
+      secondaryVp: p1SecondaryVp,
+      onChangeSecondaryVp: setP1SecondaryVp,
+      painted: p1Painted,
+      onChangePainted: setP1Painted,
+      totalVp: p1TotalVp,
+      seconds: p1Seconds,
+      secondaries: p1Secondaries,
+      factionExtraBar: renderFactionStanceBar(playerArmy),
+    },
+    {
+      side: 'opponent',
+      army: opponentArmy,
+      cp: p2Cp,
+      onChangeCp: setP2Cp,
+      primaryVp: p2PrimaryVp,
+      onChangePrimaryVp: setP2PrimaryVp,
+      secondaryVp: p2SecondaryVp,
+      onChangeSecondaryVp: setP2SecondaryVp,
+      painted: p2Painted,
+      onChangePainted: setP2Painted,
+      totalVp: p2TotalVp,
+      seconds: p2Seconds,
+      secondaries: p2Secondaries,
+      factionExtraBar: renderFactionStanceBar(opponentArmy),
+    },
+  ];
 
   return (
     <Box className="gts-battle-hud">
-      {/* 0. PORTRAIT PHONE BLOCKER */}
-      <div className="gts-landscape-guard">
-        <IconDeviceMobileRotated size={68} className="gts-rotate-icon-anim" />
-        <Badge variant="outline" size="lg" className="brand-logo gts-game-badge">
-          {t('landscape.badge')}
-        </Badge>
-        <Title order={2} className="brand-logo gts-army-title" maw={420}>
-          {t('landscape.title')}
-        </Title>
-        <Text size="sm" maw={380} c="dimmed">
-          {t('landscape.description')}
-        </Text>
-        <Button
-          size="md"
-          variant="default"
-          leftSection={isFullscreen ? <IconMinimize size={18} /> : <IconMaximize size={18} />}
-          className="brand-logo gts-game-cta-join"
-          onClick={handleToggleFullscreen}
-        >
-          {t('landscape.lockBtn')}
-        </Button>
-        {onBack && (
-          <Button
-            variant="subtle"
-            size="xs"
-            leftSection={<IconArrowLeft size={14} />}
-            onClick={onBack}
-          >
-            {backLabel || t('back')}
-          </Button>
-        )}
-      </div>
+      <BattleLandscapeGuard
+        isFullscreen={isFullscreen}
+        onToggleFullscreen={handleToggleFullscreen}
+        onBack={onBack}
+        backLabel={backLabel}
+      />
 
-      {/* 1. STRICT SINGLE-ROW TOPBAR (BLUE BORDER = OWN TURN, RED = ENEMY TURN) */}
-      <Paper
-        px="xs"
-        py={4}
-        radius="md"
-        className="gts-battle-topbar"
-        data-turn={activeSide}
-      >
-        <div className="gts-battle-topbar-row">
-          <Group gap={5} wrap="nowrap">
-            {onBack && (
-              <Tooltip label={backLabel || t('back')}>
-                <ActionIcon
-                  size="sm"
-                  variant="default"
-                  className="gts-tournament-secondary-btn"
-                  onClick={onBack}
-                >
-                  <IconArrowLeft size={14} />
-                </ActionIcon>
-              </Tooltip>
-            )}
+      <BattleTopBar
+        battleRound={battleRound}
+        maxRounds={5}
+        onChangeRound={setBattleRound}
+        activeSide={activeSide}
+        onSwapSide={() => setActiveSide((s) => (s === 'player' ? 'opponent' : 'player'))}
+        phases={phaseItems}
+        phaseIdx={phaseIdx}
+        onSelectPhase={setPhaseIdx}
+        onAdvancePhase={handleAdvancePhase}
+        p1TotalVp={p1TotalVp}
+        p2TotalVp={p2TotalVp}
+        scoreBadgeText={`${p1Wtc}:${p2Wtc}`}
+        isCompactHud={Boolean(isCompactHud)}
+        scoreboardCollapsed={scoreboardCollapsed}
+        onToggleScoreboard={() => {
+          if (isCompactHud) {
+            setMobileTab((tab) => (tab === 'score' ? 'units' : 'score'));
+          } else {
+            setScoreboardCollapsed((c) => !c);
+          }
+        }}
+        clockEnabled={settings.clockMode !== 'off'}
+        clockRunning={clockRunning}
+        onToggleClock={() => setClockRunning((r) => !r)}
+        isFullscreen={isFullscreen}
+        onToggleFullscreen={handleToggleFullscreen}
+        onOpenSettings={onOpenSettings}
+        onBack={onBack}
+        backLabel={backLabel}
+      />
 
-            <div className="gts-battle-round-pill">
-              <Group gap={3} justify="center" align="center" wrap="nowrap">
-                <Text size="9px" fw={700} className="brand-logo" c="dimmed">
-                  R
-                </Text>
-                <ActionIcon
-                  size="xs"
-                  variant="subtle"
-                  onClick={() => setBattleRound((r) => Math.max(1, r - 1))}
-                >
-                  <IconMinus size={10} />
-                </ActionIcon>
-                <Text size="xs" fw={900} className="brand-logo">
-                  {battleRound}/5
-                </Text>
-                <ActionIcon
-                  size="xs"
-                  variant="subtle"
-                  onClick={() => setBattleRound((r) => Math.min(5, r + 1))}
-                >
-                  <IconPlus size={10} />
-                </ActionIcon>
-              </Group>
-            </div>
-
-            <Tooltip label={t('swapTurn')}>
-              <ActionIcon
-                size="sm"
-                variant="filled"
-                color={activeSide === 'player' ? 'brandBlue.6' : 'red.6'}
-                onClick={() =>
-                  setActiveSide((s) => (s === 'player' ? 'opponent' : 'player'))
-                }
-              >
-                <IconArrowsLeftRight size={13} />
-              </ActionIcon>
-            </Tooltip>
-          </Group>
-
-          <div className="gts-battle-phase-scroll">
-            {PHASES.map((phase, idx) => (
-              <Tooltip key={phase} label={`${idx + 1}. ${phaseLabels[phase]}`}>
-                <button
-                  type="button"
-                  className="brand-logo gts-battle-phase-step"
-                  data-active={idx === phaseIdx ? 'true' : undefined}
-                  onClick={() => setPhaseIdx(idx)}
-                >
-                  {PHASE_ICONS[phase]}
-                  <span className="gts-battle-phase-label">{phaseLabels[phase]}</span>
-                </button>
-              </Tooltip>
-            ))}
-
-            {isCompactHud ? (
-              <Tooltip label={phaseIdx === PHASES.length - 1 ? t('endTurn') : t('nextPhase')}>
-                <ActionIcon
-                  size="sm"
-                  variant="default"
-                  className="gts-game-cta-join"
-                  onClick={handleAdvancePhase}
-                >
-                  <IconChevronRight size={14} />
-                </ActionIcon>
-              </Tooltip>
-            ) : (
-              <Button
-                size="compact-xs"
-                variant="default"
-                rightSection={<IconChevronRight size={12} />}
-                className="brand-logo gts-game-cta-join"
-                onClick={handleAdvancePhase}
-              >
-                {phaseIdx === PHASES.length - 1 ? t('endTurn') : t('nextPhase')}
-              </Button>
-            )}
-          </div>
-
-          <Group gap={5} justify="flex-end" wrap="nowrap">
-            <div
-              className="gts-battle-score-summary-pill"
-              onClick={() => {
-                if (isCompactHud) {
-                  setMobileTab((tab) => (tab === 'score' ? 'units' : 'score'));
-                } else {
-                  setScoreboardCollapsed((c) => !c);
-                }
-              }}
-              title={t('toggleScoreboard')}
-            >
-              <Text size="xs" fw={900} className="brand-logo" c="var(--gts-primary)">
-                {String(p1TotalVp).padStart(2, '0')}
-              </Text>
-              <Badge size="xs" variant="outline" className="brand-logo">
-                {p1Wtc}:{p2Wtc}
-              </Badge>
-              <Text size="xs" fw={900} className="brand-logo" c="red.4">
-                {String(p2TotalVp).padStart(2, '0')}
-              </Text>
-              {!isCompactHud &&
-                (scoreboardCollapsed ? (
-                  <IconChevronDown size={12} />
-                ) : (
-                  <IconChevronUp size={12} />
-                ))}
-            </div>
-
-            {settings.clockMode !== 'off' && (
-              <ActionIcon
-                size="sm"
-                variant="light"
-                color={clockRunning ? 'teal' : 'gray'}
-                onClick={() => setClockRunning((r) => !r)}
-                title={t('toggleClock')}
-              >
-                {clockRunning ? (
-                  <IconPlayerPause size={13} />
-                ) : (
-                  <IconPlayerPlay size={13} />
-                )}
-              </ActionIcon>
-            )}
-
-            <Tooltip label={t('fullscreen')}>
-              <ActionIcon
-                size="sm"
-                variant={isFullscreen ? 'filled' : 'subtle'}
-                color={isFullscreen ? 'brandBlue.6' : undefined}
-                onClick={handleToggleFullscreen}
-              >
-                {isFullscreen ? <IconMinimize size={14} /> : <IconMaximize size={14} />}
-              </ActionIcon>
-            </Tooltip>
-
-            {onOpenSettings && (
-              <Tooltip label={t('settings')}>
-                <ActionIcon size="sm" variant="subtle" onClick={onOpenSettings}>
-                  <IconSettings size={14} />
-                </ActionIcon>
-              </Tooltip>
-            )}
-          </Group>
-        </div>
-      </Paper>
-
-      {/* 1B. MOBILE / TABLET 3-TAB VIEW SWITCHER */}
       {isCompactHud && (
         <SegmentedControl
           fullWidth
@@ -979,966 +697,152 @@ export function BattleCompanion40k({
         />
       )}
 
-      {/* 2. COLLAPSIBLE DUAL COMMANDER SCOREBOARDS */}
       {((!isCompactHud && !scoreboardCollapsed) ||
         (isCompactHud && mobileTab === 'score')) && (
-        <Box className={isCompactHud ? 'gts-battle-datasheet-scroll' : undefined}>
-          <Grid gap="xs" align="stretch">
-            {[
-              {
-                side: 'player' as const,
-                army: playerArmy,
-                cp: p1Cp,
-                setCp: setP1Cp,
-                primaryVp: p1PrimaryVp,
-                setPrimaryVp: setP1PrimaryVp,
-                secondaryVp: p1SecondaryVp,
-                setSecondaryVp: setP1SecondaryVp,
-                painted: p1Painted,
-                setPainted: setP1Painted,
-                totalVp: p1TotalVp,
-                seconds: p1Seconds,
-                secondaries: p1Secondaries,
-              },
-              {
-                side: 'opponent' as const,
-                army: opponentArmy,
-                cp: p2Cp,
-                setCp: setP2Cp,
-                primaryVp: p2PrimaryVp,
-                setPrimaryVp: setP2PrimaryVp,
-                secondaryVp: p2SecondaryVp,
-                setSecondaryVp: setP2SecondaryVp,
-                painted: p2Painted,
-                setPainted: setP2Painted,
-                totalVp: p2TotalVp,
-                seconds: p2Seconds,
-                secondaries: p2Secondaries,
-              },
-            ].map((cmd) => {
-              const isTurn = activeSide === cmd.side;
-              const isAdMech = cmd.army.metadata.faction
-                .toLowerCase()
-                .includes('mechanicus');
-              const isChaos = cmd.army.metadata.faction.toLowerCase().includes('chaos');
-
-              return (
-                <Grid.Col key={cmd.side} span={{ base: 12, sm: 6 }}>
-                  <Paper
-                    p="xs"
-                    radius="md"
-                    className="gts-battle-scorecard"
-                    data-side={cmd.side}
-                    data-active-turn={isTurn ? 'true' : undefined}
-                    h="100%"
-                  >
-                    <Stack gap={6}>
-                      <Group justify="space-between" align="center" wrap="wrap" gap={4}>
-                        <Group gap={6} wrap="wrap" miw={0}>
-                          <Title order={6} className="brand-logo gts-army-title">
-                            {cmd.army.playerName.toUpperCase()}
-                          </Title>
-                          <Badge variant="outline" size="xs" className="gts-game-meta-tag">
-                            {cmd.army.metadata.faction}
-                          </Badge>
-                          {cmd.army.metadata.detachment && (
-                            <Badge color="brandBlue.5" variant="light" size="xs">
-                              {cmd.army.metadata.detachment}
-                            </Badge>
-                          )}
-                        </Group>
-
-                        <Group gap={6} wrap="nowrap">
-                          <Button
-                            size="compact-xs"
-                            variant="light"
-                            color={cmd.side === 'player' ? 'brandBlue.5' : 'red.5'}
-                            leftSection={<IconListDetails size={12} />}
-                            className="brand-logo"
-                            onClick={() => handleOpenArmyViewer(cmd.side)}
-                          >
-                            {t('armyViewer')}
-                          </Button>
-
-                          {settings.clockMode !== 'off' && (
-                            <div
-                              className="gts-battle-clock"
-                              data-running={clockRunning && isTurn ? 'true' : undefined}
-                            >
-                              <Group gap={4} wrap="nowrap">
-                                <IconClock size={11} />
-                                <span>{formatClock(cmd.seconds)}</span>
-                              </Group>
-                            </div>
-                          )}
-                        </Group>
-                      </Group>
-
-                      {isAdMech && (
-                        <Group justify="space-between" wrap="wrap" gap={4}>
-                          <div className="gts-stance-pill-group">
-                            {(['Protector', 'Conqueror'] as const).map((doc) => (
-                              <button
-                                key={doc}
-                                type="button"
-                                className="gts-stance-pill"
-                                data-active={activeDoctrina === doc ? 'true' : undefined}
-                                onClick={() => {
-                                  setActiveDoctrina(doc);
-                                  appendLog(`${cmd.army.playerName}: [${doc} Imperative]`);
-                                }}
-                              >
-                                {doc === 'Protector'
-                                  ? 'Protector (+1 BS)'
-                                  : 'Conqueror (+1 WS)'}
-                              </button>
-                            ))}
-                          </div>
-                          <div className="gts-stance-pill-group">
-                            {['Shroudpsalm', 'Mantra (+1 OC)', 'Vengeance'].map((cant) => (
-                              <button
-                                key={cant}
-                                type="button"
-                                className="gts-stance-pill"
-                                data-active={activeCanticle === cant ? 'true' : undefined}
-                                onClick={() => {
-                                  setActiveCanticle(cant);
-                                  appendLog(`${cmd.army.playerName}: [${cant}]`);
-                                }}
-                              >
-                                {cant}
-                              </button>
-                            ))}
-                          </div>
-                        </Group>
-                      )}
-
-                      {isChaos && (
-                        <Group justify="space-between" wrap="wrap" gap={4}>
-                          <Group gap={4}>
-                            <IconFlame size={12} color="var(--gts-danger)" />
-                            <Text size="10px" fw={700} className="brand-logo">
-                              DARK PACTS:
-                            </Text>
-                          </Group>
-                          <div className="gts-stance-pill-group">
-                            <button
-                              type="button"
-                              className="gts-stance-pill"
-                              onClick={() =>
-                                appendLog(`${cmd.army.playerName}: [Dark Pact: Lethal Hits]`)
-                              }
-                            >
-                              Lethal Hits
-                            </button>
-                            <button
-                              type="button"
-                              className="gts-stance-pill"
-                              onClick={() =>
-                                appendLog(`${cmd.army.playerName}: [Dark Pact: Sustained 1]`)
-                              }
-                            >
-                              Sustained 1
-                            </button>
-                            <button
-                              type="button"
-                              className="gts-stance-pill"
-                              onClick={() =>
-                                appendLog(`${cmd.army.playerName}: [Debt to Soulforge]`)
-                              }
-                            >
-                              Soulforge (+1W/+2A)
-                            </button>
-                          </div>
-                        </Group>
-                      )}
-
-                      <Grid gap={6}>
-                        <Grid.Col span={3}>
-                          <div className="gts-battle-metric-box">
-                            <Group justify="space-between" wrap="nowrap">
-                              <Text size="9px" fw={700} className="brand-logo" c="dimmed">
-                                {t('totalVp')}
-                              </Text>
-                              <Switch
-                                size="xs"
-                                checked={cmd.painted}
-                                onChange={(e) => cmd.setPainted(e.currentTarget.checked)}
-                                title={`+10 ${t('painted')}`}
-                              />
-                            </Group>
-                            <div className="gts-battle-metric-val">
-                              {cmd.totalVp}
-                            </div>
-                          </div>
-                        </Grid.Col>
-
-                        <Grid.Col span={3}>
-                          <div className="gts-battle-metric-box">
-                            <Text size="9px" fw={700} className="brand-logo" c="yellow.4">
-                              CP
-                            </Text>
-                            <Group justify="space-between" align="center" wrap="nowrap">
-                              <ActionIcon
-                                size="xs"
-                                variant="default"
-                                onClick={() => cmd.setCp((c) => Math.max(0, c - 1))}
-                              >
-                                <IconMinus size={10} />
-                              </ActionIcon>
-                              <span className="gts-battle-metric-val">{cmd.cp}</span>
-                              <ActionIcon
-                                size="xs"
-                                variant="default"
-                                onClick={() => cmd.setCp((c) => c + 1)}
-                              >
-                                <IconPlus size={10} />
-                              </ActionIcon>
-                            </Group>
-                          </div>
-                        </Grid.Col>
-
-                        <Grid.Col span={3}>
-                          <div className="gts-battle-metric-box">
-                            <Text size="9px" fw={700} className="brand-logo" c="dimmed">
-                              {t('primary')} ({cmd.primaryVp}/50)
-                            </Text>
-                            <Group justify="space-between" align="center" wrap="nowrap">
-                              <ActionIcon
-                                size="xs"
-                                variant="default"
-                                onClick={() => cmd.setPrimaryVp((v) => Math.max(0, v - 5))}
-                              >
-                                <IconMinus size={10} />
-                              </ActionIcon>
-                              <span className="gts-battle-metric-val">{cmd.primaryVp}</span>
-                              <ActionIcon
-                                size="xs"
-                                variant="default"
-                                onClick={() => cmd.setPrimaryVp((v) => Math.min(50, v + 5))}
-                              >
-                                <IconPlus size={10} />
-                              </ActionIcon>
-                            </Group>
-                          </div>
-                        </Grid.Col>
-
-                        <Grid.Col span={3}>
-                          <div className="gts-battle-metric-box">
-                            <Text size="9px" fw={700} className="brand-logo" c="dimmed">
-                              {t('secondary')} ({cmd.secondaryVp}/40)
-                            </Text>
-                            <Group justify="space-between" align="center" wrap="nowrap">
-                              <ActionIcon
-                                size="xs"
-                                variant="default"
-                                onClick={() =>
-                                  cmd.setSecondaryVp((v) => Math.max(0, v - 2))
-                                }
-                              >
-                                <IconMinus size={10} />
-                              </ActionIcon>
-                              <span className="gts-battle-metric-val">
-                                {cmd.secondaryVp}
-                              </span>
-                              <ActionIcon
-                                size="xs"
-                                variant="default"
-                                onClick={() =>
-                                  cmd.setSecondaryVp((v) => Math.min(40, v + 2))
-                                }
-                              >
-                                <IconPlus size={10} />
-                              </ActionIcon>
-                            </Group>
-                          </div>
-                        </Grid.Col>
-                      </Grid>
-
-                      <Group gap={6} wrap="wrap" align="center">
-                        {cmd.secondaries.map((sec) => (
-                          <Paper
-                            key={sec.id}
-                            px="xs"
-                            py={3}
-                            radius="sm"
-                            className="gts-unranked-pill"
-                            miw={150}
-                          >
-                            <Group justify="space-between" wrap="nowrap" gap={4}>
-                              <Text size="10px" fw={700} truncate>
-                                {sec.name}
-                              </Text>
-                              <Group gap={3} wrap="nowrap">
-                                <ActionIcon
-                                  size="xs"
-                                  color="teal"
-                                  variant="light"
-                                  onClick={() =>
-                                    handleScoreSecondary(cmd.side, sec.id, 3)
-                                  }
-                                  title="+3 VP"
-                                >
-                                  <IconCheck size={10} />
-                                </ActionIcon>
-                                <Badge
-                                  size="xs"
-                                  color="teal"
-                                  variant="outline"
-                                  onClick={() =>
-                                    handleScoreSecondary(cmd.side, sec.id, sec.maxVp)
-                                  }
-                                >
-                                  +{sec.maxVp}
-                                </Badge>
-                                <ActionIcon
-                                  size="xs"
-                                  color="yellow"
-                                  variant="subtle"
-                                  onClick={() =>
-                                    handleDiscardSecondaryForCp(cmd.side, sec.id)
-                                  }
-                                  title={t('discardForCp')}
-                                >
-                                  <IconTrash size={10} />
-                                </ActionIcon>
-                              </Group>
-                            </Group>
-                          </Paper>
-                        ))}
-
-                        {cmd.secondaries.length < 2 && (
-                          <Button
-                            size="compact-xs"
-                            variant="outline"
-                            leftSection={<IconRefresh size={11} />}
-                            className="brand-logo"
-                            onClick={() => handleDrawSecondary(cmd.side)}
-                          >
-                            {t('drawSecondary')}
-                          </Button>
-                        )}
-                      </Group>
-                    </Stack>
-                  </Paper>
-                </Grid.Col>
-              );
-            })}
-          </Grid>
-        </Box>
+        <BattleScoreboard
+          commanders={commanders}
+          activeSide={activeSide}
+          clockEnabled={settings.clockMode !== 'off'}
+          clockRunning={clockRunning}
+          isCompactHud={Boolean(isCompactHud)}
+          onOpenArmyViewer={handleOpenArmyViewer}
+          onScoreSecondary={handleScoreSecondary}
+          onDiscardSecondary={handleDiscardSecondaryForCp}
+          onDrawSecondary={handleDrawSecondary}
+        />
       )}
 
-      {/* 3. UNITS & DATACARDS WORKSPACE */}
       {(!isCompactHud || mobileTab === 'units') && (
         <div className="gts-battle-workspace">
-          {/* LEFT SIDEBAR: RENDERED ONLY ON TABLETS & DESKTOP (!isPhone) */}
           {!isPhone && (
-            <div
-              className="gts-battle-sidebar"
-              data-collapsed={sidebarCollapsed ? 'true' : undefined}
-            >
-              <Group
-                justify={sidebarCollapsed ? 'center' : 'space-between'}
-                px="xs"
-                py={6}
-              >
-                {!sidebarCollapsed && (
-                  <Text size="xs" fw={700} className="brand-logo">
-                    {t('unitPane.roster')}
-                  </Text>
-                )}
-                <Tooltip
-                  label={
-                    sidebarCollapsed ? t('expandSidebar') : t('collapseSidebar')
-                  }
-                >
-                  <ActionIcon
-                    size="sm"
-                    variant="subtle"
-                    onClick={() => setSidebarCollapsed((c) => !c)}
-                  >
-                    {sidebarCollapsed ? (
-                      <IconLayoutSidebarLeftExpand size={16} />
-                    ) : (
-                      <IconLayoutSidebarLeftCollapse size={16} />
-                    )}
-                  </ActionIcon>
-                </Tooltip>
-              </Group>
-
-              {!sidebarCollapsed && (
-                <div className="gts-battle-sidebar-scroll">
-                  <Stack gap="sm">
-                    <div>
-                      <button
-                        type="button"
-                        className="gts-battle-roster-header"
-                        onClick={() => setOwnListOpen((o) => !o)}
-                      >
-                        <Group gap={6} wrap="nowrap">
-                          <IconSwords size={14} color="var(--gts-primary)" />
-                          <Text size="xs" fw={700} className="brand-logo">
-                            {t('own')}: {playerArmy.metadata.faction.toUpperCase()} (
-                            {playerArmy.units.length})
-                          </Text>
-                        </Group>
-                        {ownListOpen ? (
-                          <IconChevronUp size={14} />
-                        ) : (
-                          <IconChevronDown size={14} />
-                        )}
-                      </button>
-
-                      {ownListOpen && (
-                        <Stack gap={6} mt={6}>
-                          {playerArmy.units.map((unit) =>
-                            renderSidebarUnitRow('player', unit)
-                          )}
-                        </Stack>
-                      )}
-                    </div>
-
-                    <div>
-                      <button
-                        type="button"
-                        className="gts-battle-roster-header"
-                        onClick={() => setEnemyListOpen((o) => !o)}
-                      >
-                        <Group gap={6} wrap="nowrap">
-                          <IconShield size={14} color="var(--gts-danger)" />
-                          <Text size="xs" fw={700} className="brand-logo">
-                            {t('enemy')}: {opponentArmy.metadata.faction.toUpperCase()} (
-                            {opponentArmy.units.length})
-                          </Text>
-                        </Group>
-                        {enemyListOpen ? (
-                          <IconChevronUp size={14} />
-                        ) : (
-                          <IconChevronDown size={14} />
-                        )}
-                      </button>
-
-                      {enemyListOpen && (
-                        <Stack gap={6} mt={6}>
-                          {opponentArmy.units.map((unit) =>
-                            renderSidebarUnitRow('opponent', unit)
-                          )}
-                        </Stack>
-                      )}
-                    </div>
-                  </Stack>
-                </div>
-              )}
-            </div>
+            <BattleRosterSidebar
+              playerArmy={playerArmy}
+              opponentArmy={opponentArmy}
+              unitStatuses={unitStatuses}
+              inspectorSide={inspectorSide}
+              selectedPlayerUnitId={selectedPlayerUnitId}
+              selectedOpponentUnitId={selectedOpponentUnitId}
+              sidebarCollapsed={sidebarCollapsed}
+              onToggleSidebar={() => setSidebarCollapsed((c) => !c)}
+              ownListOpen={ownListOpen}
+              onToggleOwnList={() => setOwnListOpen((o) => !o)}
+              enemyListOpen={enemyListOpen}
+              onToggleEnemyList={() => setEnemyListOpen((o) => !o)}
+              onSelectUnit={(side, unitId) => {
+                setInspectorSide(side);
+                if (side === 'player') setSelectedPlayerUnitId(unitId);
+                else setSelectedOpponentUnitId(unitId);
+              }}
+              onAdjustModels={adjustUnitModels}
+              onAdjustWounds={adjustUnitWounds}
+              onToggleShock={toggleUnitBattleShock}
+            />
           )}
 
-          {/* MAIN DATASHEET PANE */}
-          <div className="gts-battle-main-pane">
-            <Paper p={6} radius="md" className="gts-army-panel">
-              <Group justify="space-between" wrap="nowrap" gap="xs">
-                <Group gap={6} wrap="nowrap" miw={0}>
-                  {/* Uses separate playerUnitIndex and opponentUnitIndex so advancing one never advances the other! */}
-                  <SegmentedControl
-                    size="xs"
-                    value={inspectorSide}
-                    onChange={(val) => {
-                      setSwipeDir(0);
-                      setInspectorSide(val as 'player' | 'opponent');
-                    }}
-                    data={[
-                      {
-                        label: `${t('own')} (${playerUnitIndex + 1}/${playerArmy.units.length})`,
-                        value: 'player',
-                      },
-                      {
-                        label: `${t('enemy')} (${opponentUnitIndex + 1}/${opponentArmy.units.length})`,
-                        value: 'opponent',
-                      },
-                    ]}
-                  />
-
-                  <ActionIcon
-                    size="md"
-                    variant="default"
-                    onClick={() => paginateUnit(-1)}
-                  >
-                    <IconChevronLeft size={14} />
-                  </ActionIcon>
-
-                  <Select
-                    size="xs"
-                    searchable={!isPhone}
-                    w={isPhone ? 190 : 250}
-                    value={
-                      inspectorSide === 'player'
-                        ? selectedPlayerUnitId
-                        : selectedOpponentUnitId
-                    }
-                    onChange={(val) => {
-                      if (!val) return;
-                      if (inspectorSide === 'player') setSelectedPlayerUnitId(val);
-                      else setSelectedOpponentUnitId(val);
-                    }}
-                    data={
-                      inspectorSide === 'player'
-                        ? playerUnitSelectData
-                        : opponentUnitSelectData
-                    }
-                  />
-
-                  <ActionIcon
-                    size="md"
-                    variant="default"
-                    onClick={() => paginateUnit(1)}
-                  >
-                    <IconChevronRight size={14} />
-                  </ActionIcon>
-                </Group>
-
-                {!isPhone && (
-                  <Group gap="xs" wrap="nowrap">
-                    {!isCompactHud && (
-                      <Button
-                        size="xs"
-                        variant="subtle"
-                        leftSection={<IconBolt size={14} />}
-                        onClick={() => setBottomTrayOpen((o) => !o)}
-                      >
-                        {t('tabs.strats')}
-                      </Button>
-                    )}
-
-                    <Button
-                      size="xs"
-                      variant="default"
-                      leftSection={<IconArrowsLeftRight size={14} />}
-                      className="brand-logo gts-game-cta-join"
-                      onClick={() => setCompareModalOpen(true)}
-                    >
-                      {t('vsCompare')}
-                    </Button>
-                  </Group>
-                )}
-              </Group>
-            </Paper>
-
-            {activeInspectedUnit && activeInspectedStatus && (
-              <div
-                className="gts-unit-live-control-bar"
-                data-side={inspectorSide}
-              >
-                <Group gap="xs" wrap="nowrap" miw={0}>
-                  <Badge
-                    size="sm"
-                    variant="filled"
-                    color={inspectorSide === 'player' ? 'brandBlue.6' : 'red.6'}
-                    className="brand-logo"
-                  >
-                    {inspectorSide === 'player' ? t('own') : t('enemy')}
-                  </Badge>
-                  <Text
-                    size="sm"
-                    fw={800}
-                    className="brand-logo"
-                    td={activeInspectedStatus.destroyed ? 'line-through' : undefined}
-                    c={activeInspectedStatus.destroyed ? 'red.4' : undefined}
-                    truncate
-                  >
-                    {activeInspectedUnit.name.toUpperCase()}
-                  </Text>
-                </Group>
-
-                <Group gap="sm" wrap="nowrap">
-                  <Group gap={4} wrap="nowrap">
-                    <IconUsers size={14} color="var(--gts-text-secondary)" />
-                    {!isPhone && (
-                      <Text size="11px" fw={700} className="brand-logo" c="dimmed">
-                        {t('modelsLabel')}:
-                      </Text>
-                    )}
-                    <ActionIcon
-                      size="sm"
-                      variant="default"
-                      onClick={() =>
-                        adjustUnitModels(inspectorSide, activeInspectedUnit, -1)
-                      }
-                    >
-                      <IconMinus size={12} />
-                    </ActionIcon>
-                    <Badge size="md" variant="outline" w={64} ta="center">
-                      {activeInspectedStatus.currentModels}/{activeInspectedStatus.maxModels}
-                    </Badge>
-                    <ActionIcon
-                      size="sm"
-                      variant="default"
-                      onClick={() =>
-                        adjustUnitModels(inspectorSide, activeInspectedUnit, 1)
-                      }
-                    >
-                      <IconPlus size={12} />
-                    </ActionIcon>
-                  </Group>
-
-                  <Group gap={4} wrap="nowrap">
-                    <IconHeartFilled size={14} color="var(--gts-danger)" />
-                    {!isPhone && (
-                      <Text size="11px" fw={700} className="brand-logo" c="dimmed">
-                        {t('woundsLabel')}:
-                      </Text>
-                    )}
-                    <ActionIcon
-                      size="sm"
-                      variant="default"
-                      onClick={() =>
-                        adjustUnitWounds(inspectorSide, activeInspectedUnit, -1)
-                      }
-                    >
-                      <IconMinus size={12} />
-                    </ActionIcon>
-                    <Badge
-                      size="md"
-                      variant="filled"
-                      w={78}
-                      ta="center"
-                      color={
-                        activeInspectedStatus.destroyed
-                          ? 'gray'
-                          : activeInspectedStatus.currentWounds <=
-                              activeInspectedStatus.maxWounds / 2
-                            ? 'orange'
-                            : inspectorSide === 'player'
-                              ? 'brandBlue.6'
-                              : 'red.6'
-                      }
-                    >
-                      {activeInspectedStatus.currentWounds}/{activeInspectedStatus.maxWounds} W
-                    </Badge>
-                    <ActionIcon
-                      size="sm"
-                      variant="default"
-                      onClick={() =>
-                        adjustUnitWounds(inspectorSide, activeInspectedUnit, 1)
-                      }
-                    >
-                      <IconPlus size={12} />
-                    </ActionIcon>
-                  </Group>
-
-                  {activeInspectedStatus.destroyed ? (
-                    <Badge
-                      size="lg"
-                      color="red"
-                      variant="filled"
-                      w={110}
-                      ta="center"
-                      className="brand-logo"
-                    >
-                      {t('destroyed')}
-                    </Badge>
-                  ) : (
-                    <Button
-                      size="compact-xs"
-                      color={activeInspectedStatus.battleShocked ? 'yellow' : 'gray'}
-                      variant={
-                        activeInspectedStatus.battleShocked ? 'filled' : 'default'
-                      }
-                      leftSection={<IconAlertTriangle size={12} />}
-                      w={110}
-                      onClick={() =>
-                        toggleUnitBattleShock(inspectorSide, activeInspectedUnit)
-                      }
-                    >
-                      {t('shocked')}
-                    </Button>
-                  )}
-                </Group>
-              </div>
-            )}
-
-            <div className="gts-battle-datasheet-scroll">
-              {activeInspectedUnit && (
-                <AnimatePresence initial={false} mode="wait" custom={swipeDir}>
-                  <motion.div
-                    key={`${inspectorSide}-${activeInspectedUnit.id}`}
-                    className="gts-battle-swipe-deck"
-                    initial={{ opacity: 0, x: swipeDir >= 0 ? 48 : -48 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: swipeDir >= 0 ? -48 : 48 }}
-                    transition={{ duration: 0.16 }}
-                    drag="x"
-                    dragConstraints={{ left: 0, right: 0 }}
-                    dragElastic={0.65}
-                    onDragEnd={(_e, { offset, velocity }: PanInfo) => {
-                      const swipe = swipePower(offset.x, velocity.x);
-                      if (swipe < -SWIPE_CONFIDENCE_THRESHOLD || offset.x < -75) {
-                        paginateUnit(1);
-                      } else if (swipe > SWIPE_CONFIDENCE_THRESHOLD || offset.x > 75) {
-                        paginateUnit(-1);
-                      }
-                    }}
-                  >
-                    <ArmyUnitDatasheet unit={activeInspectedUnit} />
-                  </motion.div>
-                </AnimatePresence>
-              )}
-            </div>
-
-            {!isCompactHud && bottomTrayOpen && (
-              <Paper p="xs" radius="md" className="gts-army-panel">
-                <Grid gap="xs" align="stretch">
-                  <Grid.Col span={8}>
-                    <Group gap={6} mb={4}>
-                      <IconBolt size={14} color="var(--gts-accent)" />
-                      <Text size="10px" fw={700} className="brand-logo">
-                        {t('coreStratagems')}
-                      </Text>
-                    </Group>
-                    <Grid gap={4}>
-                      {CORE_STRATAGEMS.map((strat) => {
-                        const activeCp = activeSide === 'player' ? p1Cp : p2Cp;
-                        return (
-                          <Grid.Col key={strat.id} span={3}>
-                            <button
-                              type="button"
-                              disabled={activeCp < strat.cost}
-                              className="gts-battle-strat-btn"
-                              onClick={() =>
-                                handleUseStratagem(strat.name, strat.cost)
-                              }
-                            >
-                              <Group justify="space-between" wrap="nowrap">
-                                <Badge size="xs" color="yellow" variant="outline">
-                                  {strat.cost} CP
-                                </Badge>
-                                <Text size="9px" c="dimmed" truncate>
-                                  {strat.phase}
-                                </Text>
-                              </Group>
-                              <Text size="11px" fw={700} truncate>
-                                {strat.name}
-                              </Text>
-                            </button>
-                          </Grid.Col>
-                        );
-                      })}
-                    </Grid>
-                  </Grid.Col>
-
-                  <Grid.Col span={4}>
-                    <Group gap={6} mb={4}>
-                      <IconFlame size={14} color="var(--gts-accent)" />
-                      <Text size="10px" fw={700} className="brand-logo">
-                        {t('battleLog')}
-                      </Text>
-                    </Group>
-                    <ScrollArea h={85}>
-                      <Stack gap={2}>
-                        {battleLog.map((entry, idx) => (
-                          <Text
-                            key={idx}
-                            size="11px"
-                            c={idx === 0 ? undefined : 'dimmed'}
-                            ff="monospace"
-                          >
-                            • {entry}
-                          </Text>
-                        ))}
-                      </Stack>
-                    </ScrollArea>
-                  </Grid.Col>
-                </Grid>
-              </Paper>
-            )}
-          </div>
+          <BattleUnitInspector
+            inspectorSide={inspectorSide}
+            onChangeInspectorSide={(side) => {
+              setSwipeDir(0);
+              setInspectorSide(side);
+            }}
+            playerUnitIndex={playerUnitIndex}
+            playerUnitCount={playerArmy.units.length}
+            opponentUnitIndex={opponentUnitIndex}
+            opponentUnitCount={opponentArmy.units.length}
+            selectedUnitId={
+              inspectorSide === 'player' ? selectedPlayerUnitId : selectedOpponentUnitId
+            }
+            onSelectUnitId={(val) => {
+              if (inspectorSide === 'player') setSelectedPlayerUnitId(val);
+              else setSelectedOpponentUnitId(val);
+            }}
+            unitSelectData={
+              inspectorSide === 'player' ? playerUnitSelectData : opponentUnitSelectData
+            }
+            onPaginateUnit={paginateUnit}
+            swipeDir={swipeDir}
+            activeUnit={activeInspectedUnit}
+            activeStatus={activeInspectedStatus}
+            onAdjustModels={(delta) =>
+              activeInspectedUnit &&
+              adjustUnitModels(inspectorSide, activeInspectedUnit, delta)
+            }
+            onAdjustWounds={(delta) =>
+              activeInspectedUnit &&
+              adjustUnitWounds(inspectorSide, activeInspectedUnit, delta)
+            }
+            onToggleShock={() =>
+              activeInspectedUnit &&
+              toggleUnitBattleShock(inspectorSide, activeInspectedUnit)
+            }
+            isPhone={Boolean(isPhone)}
+            isCompactHud={Boolean(isCompactHud)}
+            onToggleBottomTray={() => setBottomTrayOpen((o) => !o)}
+            onOpenCompareModal={() => setCompareModalOpen(true)}
+            bottomTrayNode={
+              !isCompactHud && bottomTrayOpen ? (
+                <BattleStratagemsLog
+                  actions={CORE_STRATAGEMS}
+                  activeCp={activeSide === 'player' ? p1Cp : p2Cp}
+                  battleLog={battleLog}
+                  onUseAction={handleUseStratagem}
+                  compactDrawer={true}
+                />
+              ) : undefined
+            }
+          />
         </div>
       )}
 
-      {/* 4. MOBILE / TABLET STRATAGEMS & LOG TAB */}
       {isCompactHud && mobileTab === 'strats' && (
-        <Box className="gts-battle-datasheet-scroll">
-          <Grid gap="sm" align="stretch">
-            <Grid.Col span={{ base: 12, sm: 7 }}>
-              <Paper p="sm" radius="md" className="gts-army-panel" h="100%">
-                <Group gap="xs" mb="xs">
-                  <IconBolt size={15} color="var(--gts-accent)" />
-                  <Text size="xs" fw={700} className="brand-logo">
-                    {t('coreStratagems')} (
-                    {activeSide === 'player'
-                      ? `${playerArmy.playerName}: ${p1Cp} CP`
-                      : `${opponentArmy.playerName}: ${p2Cp} CP`}
-                    )
-                  </Text>
-                </Group>
-                <Grid gap="xs">
-                  {CORE_STRATAGEMS.map((strat) => {
-                    const activeCp = activeSide === 'player' ? p1Cp : p2Cp;
-                    return (
-                      <Grid.Col key={strat.id} span={{ base: 6, sm: 3 }}>
-                        <button
-                          type="button"
-                          disabled={activeCp < strat.cost}
-                          className="gts-battle-strat-btn"
-                          onClick={() => handleUseStratagem(strat.name, strat.cost)}
-                        >
-                          <Group justify="space-between" wrap="nowrap" mb={2}>
-                            <Badge size="xs" color="yellow" variant="outline">
-                              {strat.cost} CP
-                            </Badge>
-                            <Text size="9px" c="dimmed" truncate>
-                              {strat.phase}
-                            </Text>
-                          </Group>
-                          <Text size="xs" fw={700} truncate>
-                            {strat.name}
-                          </Text>
-                        </button>
-                      </Grid.Col>
-                    );
-                  })}
-                </Grid>
-              </Paper>
-            </Grid.Col>
-
-            <Grid.Col span={{ base: 12, sm: 5 }}>
-              <Paper p="sm" radius="md" className="gts-army-panel" h="100%">
-                <Group gap="xs" mb="xs">
-                  <IconFlame size={15} color="var(--gts-accent)" />
-                  <Text size="xs" fw={700} className="brand-logo">
-                    {t('battleLog')}
-                  </Text>
-                </Group>
-                <ScrollArea h={220}>
-                  <Stack gap={4}>
-                    {battleLog.map((entry, idx) => (
-                      <Text
-                        key={idx}
-                        size="xs"
-                        c={idx === 0 ? undefined : 'dimmed'}
-                        ff="monospace"
-                      >
-                        • {entry}
-                      </Text>
-                    ))}
-                  </Stack>
-                </ScrollArea>
-              </Paper>
-            </Grid.Col>
-          </Grid>
-        </Box>
+        <BattleStratagemsLog
+          actions={CORE_STRATAGEMS}
+          activeCp={activeSide === 'player' ? p1Cp : p2Cp}
+          activePlayerLabel={
+            activeSide === 'player'
+              ? `${playerArmy.playerName}: ${p1Cp} CP`
+              : `${opponentArmy.playerName}: ${p2Cp} CP`
+          }
+          battleLog={battleLog}
+          onUseAction={handleUseStratagem}
+        />
       )}
 
-      {/* 5. DEDICATED SIDE-BY-SIDE VS UNIT COMPARISON MODAL (TABLET & DESKTOP ONLY) */}
       {!isPhone && (
-        <Modal
+        <BattleCompareModal
           opened={compareModalOpen}
           onClose={() => setCompareModalOpen(false)}
-          size="96%"
-          centered
-          title={
-            <Group gap="xs">
-              <IconArrowsLeftRight size={18} color="var(--gts-accent)" />
-              <Text fw={700} className="brand-logo">
-                {t('vsModalTitle')}
-              </Text>
-            </Group>
-          }
-          classNames={{
-            content: 'gts-modal-content',
-            header: 'gts-modal-header',
-          }}
-        >
-          <Grid gap="md">
-            <Grid.Col span={{ base: 12, md: 6 }}>
-              <Stack gap="sm">
-                <Select
-                  label={`${t('selectOwnUnit')} (${playerArmy.metadata.faction})`}
-                  searchable
-                  value={selectedPlayerUnitId}
-                  onChange={(val) => val && setSelectedPlayerUnitId(val)}
-                  data={playerUnitSelectData}
-                  classNames={{
-                    input: 'gts-input-field',
-                    label: 'gts-input-label',
-                  }}
-                />
-                <ScrollArea.Autosize mah="72dvh" offsetScrollbars>
-                  {selectedPlayerUnit && (
-                    <ArmyUnitDatasheet unit={selectedPlayerUnit} />
-                  )}
-                </ScrollArea.Autosize>
-              </Stack>
-            </Grid.Col>
-
-            <Grid.Col span={{ base: 12, md: 6 }}>
-              <Stack gap="sm">
-                <Select
-                  label={`${t('selectEnemyUnit')} (${opponentArmy.metadata.faction})`}
-                  searchable
-                  value={selectedOpponentUnitId}
-                  onChange={(val) => val && setSelectedOpponentUnitId(val)}
-                  data={opponentUnitSelectData}
-                  classNames={{
-                    input: 'gts-input-field',
-                    label: 'gts-input-label',
-                  }}
-                />
-                <ScrollArea.Autosize mah="72dvh" offsetScrollbars>
-                  {selectedOpponentUnit && (
-                    <ArmyUnitDatasheet unit={selectedOpponentUnit} />
-                  )}
-                </ScrollArea.Autosize>
-              </Stack>
-            </Grid.Col>
-          </Grid>
-        </Modal>
+          playerFaction={playerArmy.metadata.faction}
+          opponentFaction={opponentArmy.metadata.faction}
+          selectedPlayerUnitId={selectedPlayerUnitId}
+          onSelectPlayerUnitId={setSelectedPlayerUnitId}
+          playerUnitSelectData={playerUnitSelectData}
+          selectedPlayerUnit={selectedPlayerUnit}
+          selectedOpponentUnitId={selectedOpponentUnitId}
+          onSelectOpponentUnitId={setSelectedOpponentUnitId}
+          opponentUnitSelectData={opponentUnitSelectData}
+          selectedOpponentUnit={selectedOpponentUnit}
+        />
       )}
 
-      {/* 6. FULL ARMY VIEWER MODAL */}
-      <Modal
+      <BattleArmyViewerModal
+        army={modalArmy}
         opened={armyViewerModalSide !== null}
         onClose={() => setArmyViewerModalSide(null)}
-        size="95%"
-        centered
-        title={
-          <Group gap="xs">
-            <IconListDetails size={18} color="var(--gts-accent)" />
-            <Text fw={700} className="brand-logo">
-              {t('armyViewer')} — {modalArmy?.metadata.name.toUpperCase()}
-            </Text>
-          </Group>
-        }
-        classNames={{
-          content: 'gts-modal-content',
-          header: 'gts-modal-header',
+        onSelectUnit={(unitId) => {
+          if (armyViewerModalSide === 'player') {
+            setInspectorSide('player');
+            setSelectedPlayerUnitId(unitId);
+          } else {
+            setInspectorSide('opponent');
+            setSelectedOpponentUnitId(unitId);
+          }
+          setArmyViewerModalSide(null);
+          if (isCompactHud) {
+            setMobileTab('units');
+          }
         }}
-      >
-        {modalArmy && (
-          <ScrollArea.Autosize mah="80dvh" offsetScrollbars>
-            <Stack gap="lg">
-              <ArmyHeaderCard metadata={modalArmy.metadata} />
-              <ArmyRosterTable
-                units={modalArmy.units}
-                onSelectUnit={(unitId) => {
-                  if (armyViewerModalSide === 'player') {
-                    setInspectorSide('player');
-                    setSelectedPlayerUnitId(unitId);
-                  } else {
-                    setInspectorSide('opponent');
-                    setSelectedOpponentUnitId(unitId);
-                  }
-                  setArmyViewerModalSide(null);
-                  if (isCompactHud) {
-                    setMobileTab('units');
-                  }
-                }}
-              />
-              {modalArmy.armyRules && modalArmy.armyRules.length > 0 && (
-                <ArmyRulesGlossary rules={modalArmy.armyRules} />
-              )}
-            </Stack>
-          </ScrollArea.Autosize>
-        )}
-      </Modal>
+      />
     </Box>
   );
 }
