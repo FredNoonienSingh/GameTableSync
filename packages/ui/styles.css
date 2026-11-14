@@ -2756,3 +2756,435 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* --- Feature Showcase / Mockup Link Card --- */
+.gts-showcase-mockup-frame {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--gts-border-subtle);
+  background-color: var(--gts-bg-subcard);
+  box-shadow: var(--gts-shadow-card), 0 0 22px color-mix(in srgb, var(--gts-primary) 16%, transparent);
+  transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.gts-showcase-mockup-frame:hover {
+  transform: translateY(-3px);
+  border-color: var(--gts-accent);
+  box-shadow: var(--gts-shadow-card), 0 0 28px color-mix(in srgb, var(--gts-accent) 32%, transparent);
+}
+
+.gts-showcase-mockup-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.gts-showcase-mockup-frame:hover .gts-showcase-mockup-img {
+  transform: scale(1.015);
+}
+
+.gts-showcase-mockup-tag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  background-color: color-mix(in srgb, var(--gts-bg-canvas) 82%, transparent);
+  border: 1px solid var(--gts-accent);
+  color: var(--gts-accent);
+  backdrop-filter: blur(8px);
+}
+/* ==========================================================================
+   23. COMING SOON OVERLAY BANNER (WITH HOVER FADE & MOBILE TAP-TO-PEEK)
+   ========================================================================== */
+.gts-coming-soon-wrapper {
+  position: relative;
+  width: 100%;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.gts-coming-soon-content {
+  width: 100%;
+  height: 100%;
+  opacity: var(--cs-content-opacity, 0.45);
+  pointer-events: none;
+  user-select: none;
+  filter: saturate(0.4);
+  transition: opacity 0.28s ease, filter 0.28s ease;
+}
+
+.gts-coming-soon-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: color-mix(
+    in srgb,
+    var(--gts-bg-canvas) var(--cs-backdrop-alpha, 45%),
+    transparent
+  );
+  backdrop-filter: blur(var(--cs-blur, 3px));
+  -webkit-backdrop-filter: blur(var(--cs-blur, 3px));
+  border-radius: inherit;
+  pointer-events: all;
+  cursor: not-allowed;
+  overflow: hidden;
+  transition:
+    background-color 0.28s ease,
+    backdrop-filter 0.28s ease,
+    -webkit-backdrop-filter 0.28s ease;
+}
+
+.gts-coming-soon-backdrop[data-revealable="true"] {
+  cursor: pointer;
+}
+
+/* Full-width semi-transparent horizontal banner */
+.gts-coming-soon-banner {
+  width: 100%;
+  padding: 10px 16px;
+  background-color: color-mix(
+    in srgb,
+    var(--gts-bg-panel) var(--cs-banner-alpha, 85%),
+    transparent
+  );
+  border-top: 1px solid color-mix(in srgb, var(--gts-accent) 55%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--gts-accent) 55%, transparent);
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.55),
+    0 0 20px color-mix(in srgb, var(--gts-primary) 25%, transparent);
+  backdrop-filter: blur(8px);
+  text-align: center;
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+/* Variant: Slight diagonal tactical stamp */
+.gts-coming-soon-banner[data-variant="tilted"] {
+  width: 110%;
+  transform: rotate(-3deg);
+}
+
+/* Variant: Compact center pill instead of full-width stripe */
+.gts-coming-soon-banner[data-variant="pill"] {
+  width: auto;
+  padding: 8px 22px;
+  border-radius: 999px;
+  border: 1px solid var(--gts-accent);
+}
+
+.gts-coming-soon-icon {
+  color: var(--gts-accent);
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--gts-accent) 60%, transparent));
+}
+
+.gts-coming-soon-text {
+  font-size: clamp(0.78rem, 2vw, 0.95rem);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: var(--gts-text-heading);
+  text-transform: uppercase;
+  text-shadow: 0 0 12px color-mix(in srgb, var(--gts-accent) 45%, transparent);
+}
+
+.gts-coming-soon-subtext {
+  color: var(--gts-text-secondary);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* Subtle eye icon on touch devices so mobile users know they can tap to peek */
+.gts-coming-soon-peek-hint {
+  color: var(--gts-text-muted);
+  opacity: 0.75;
+  margin-left: 4px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .gts-coming-soon-peek-hint {
+    display: none;
+  }
+}
+
+/* Small corner badge that remains visible while peeked on mobile */
+.gts-coming-soon-peek-pill {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  background-color: color-mix(in srgb, var(--gts-bg-panel) 88%, transparent);
+  border: 1px solid var(--gts-border-subtle);
+  color: var(--gts-accent);
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+/* --- Desktop Hover State (Fades out banner & restores underlying content) --- */
+@media (hover: hover) and (pointer: fine) {
+  .gts-coming-soon-wrapper[data-revealable="true"]:hover .gts-coming-soon-content {
+    opacity: 1;
+    filter: saturate(1);
+  }
+
+  .gts-coming-soon-wrapper[data-revealable="true"]:hover .gts-coming-soon-backdrop,
+  .gts-coming-soon-backdrop[data-revealable="true"]:hover {
+    background-color: transparent;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+
+  .gts-coming-soon-wrapper[data-revealable="true"]:hover .gts-coming-soon-banner,
+  .gts-coming-soon-backdrop[data-revealable="true"]:hover .gts-coming-soon-banner {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+
+  .gts-coming-soon-wrapper[data-revealable="true"]:hover
+    .gts-coming-soon-banner[data-variant="tilted"],
+  .gts-coming-soon-backdrop[data-revealable="true"]:hover
+    .gts-coming-soon-banner[data-variant="tilted"] {
+    transform: rotate(-3deg) scale(0.97);
+  }
+}
+
+/* --- Mobile / Touch Tap-to-Peek State --- */
+.gts-coming-soon-wrapper[data-peeked="true"] .gts-coming-soon-content {
+  opacity: 1;
+  filter: saturate(1);
+}
+
+.gts-coming-soon-backdrop[data-peeked="true"] {
+  background-color: transparent;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+}
+
+.gts-coming-soon-backdrop[data-peeked="true"] .gts-coming-soon-banner {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.gts-coming-soon-peek-pill[data-peeked="true"] {
+  opacity: 0.9;
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   23. MAGIC: THE GATHERING (MTG) LIVE BATTLE COMPANION
+   ========================================================================== */
+.gts-mtg-workspace {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: grid;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.gts-mtg-workspace[data-seats="2"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.gts-mtg-workspace[data-seats="4"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+
+.gts-mtg-seat-card {
+  --seat-color: var(--gts-primary);
+  background-color: var(--gts-bg-card);
+  border: 1px solid color-mix(in srgb, var(--seat-color) 35%, var(--gts-border-subtle));
+  border-top: 3px solid var(--seat-color);
+  border-radius: 8px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4px;
+  min-height: 0;
+  overflow: hidden;
+  box-shadow: var(--gts-shadow-card);
+  font-variant-numeric: tabular-nums;
+}
+
+.gts-mtg-seat-card[data-seat="0"] { --seat-color: var(--gts-primary); }
+.gts-mtg-seat-card[data-seat="1"] { --seat-color: var(--gts-danger); }
+.gts-mtg-seat-card[data-seat="2"] { --seat-color: #20c997; }
+.gts-mtg-seat-card[data-seat="3"] { --seat-color: #fcc419; }
+
+.gts-mtg-seat-card[data-active-turn="true"] {
+  border-color: var(--seat-color);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--seat-color) 22%, transparent);
+}
+
+.gts-mtg-seat-card[data-eliminated="true"] {
+  opacity: 0.42;
+  border-top-color: var(--gts-text-muted);
+}
+
+.gts-mtg-topbar-seat-color[data-active-seat="0"] { --turn-color: var(--gts-primary); }
+.gts-mtg-topbar-seat-color[data-active-seat="1"] { --turn-color: var(--gts-danger); }
+.gts-mtg-topbar-seat-color[data-active-seat="2"] { --turn-color: #20c997; }
+.gts-mtg-topbar-seat-color[data-active-seat="3"] { --turn-color: #fcc419; }
+
+/* --- Main Life Total Strip --- */
+.gts-mtg-life-strip {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(6px, 1.5vw, 14px);
+  background-color: var(--gts-bg-subcard);
+  border: 1px solid var(--gts-border-faint);
+  border-radius: 8px;
+  padding: 4px 8px;
+}
+
+.gts-mtg-life-val {
+  font-family: var(--gts-font-brand);
+  font-size: clamp(2rem, 4.5vw, 3.6rem);
+  font-weight: 900;
+  line-height: 1;
+  min-width: 2.6ch;
+  text-align: center;
+  color: var(--gts-text-heading);
+  font-variant-numeric: tabular-nums;
+}
+
+.gts-mtg-seat-card[data-seats="4"] .gts-mtg-life-val {
+  font-size: clamp(1.35rem, 2.6vw, 2.1rem);
+}
+
+.gts-mtg-life-step-btn {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-family: var(--gts-font-brand);
+  font-size: clamp(0.68rem, 1vw, 0.8rem);
+  font-weight: 800;
+  background-color: var(--gts-bg-card);
+  border: 1px solid var(--gts-border-subtle);
+  color: var(--gts-text-heading);
+  cursor: pointer;
+  user-select: none;
+  min-width: 32px;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+
+.gts-mtg-life-step-btn:hover:not(:disabled) {
+  border-color: var(--seat-color);
+  background-color: color-mix(in srgb, var(--seat-color) 16%, var(--gts-bg-card));
+}
+
+/* --- Overflow-Proof Bottom Counter & Commander Damage Grid --- */
+.gts-mtg-bottom-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.gts-mtg-counter-pill {
+  background-color: var(--gts-bg-subcard);
+  border: 1px solid var(--gts-border-faint);
+  border-radius: 6px;
+  padding: 3px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+.gts-mtg-counter-pill-val {
+  font-family: var(--gts-font-brand);
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--gts-text-heading);
+  min-width: 2.2ch;
+  text-align: center;
+}
+
+.gts-mtg-mini-step-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background-color: var(--gts-bg-card);
+  border: 1px solid var(--gts-border-subtle);
+  color: var(--gts-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.gts-mtg-mini-step-btn:hover {
+  color: var(--gts-text-heading);
+  border-color: var(--seat-color);
+}
+
+/* --- 3-Opponent Commander Damage Strip --- */
+.gts-mtg-cmd-dmg-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.gts-mtg-cmd-dmg-box {
+  background-color: var(--gts-bg-subcard);
+  border: 1px solid var(--gts-border-faint);
+  border-radius: 5px;
+  padding: 2px 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3px;
+  min-width: 0;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+.gts-mtg-cmd-dmg-box[data-lethal="true"] {
+  border-color: var(--gts-danger);
+  background-color: color-mix(in srgb, var(--gts-danger) 18%, var(--gts-bg-subcard));
+}
+
+.gts-mtg-mana-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.52rem;
+  font-weight: 900;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  flex-shrink: 0;
+}
+.gts-mtg-mana-dot[data-mana="W"] { background-color: #f8f6d8; color: #111; }
+.gts-mtg-mana-dot[data-mana="U"] { background-color: #0e68ab; color: #fff; }
+.gts-mtg-mana-dot[data-mana="B"] { background-color: #2b2523; color: #fff; }
+.gts-mtg-mana-dot[data-mana="R"] { background-color: #d3202a; color: #fff; }
+.gts-mtg-mana-dot[data-mana="G"] { background-color: #00733e; color: #fff; }
+.gts-mtg-mana-dot[data-mana="C"] { background-color: #908c8a; color: #111; }

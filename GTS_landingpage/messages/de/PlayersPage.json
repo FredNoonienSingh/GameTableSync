@@ -38,6 +38,19 @@
         "description": "Verfolge Erfahrungspunkte, Kampfnarben, Relikte und eroberte Planetensektoren deiner Einheiten über Monate hinweg."
       }
     },
+    "companion": {
+      "badge": "LIVE TACTICAL HUD",
+      "title": "SYSTEM SPECIFISCHE BATTLE COMPANIONS",
+      "description": "Neben 40K und AoS stehen euch Battle Companions für eine wachsende Menge von Spielsystemen zur Verfügung",
+      "inlineLink": "Jetzt 40K Demo testen →",
+      "cta": "40K DEMO-HUD STARTEN",
+      "imageAlt": "Warhammer 40,000 Battle Companion Tactical HUD Vorschau",
+      "imageTag": "11. EDITION BEREIT",
+      "subHud": {
+        "title": "INTERAKTIVER EINHEITEN-INSPEKTOR & WTC-SCOREBOARD",
+        "description": "Wische durch komplette Datenblätter, aktualisiere Lebenspunkte sowie Erschütterung in Echtzeit und berechne WTC-20-0-Differenzen vollautomatisch."
+      }
+    },
     "competitive": {
       "badge": "TURNIERE & RANGFOLGE",
       "title": "VOM BALKON-SPIEL ZUM GRAND TOURNAMENT",

@@ -12,6 +12,7 @@ export { MantineProvider, mantineHtmlProps, ColorSchemeScript } from '@mantine/c
 export { default as gtsPureLogo } from './assets/gametablesync_pure.png';
 export { default as gtsLogo2048 } from './assets/gametablesync-2048.png';
 export { default as gtsLogoSvg } from './assets/gametablesync.svg';
+export { default as BCMockup } from './assets/mockups/BattleCompanionMockup.svg';
 
 
 // ==========================================
@@ -34,7 +35,10 @@ export { Footer } from './components/shared/Footer';
 export { ProfileSmall } from './components/player/ProfileSmall';
 export { GalleryShowcase, type GalleryImageItem, type GalleryShowcaseProps } from './components/shared/GalleryShowcase';
 export { TabbedShowcase, type TabbedShowcaseItem, type TabbedShowcaseProps } from './components/shared/TabbedShowcase';
-
+export {
+  ComingSoonOverlay,
+  type ComingSoonOverlayProps,
+} from './components/shared/ComingSoonOverlay';
 
 // ==========================================
 // 4. NAVIGATION & FUNCTIONAL CONTROLS
@@ -54,6 +58,11 @@ export { BrandHeader } from './components/marketing/BrandHeader';
 export { LaunchCountdown } from './components/marketing/LaunchCountdown';
 export { PriceDetail, type PriceDetailProps } from './components/marketing/PriceDetail';
 export { ContactForm } from './components/marketing/ContactForm';
+export {
+  FeatureShowcaseCard,
+  type FeatureShowcaseCardProps,
+  type ShowcaseImageSource,
+} from './components/marketing/FeatureShowcaseCard';
 
 
 // ==========================================
@@ -76,7 +85,22 @@ export {
   type BattleCompanion40kProps,
 } from './components/game/BattleCompanion40k';
 export * from './components/game/battle-hud';
-
+export {
+  GameMtgSetupPanel,
+  GameMtgSetupModal,
+  DEFAULT_MTG_SETTINGS,
+  type MtgFormatType,
+  type GameMtgSettings,
+  type GameMtgSetupPanelProps,
+} from './components/game/GameMtgSetupModal';
+export {
+  BattleCompanionMtg,
+  type MtgManaColor,
+  type MtgPhaseId,
+  type MtgDeckCardEntry,
+  type MtgPlayerInput,
+  type BattleCompanionMtgProps,
+} from './components/game/BattleCompanionMtg';
 
 // ==========================================
 // 7. TOURNAMENTS & LEADERBOARDS

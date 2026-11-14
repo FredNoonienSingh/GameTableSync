@@ -9,7 +9,10 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   const [intro, features, subpages, 
       pricing ,common, imprint, 
-      privacy, terms, PlayersPage, BattleCompanion40k] = await Promise.all([
+      privacy, terms, PlayersPage, 
+      BattleCompanion40k, BattleCompanionMtg
+    
+    ] = await Promise.all([
     import(`../../messages/${locale}/intro.json`),
     import(`../../messages/${locale}/features.json`),
     import(`../../messages/${locale}/subpages.json`),
@@ -19,7 +22,8 @@ export default getRequestConfig(async ({ requestLocale }) => {
     import(`../../messages/${locale}/legal/privacy.json`),
     import(`../../messages/${locale}/legal/terms.json`),
     import(`../../messages/${locale}/PlayersPage.json`),
-    import(`../../messages/${locale}/BattleCompanion40k.json`)
+    import(`../../messages/${locale}/BattleCompanion40k.json`),
+    import(`../../messages/${locale}/BattleCompanionMtg.json`)
   ]);
 
   return {
@@ -50,6 +54,9 @@ export default getRequestConfig(async ({ requestLocale }) => {
       },
       BattleCompanion40k: {
         ...BattleCompanion40k.default,
+      },
+      BattleCompanionMtg: {
+        ...BattleCompanionMtg.default,
       }
     },
   };
