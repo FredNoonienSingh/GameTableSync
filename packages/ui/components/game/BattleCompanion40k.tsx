@@ -115,36 +115,109 @@ export function BattleCompanion40k({
 
   const [mobileTab, setMobileTab] = useState<MobileHudTab>('units');
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [isPseudoFullscreen, setIsPseudoFullscreen] = useState<boolean>(false);
+  const [guardDismissed, setGuardDismissed] = useState<boolean>(false);
 
   useEffect(() => {
-    const onFsChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    const onFsChange = () => {
+      const doc = document as any;
+      const active = Boolean(doc.fullscreenElement || doc.webkitFullscreenElement);
+      setIsFullscreen(active);
+      if (!active) {
+        setIsPseudoFullscreen(false);
+      }
+    };
     document.addEventListener('fullscreenchange', onFsChange);
-    return () => document.removeEventListener('fullscreenchange', onFsChange);
+    document.addEventListener('webkitfullscreenchange', onFsChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', onFsChange);
+      document.removeEventListener('webkitfullscreenchange', onFsChange);
+    };
   }, []);
 
+  // Lock body scroll and nudge iOS Safari address bar when in pseudo-fullscreen
+  useEffect(() => {
+    if (!isPseudoFullscreen) return;
+    const prevOverflow = document.body.style.overflow;
+    const prevTouchAction = document.body.style.touchAction;
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+    window.scrollTo(0, 1);
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.body.style.touchAction = prevTouchAction;
+    };
+  }, [isPseudoFullscreen]);
+
+  const effectiveFullscreen = isFullscreen || isPseudoFullscreen;
+
   const handleToggleFullscreen = async () => {
-    try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-        if (
-          typeof screen !== 'undefined' &&
-          'orientation' in screen &&
-          typeof (screen.orientation as any).unlock === 'function'
-        ) {
-          (screen.orientation as any).unlock();
-        }
-      } else {
-        await document.documentElement.requestFullscreen();
-        if (
-          typeof screen !== 'undefined' &&
-          'orientation' in screen &&
-          typeof (screen.orientation as any).lock === 'function'
-        ) {
-          await (screen.orientation as any).lock('landscape');
+    const doc = document as any;
+    const el = document.documentElement as any;
+
+    const requestFs = el.requestFullscreen || el.webkitRequestFullscreen;
+    const exitFs = doc.exitFullscreen || doc.webkitExitFullscreen;
+    const isNativeFsActive = Boolean(
+      doc.fullscreenElement || doc.webkitFullscreenElement
+    );
+
+    // 1. Exit if already in native or pseudo fullscreen
+    if (isNativeFsActive || isPseudoFullscreen) {
+      if (isNativeFsActive && typeof exitFs === 'function') {
+        try {
+          await exitFs.call(doc);
+        } catch {
+          // Ignored
         }
       }
-    } catch {
-      // Ignored if browser blocks orientation lock
+      if (
+        typeof screen !== 'undefined' &&
+        'orientation' in screen &&
+        typeof (screen.orientation as any).unlock === 'function'
+      ) {
+        try {
+          (screen.orientation as any).unlock();
+        } catch {
+          // Ignored
+        }
+      }
+      setIsFullscreen(false);
+      setIsPseudoFullscreen(false);
+      return;
+    }
+
+    // 2. Try native Fullscreen API first (Desktop / Android / iPad)
+    let enteredNative = false;
+    if (typeof requestFs === 'function') {
+      try {
+        await requestFs.call(el);
+        enteredNative = true;
+      } catch {
+        enteredNative = false;
+      }
+    }
+
+    // 3. Fallback for iPhone iOS Safari (where Fullscreen API is blocked on non-video DOM)
+    if (!enteredNative) {
+      setIsPseudoFullscreen(true);
+      setGuardDismissed(true);
+    }
+
+    // 4. Attempt landscape orientation lock if supported
+    if (
+      typeof screen !== 'undefined' &&
+      'orientation' in screen &&
+      typeof (screen.orientation as any).lock === 'function'
+    ) {
+      try {
+        await (screen.orientation as any).lock('landscape');
+      } catch {
+        // iOS blocks orientation lock; dismiss guard so button isn't a dead-end
+        setGuardDismissed(true);
+      }
+    } else {
+      setGuardDismissed(true);
     }
   };
 
@@ -155,10 +228,14 @@ export function BattleCompanion40k({
   const [bottomTrayOpen, setBottomTrayOpen] = useState<boolean>(false);
 
   const [battleRound, setBattleRound] = useState<number>(1);
-  const [activeSide, setActiveSide] = useState<'player' | 'opponent'>(settings.firstTurnSide);
+  const [activeSide, setActiveSide] = useState<'player' | 'opponent'>(
+    settings.firstTurnSide
+  );
   const [phaseIdx, setPhaseIdx] = useState<number>(0);
 
-  const [activeDoctrina, setActiveDoctrina] = useState<'Protector' | 'Conqueror'>('Protector');
+  const [activeDoctrina, setActiveDoctrina] = useState<'Protector' | 'Conqueror'>(
+    'Protector'
+  );
   const [activeCanticle, setActiveCanticle] = useState<string>('Shroudpsalm');
 
   const [p1Cp, setP1Cp] = useState<number>(settings.startingCp + 1);
@@ -175,7 +252,9 @@ export function BattleCompanion40k({
   const [p2Cp, setP2Cp] = useState<number>(settings.startingCp + 1);
   const [p2PrimaryVp, setP2PrimaryVp] = useState<number>(0);
   const [p2SecondaryVp, setP2SecondaryVp] = useState<number>(0);
-  const [p2Painted, setP2Painted] = useState<boolean>(settings.battleReadyPaintedOpponent);
+  const [p2Painted, setP2Painted] = useState<boolean>(
+    settings.battleReadyPaintedOpponent
+  );
   const [p2Secondaries, setP2Secondaries] = useState<SecondaryMissionCard[]>(
     opponentArmy.initialSecondaries ?? [
       { id: 'assassination', name: 'Assassination', maxVp: 5, scoredVp: 0 },
@@ -184,8 +263,12 @@ export function BattleCompanion40k({
   );
 
   const [clockRunning, setClockRunning] = useState<boolean>(false);
-  const [p1Seconds, setP1Seconds] = useState<number>(settings.clockMinutesPerPlayer * 60);
-  const [p2Seconds, setP2Seconds] = useState<number>(settings.clockMinutesPerPlayer * 60);
+  const [p1Seconds, setP1Seconds] = useState<number>(
+    settings.clockMinutesPerPlayer * 60
+  );
+  const [p2Seconds, setP2Seconds] = useState<number>(
+    settings.clockMinutesPerPlayer * 60
+  );
 
   useEffect(() => {
     setP1Seconds(settings.clockMinutesPerPlayer * 60);
@@ -248,9 +331,9 @@ export function BattleCompanion40k({
 
   const [swipeDir, setSwipeDir] = useState<number>(0);
   const [compareModalOpen, setCompareModalOpen] = useState<boolean>(false);
-  const [armyViewerModalSide, setArmyViewerModalSide] = useState<'player' | 'opponent' | null>(
-    null
-  );
+  const [armyViewerModalSide, setArmyViewerModalSide] = useState<
+    'player' | 'opponent' | null
+  >(null);
 
   const [battleLog, setBattleLog] = useState<string[]>([
     `11th Ed: ${settings.primaryMission} (${settings.deploymentMap})`,
@@ -339,7 +422,11 @@ export function BattleCompanion40k({
     }
   };
 
-  const handleScoreSecondary = (side: 'player' | 'opponent', cardId: string, pts: number) => {
+  const handleScoreSecondary = (
+    side: 'player' | 'opponent',
+    cardId: string,
+    pts: number
+  ) => {
     if (side === 'player') {
       const target = p1Secondaries.find((c) => c.id === cardId);
       setP1SecondaryVp((v) => Math.min(40, v + pts));
@@ -371,7 +458,11 @@ export function BattleCompanion40k({
     }
   };
 
-  const adjustUnitWounds = (side: 'player' | 'opponent', unit: ParsedUnit, delta: number) => {
+  const adjustUnitWounds = (
+    side: 'player' | 'opponent',
+    unit: ParsedUnit,
+    delta: number
+  ) => {
     const key = `${side}:${unit.id}`;
     setUnitStatuses((prev) => {
       const cur = prev[key] ?? createInitialUnitStatus(unit);
@@ -381,7 +472,10 @@ export function BattleCompanion40k({
           ? 0
           : cur.maxModels === 1
             ? 1
-            : Math.min(cur.maxModels, Math.max(1, Math.ceil(nextWounds / cur.woundsPerModel)));
+            : Math.min(
+                cur.maxModels,
+                Math.max(1, Math.ceil(nextWounds / cur.woundsPerModel))
+              );
       const isNowDestroyed = nextWounds === 0;
       return {
         ...prev,
@@ -396,7 +490,11 @@ export function BattleCompanion40k({
     });
   };
 
-  const adjustUnitModels = (side: 'player' | 'opponent', unit: ParsedUnit, delta: number) => {
+  const adjustUnitModels = (
+    side: 'player' | 'opponent',
+    unit: ParsedUnit,
+    delta: number
+  ) => {
     const key = `${side}:${unit.id}`;
     setUnitStatuses((prev) => {
       const cur = prev[key] ?? createInitialUnitStatus(unit);
@@ -468,7 +566,8 @@ export function BattleCompanion40k({
   };
 
   const selectedPlayerUnit = playerArmy.units[playerUnitIndex] ?? playerArmy.units[0];
-  const selectedOpponentUnit = opponentArmy.units[opponentUnitIndex] ?? opponentArmy.units[0];
+  const selectedOpponentUnit =
+    opponentArmy.units[opponentUnitIndex] ?? opponentArmy.units[0];
 
   const activeInspectedUnit =
     inspectorSide === 'player' ? selectedPlayerUnit : selectedOpponentUnit;
@@ -616,13 +715,19 @@ export function BattleCompanion40k({
   ];
 
   return (
-    <Box className="gts-battle-hud">
-      <BattleLandscapeGuard
-        isFullscreen={isFullscreen}
-        onToggleFullscreen={handleToggleFullscreen}
-        onBack={onBack}
-        backLabel={backLabel}
-      />
+    <Box
+      className="gts-battle-hud"
+      data-pseudo-fullscreen={isPseudoFullscreen ? 'true' : undefined}
+    >
+      {!guardDismissed && (
+        <BattleLandscapeGuard
+          isFullscreen={effectiveFullscreen}
+          onToggleFullscreen={handleToggleFullscreen}
+          onDismissGuard={() => setGuardDismissed(true)}
+          onBack={onBack}
+          backLabel={backLabel}
+        />
+      )}
 
       <BattleTopBar
         battleRound={battleRound}
@@ -649,7 +754,7 @@ export function BattleCompanion40k({
         clockEnabled={settings.clockMode !== 'off'}
         clockRunning={clockRunning}
         onToggleClock={() => setClockRunning((r) => !r)}
-        isFullscreen={isFullscreen}
+        isFullscreen={effectiveFullscreen}
         onToggleFullscreen={handleToggleFullscreen}
         onOpenSettings={onOpenSettings}
         onBack={onBack}

@@ -1,3 +1,4 @@
+// packages/ui/components/game/Game40kSetupModal.tsx
 'use client';
 
 import {
@@ -14,7 +15,9 @@ import {
   Switch,
   Button,
   Divider,
+  ScrollArea,
 } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
 import {
   IconSettings,
   IconClock,
@@ -88,6 +91,8 @@ export interface Game40kSetupPanelProps {
   onSwapSides?: () => void;
   onStartOrResume?: () => void;
   ctaLabel?: string;
+  /** Hides the inner card title block when rendered inside a Modal that already renders a sticky header */
+  hideHeader?: boolean;
 }
 
 export function Game40kSetupPanel({
@@ -98,39 +103,73 @@ export function Game40kSetupPanel({
   onSwapSides,
   onStartOrResume,
   ctaLabel,
+  hideHeader = false,
 }: Game40kSetupPanelProps) {
   const t = useTranslations('BattleCompanion40k');
 
   return (
-    <Paper p={{ base: 'md', md: 'xl' }} radius="md" className="gts-contact-card">
+    <Paper
+      p={hideHeader ? { base: 'xs', sm: 'md' } : { base: 'md', md: 'xl' }}
+      radius="md"
+      className="gts-contact-card"
+    >
       <Stack gap="md">
-        <Group justify="space-between" align="center" wrap="wrap" gap="sm">
-          <Group gap="sm">
-            <IconSettings size={22} color="var(--gts-accent)" />
-            <div>
-              <Title order={4} className="brand-logo gts-army-title">
-                {t('setup.title')}
-              </Title>
-              <Text size="xs" c="dimmed">
-                {t('setup.subtitle')}
-              </Text>
-            </div>
+        {!hideHeader ? (
+          <>
+            <Group justify="space-between" align="flex-start" wrap="wrap" gap="sm">
+              <Group gap="sm" wrap="nowrap" miw={0} style={{ flex: 1 }}>
+                <IconSettings
+                  size={22}
+                  color="var(--gts-accent)"
+                  style={{ flexShrink: 0 }}
+                />
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <Title
+                    order={4}
+                    className="brand-logo gts-army-title"
+                    style={{ lineHeight: 1.25, wordBreak: 'break-word' }}
+                  >
+                    {t('setup.title')}
+                  </Title>
+                  <Text size="xs" c="dimmed" mt={2}>
+                    {t('setup.subtitle')}
+                  </Text>
+                </div>
+              </Group>
+
+              {onSwapSides && (
+                <Button
+                  size="xs"
+                  variant="outline"
+                  leftSection={<IconArrowsLeftRight size={14} />}
+                  className="brand-logo"
+                  onClick={onSwapSides}
+                >
+                  {t('setup.swapSides')}
+                </Button>
+              )}
+            </Group>
+
+            <Divider color="var(--gts-border-subtle)" />
+          </>
+        ) : (
+          <Group justify="space-between" align="center" wrap="wrap" gap="xs">
+            <Text size="xs" c="dimmed" style={{ flex: 1, minWidth: 180 }}>
+              {t('setup.subtitle')}
+            </Text>
+            {onSwapSides && (
+              <Button
+                size="xs"
+                variant="outline"
+                leftSection={<IconArrowsLeftRight size={14} />}
+                className="brand-logo"
+                onClick={onSwapSides}
+              >
+                {t('setup.swapSides')}
+              </Button>
+            )}
           </Group>
-
-          {onSwapSides && (
-            <Button
-              size="xs"
-              variant="outline"
-              leftSection={<IconArrowsLeftRight size={14} />}
-              className="brand-logo"
-              onClick={onSwapSides}
-            >
-              {t('setup.swapSides')}
-            </Button>
-          )}
-        </Group>
-
-        <Divider color="var(--gts-border-subtle)" />
+        )}
 
         <Grid gap="md">
           <Grid.Col span={{ base: 12, sm: 4 }}>
@@ -153,6 +192,7 @@ export function Game40kSetupPanel({
                 onChange({ ...settings, battleSize: bSize, pointsLimit: pts });
               }}
               classNames={inputClassNames}
+              comboboxProps={{ withinPortal: true, zIndex: 2200 }}
             />
           </Grid.Col>
 
@@ -165,6 +205,7 @@ export function Game40kSetupPanel({
                 onChange({ ...settings, primaryMission: val || 'Take and Hold' })
               }
               classNames={inputClassNames}
+              comboboxProps={{ withinPortal: true, zIndex: 2200 }}
             />
           </Grid.Col>
 
@@ -177,6 +218,7 @@ export function Game40kSetupPanel({
                 onChange({ ...settings, deploymentMap: val || 'Crucible of Battle' })
               }
               classNames={inputClassNames}
+              comboboxProps={{ withinPortal: true, zIndex: 2200 }}
             />
           </Grid.Col>
 
@@ -341,24 +383,36 @@ export function Game40kSetupModal({
   ...panelProps
 }: Game40kSetupPanelProps & { opened: boolean; onClose: () => void }) {
   const t = useTranslations('BattleCompanion40k');
+  const isMobileModal = useMediaQuery('(max-width: 48em), (max-height: 520px)');
 
   return (
     <Modal
       opened={opened}
       onClose={onClose}
       size="xl"
+      fullScreen={Boolean(isMobileModal)}
       centered
+      zIndex={2100}
+      scrollAreaComponent={ScrollArea.Autosize}
       title={
-        <Text fw={700} className="brand-logo">
-          {t('setup.modalTitle')}
-        </Text>
+        <Group gap="xs" wrap="nowrap">
+          <IconSettings size={18} color="var(--gts-accent)" />
+          <Text fw={700} className="brand-logo">
+            {t('setup.modalTitle')}
+          </Text>
+        </Group>
       }
       classNames={{
         content: 'gts-modal-content',
         header: 'gts-modal-header',
+        close: 'gts-modal-close',
       }}
     >
-      <Game40kSetupPanel {...panelProps} onStartOrResume={onClose} />
+      <Game40kSetupPanel
+        {...panelProps}
+        hideHeader={true}
+        onStartOrResume={onClose}
+      />
     </Modal>
   );
 }

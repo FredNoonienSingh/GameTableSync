@@ -1,7 +1,7 @@
 // packages/ui/components/game/battle-hud/BattleLandscapeGuard.tsx
 'use client';
 
-import { Badge, Title, Text, Button } from '@mantine/core';
+import { Badge, Title, Text, Button, Group } from '@mantine/core';
 import {
   IconDeviceMobileRotated,
   IconMaximize,
@@ -13,6 +13,7 @@ import { useTranslations } from 'next-intl';
 export interface BattleLandscapeGuardProps {
   isFullscreen: boolean;
   onToggleFullscreen: () => void;
+  onDismissGuard?: () => void;
   onBack?: () => void;
   backLabel?: string;
 }
@@ -20,6 +21,7 @@ export interface BattleLandscapeGuardProps {
 export function BattleLandscapeGuard({
   isFullscreen,
   onToggleFullscreen,
+  onDismissGuard,
   onBack,
   backLabel,
 }: BattleLandscapeGuardProps) {
@@ -42,20 +44,25 @@ export function BattleLandscapeGuard({
         variant="default"
         leftSection={isFullscreen ? <IconMinimize size={18} /> : <IconMaximize size={18} />}
         className="brand-logo gts-game-cta-join"
-        onClick={onToggleFullscreen}
+        onClick={() => {
+          onToggleFullscreen();
+          onDismissGuard?.();
+        }}
       >
         {t('landscape.lockBtn')}
       </Button>
-      {onBack && (
-        <Button
-          variant="subtle"
-          size="xs"
-          leftSection={<IconArrowLeft size={14} />}
-          onClick={onBack}
-        >
-          {backLabel || t('back')}
-        </Button>
-      )}
+      <Group gap="xs" justify="center">
+        {onBack && (
+          <Button
+            variant="subtle"
+            size="xs"
+            leftSection={<IconArrowLeft size={14} />}
+            onClick={onBack}
+          >
+            {backLabel || t('back')}
+          </Button>
+        )}
+      </Group>
     </div>
   );
 }

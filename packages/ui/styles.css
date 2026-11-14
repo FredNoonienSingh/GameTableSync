@@ -73,7 +73,7 @@
 
 /* ==========================================================================
    LIGHT MODE GLOBAL SAFETY OVERRIDES
-   Automatically flips leftover  , c="gray.3/4" & dark Paper backgrounds
+   Automatically flips leftover, c="gray.3/4" & dark Paper backgrounds
    ========================================================================== */
 [data-mantine-color-scheme="light"] .mantine-Paper-root {
   --paper-bg: var(--gts-bg-card) !important;
@@ -236,47 +236,92 @@
 }
 
 /* ==========================================================================
-   6. LOGIN MODAL
+   6. MODALS (MODERNIZED TO GTS VISUAL LANGUAGE + OPAQUE STICKY HEADER)
    ========================================================================== */
 .gts-modal-content {
   background-color: var(--gts-bg-modal);
   color: var(--gts-text-heading);
-  border: 1px solid var(--gts-border-modal);
+  border: 1px solid var(--gts-border-subtle);
+  border-top: 3px solid var(--gts-primary);
+  box-shadow: var(--gts-shadow-card), 0 0 24px color-mix(in srgb, var(--gts-primary) 15%, transparent);
+  backdrop-filter: blur(12px);
 }
 
 .gts-modal-header {
-  background-color: var(--gts-bg-modal);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: var(--gts-bg-modal) !important;
   color: var(--gts-text-heading);
+  border-bottom: 1px solid var(--gts-border-faint);
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
 }
 
 .gts-modal-title {
-  font-family: var(--gts-font-impact);
-  letter-spacing: 0.05em;
-  font-size: 1.25rem;
-}
-
-.gts-modal-close {
+  font-family: var(--gts-font-brand);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-size: 1.1rem;
   color: var(--gts-text-heading);
 }
 
+.gts-modal-close {
+  color: var(--gts-text-secondary);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
 .gts-modal-close:hover {
-  background-color: var(--gts-danger);
-  color: #ffffff;
+  background-color: color-mix(in srgb, var(--gts-danger) 20%, transparent);
+  color: var(--gts-danger);
 }
 
 .gts-input-field {
   background-color: var(--gts-bg-input);
   color: var(--gts-text-heading);
-  border-color: var(--gts-border-modal);
+  border-color: var(--gts-border-subtle);
+  transition: border-color 0.15s ease;
+}
+
+.gts-input-field:focus,
+.gts-input-field:focus-within {
+  border-color: var(--gts-accent);
 }
 
 .gts-input-label {
+  color: var(--gts-text-secondary);
+  font-family: var(--gts-font-brand);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.gts-modal-submit-btn,
+.gts-modal-submit-btn[data-variant] {
+  background-color: color-mix(in srgb, var(--gts-primary) 18%, transparent);
+  border: 1px solid var(--gts-primary);
   color: var(--gts-text-heading);
+  transition: background-color 0.18s ease, box-shadow 0.18s ease, transform 0.15s ease;
+}
+
+.gts-modal-submit-btn:hover,
+.gts-modal-submit-btn[data-variant]:hover {
+  background-color: color-mix(in srgb, var(--gts-primary) 30%, transparent);
+  border-color: var(--gts-accent);
+  color: var(--gts-text-heading);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--gts-primary) 35%, transparent);
+  transform: translateY(-1px);
 }
 
 .gts-modal-toggle-link {
   cursor: pointer;
+  color: var(--gts-text-secondary);
   text-decoration: underline;
+  transition: color 0.15s ease;
+}
+
+.gts-modal-toggle-link:hover {
+  color: var(--gts-accent);
 }
 
 /* ==========================================================================
@@ -653,7 +698,7 @@
 }
 
 /* ==========================================================================
-   11. CONTACT FORM
+   11. CONTACT FORM & SETUP CARDS
    ========================================================================== */
 .gts-contact-section {
   position: relative;
@@ -701,6 +746,7 @@
 }
 
 .gts-contact-card {
+  position: relative;
   background-color: var(--gts-bg-card);
   border: 1px solid color-mix(in srgb, var(--gts-primary) 25%, transparent);
   border-top: 3px solid var(--gts-primary);
@@ -1594,7 +1640,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  zIndex: 2;
+  z-index: 2;
   box-shadow: 0 0 10px color-mix(in srgb, var(--gfx-primary) 60%, transparent);
 }
 
@@ -1659,37 +1705,6 @@
 }
 
 /* ==========================================================================
-   18. DYNAMIC LANGUAGE SWITCHER
-   ========================================================================== */
-.gts-lang-trigger {
-  height: 36px;
-  padding: 0 10px;
-  border-radius: 8px;
-  background-color: var(--gts-bg-glass-subtle);
-  border: 1px solid var(--gts-border-subtle);
-  color: var(--gts-text-heading);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
-}
-
-.gts-lang-trigger:hover {
-  background-color: color-mix(in srgb, var(--gts-primary) 18%, transparent);
-  border-color: var(--gts-primary);
-  transform: translateY(-1px);
-}
-
-.gts-lang-item-active {
-  background-color: color-mix(in srgb, var(--gts-primary) 22%, transparent);
-  color: var(--gts-accent);
-  font-weight: 700;
-}
-
-/* ==========================================================================
    17. PLAYER FREE CALLOUT BUTTON & TIER FORTIFICATION GRAPHICS
    ========================================================================== */
 .gts-player-free-btn,
@@ -1735,88 +1750,34 @@
 }
 
 /* ==========================================================================
-   6. LOGIN MODAL (MODERNIZED TO GTS VISUAL LANGUAGE)
+   18. DYNAMIC LANGUAGE SWITCHER
    ========================================================================== */
-.gts-modal-content {
-  background-color: var(--gts-bg-modal);
-  color: var(--gts-text-heading);
+.gts-lang-trigger {
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background-color: var(--gts-bg-glass-subtle);
   border: 1px solid var(--gts-border-subtle);
-  border-top: 3px solid var(--gts-primary);
-  box-shadow: var(--gts-shadow-card), 0 0 24px color-mix(in srgb, var(--gts-primary) 15%, transparent);
-  backdrop-filter: blur(12px);
-}
-
-.gts-modal-header {
-  background-color: transparent;
   color: var(--gts-text-heading);
-  border-bottom: 1px solid var(--gts-border-faint);
-  padding-bottom: 0.75rem;
-}
-
-.gts-modal-title {
-  font-family: var(--gts-font-brand);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.06em;
-  font-size: 1.1rem;
-  color: var(--gts-text-heading);
+  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
 }
 
-.gts-modal-close {
-  color: var(--gts-text-secondary);
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.gts-modal-close:hover {
-  background-color: color-mix(in srgb, var(--gts-danger) 20%, transparent);
-  color: var(--gts-danger);
-}
-
-.gts-input-field {
-  background-color: var(--gts-bg-input);
-  color: var(--gts-text-heading);
-  border-color: var(--gts-border-subtle);
-  transition: border-color 0.15s ease;
-}
-
-.gts-input-field:focus,
-.gts-input-field:focus-within {
-  border-color: var(--gts-accent);
-}
-
-.gts-input-label {
-  color: var(--gts-text-secondary);
-  font-family: var(--gts-font-brand);
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-  margin-bottom: 4px;
-}
-
-.gts-modal-submit-btn,
-.gts-modal-submit-btn[data-variant] {
+.gts-lang-trigger:hover {
   background-color: color-mix(in srgb, var(--gts-primary) 18%, transparent);
-  border: 1px solid var(--gts-primary);
-  color: var(--gts-text-heading);
-  transition: background-color 0.18s ease, box-shadow 0.18s ease, transform 0.15s ease;
-}
-
-.gts-modal-submit-btn:hover,
-.gts-modal-submit-btn[data-variant]:hover {
-  background-color: color-mix(in srgb, var(--gts-primary) 30%, transparent);
-  border-color: var(--gts-accent);
-  color: var(--gts-text-heading);
-  box-shadow: 0 0 18px color-mix(in srgb, var(--gts-primary) 35%, transparent);
+  border-color: var(--gts-primary);
   transform: translateY(-1px);
 }
 
-.gts-modal-toggle-link {
-  cursor: pointer;
-  color: var(--gts-text-secondary);
-  text-decoration: underline;
-  transition: color 0.15s ease;
-}
-
-.gts-modal-toggle-link:hover {
+.gts-lang-item-active {
+  background-color: color-mix(in srgb, var(--gts-primary) 22%, transparent);
   color: var(--gts-accent);
+  font-weight: 700;
 }
 
 /* ==========================================================================
@@ -1848,6 +1809,7 @@
 }
 
 .gts-army-title {
+  position: static;
   letter-spacing: 0.05em;
   color: var(--gts-text-heading);
 }
@@ -2386,6 +2348,21 @@
   padding: 6px 10px;
   box-sizing: border-box;
   font-variant-numeric: tabular-nums;
+}
+
+/* iPhone / iOS Safari Pseudo-Fullscreen Lock (covers fixed navbars & safe-area) */
+.gts-battle-hud[data-pseudo-fullscreen="true"] {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100dvw !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  z-index: 2000 !important;
+  background-color: var(--gts-bg-canvas);
+  padding-top: max(6px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(6px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(10px, env(safe-area-inset-left, 0px));
+  padding-right: max(10px, env(safe-area-inset-right, 0px));
 }
 
 /* --- Portrait Orientation Lock Overlay (Phones in Portrait) --- */
