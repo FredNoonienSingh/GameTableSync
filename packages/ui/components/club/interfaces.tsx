@@ -3,8 +3,7 @@ import {UUID, AvatarResource, Player, Tournament} from '@gts/ui';
 export enum Subscription{
     OUTPOST="OUTPOST",
     STRONGHOLD="STRONGHOLD",
-    CITADEL="CITADEL"
-    FORT
+    CITADEL="CITADEL",
 }
 
 export interface Table{
