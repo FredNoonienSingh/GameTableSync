@@ -75,9 +75,17 @@ export function LoginModal({
       }}
     >
       <form onSubmit={handleSubmit}>
-        <Stack gap="md">
-          {displayError && <Text c="red" fw={700} ta="center">{displayError}</Text>}
-          {successMsg && <Text c="green" fw={700} ta="center">{successMsg}</Text>}
+        <Stack gap="md" pt="sm">
+          {displayError && (
+            <Text c="red.5" fw={700} size="sm" ta="center">
+              {displayError}
+            </Text>
+          )}
+          {successMsg && (
+            <Text c="teal.4" fw={700} size="sm" ta="center">
+              {successMsg}
+            </Text>
+          )}
 
           {isRegister && (
             <>
@@ -128,18 +136,18 @@ export function LoginModal({
 
           <Button
             type="submit"
+            variant="default"
             loading={isLoading}
             fullWidth
-            color="red"
+            mt="xs"
             leftSection={isRegister ? <IconUserPlus size={18} /> : <IconShieldLock size={18} />}
-            className="impact-font"
+            className="brand-logo gts-modal-submit-btn"
           >
             {isRegister ? 'REGISTRIEREN' : 'ANMELDEN'}
           </Button>
 
           <Text
             size="xs"
-            c="gray.4"
             ta="center"
             className="gts-modal-toggle-link"
             onClick={() => {
@@ -147,7 +155,9 @@ export function LoginModal({
               setLocalError('');
             }}
           >
-            {isRegister ? 'Bereits einen Account? Hier einloggen.' : 'Noch kein Account? Hier registrieren.'}
+            {isRegister
+              ? 'Bereits einen Account? Hier einloggen.'
+              : 'Noch kein Account? Hier registrieren.'}
           </Text>
         </Stack>
       </form>

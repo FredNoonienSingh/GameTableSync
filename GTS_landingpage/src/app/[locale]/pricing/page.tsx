@@ -108,7 +108,7 @@ export default function PricingPage() {
           )}
         </Stack>
 
-        {/* 1. Free Forever for Players Callout Banner */}
+        {/* 1. Free Forever for Players Callout Banner 
         <Paper
           p={{ base: 'lg', sm: 'xl' }}
           radius="md"
@@ -122,7 +122,7 @@ export default function PricingPage() {
           }}
         >
           <Grid align="center" gap="xl">
-            <Grid.Col span={{ base: 12, md: 8 }}>
+            <Grid span={{ base: 12, md: 8 }}>
               <Stack gap="xs">
                 <Group gap="xs">
                   <ThemeIcon
@@ -148,8 +148,8 @@ export default function PricingPage() {
                   {t('playerFree.description')}
                 </Text>
               </Stack>
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, md: 4 }} style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            </Grid>
+            <Grid>
               <Button
                 component="a"
                 href={`/${locale}/players`}
@@ -175,9 +175,10 @@ export default function PricingPage() {
               >
                 {t('playerFree.cta')}
               </Button>
-            </Grid.Col>
+            </Grid>
           </Grid>
         </Paper>
+        */}
 
         {/* 2. Four Club/Store Pricing Tiers: Outpost, Stronghold, Citadel, Fortress of Terra */}
         <Grid gap="lg" align="stretch">

@@ -4,6 +4,12 @@
     "players": "Players",
     "pricing": "Pricing",
     "cta": "Demo"
+  },
+  "playerFree": {
+    "badge": "PLAYER PROMISE",
+    "title": "FREE FOR PLAYERS FOREVER – ACROSS THE ENTIRE UNIVERSE",
+    "description": "GameTableSync costs individual players nothing—not today, not tomorrow, and not even in the 41st Millennium. Army list viewers, digital RPG character sheets, the live TCG companion, and your global ELO profile remain free forever.",
+    "cta": "GO TO PLAYER PAGE"
   }, 
   "OrganizersPage": {
     "badge": "B2B CLUB & STORE ENGINE",

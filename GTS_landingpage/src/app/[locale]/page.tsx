@@ -1,4 +1,18 @@
+'use client';
+
 import { useTranslations, useLocale } from 'next-intl';
+import {
+  Paper,
+  ThemeIcon,
+  Grid,
+  Group,
+  Stack,
+  Title,
+  Text,
+  Badge,
+  Button,
+  Container
+} from '@mantine/core';
 import {
   IconCalendarEvent,
   IconBrandDiscord,
@@ -12,33 +26,40 @@ import {
   IconDeviceMobile,
   IconAward,
   IconFeather,
+  IconSparkles,
+  IconArrowRight
 } from '@tabler/icons-react';
-import { AnimatedBackground } from '@gts/ui';
-import { Section } from '@gts/ui';
-import { SubSection } from '@gts/ui';
-import { BrandHeader } from '@gts/ui';
-import { LaunchCountdown } from '@gts/ui';
-import { ContactForm } from '@gts/ui';
-import { Footer } from '@gts/ui';
-import { LandingNavbar } from '@gts/ui';
+import {
+  AnimatedBackground,
+  Section,
+  SubSection,
+  BrandHeader,
+  LaunchCountdown,
+  ContactForm,
+  Footer,
+  LandingNavbar,
+  CommandHubGraphic,
+  FallingD6Graphic,
+  RotatingD20Graphic,
+  FanningCardsGraphic,
+} from '@gts/ui';
 
 export default function HomePage() {
   const t = useTranslations('HomePage');
-  const tFooter = useTranslations('Common.footer');
-  const locale = useLocale(); // Grabs 'de' or 'en' from the URL automatically
+  const tCommon = useTranslations('Common');
+  const locale = useLocale();
 
   return (
     <main style={{ position: 'relative', overflowX: 'hidden' }}>
-      <LandingNavbar/>
+      <LandingNavbar />
       <AnimatedBackground />
 
       {/* 1. Intro Section with Shimmering Logo & Countdown */}
       <Section
-        variant="intro"
         badge={t('intro.badge')}
         title={t('intro.title')}
         description={t('intro.subtitle')}
-        headerSlot={<BrandHeader/>}
+        headerSlot={<BrandHeader />}
       >
         <LaunchCountdown
           labels={{
@@ -50,14 +71,87 @@ export default function HomePage() {
           }}
         />
       </Section>
+      <Container size="xl" py={{ base: 40, md: 70 }} style={{ flex: 1, position: 'relative', zIndex: 2 }}>
+
+        {/* 1. Free Forever for Players Callout Banner */}
+        <Paper
+          p={{ base: 'lg', sm: 'xl' }}
+          radius="md"
+          mb={{ base: 40, md: 60 }}
+          style={{
+            backgroundColor: 'rgba(15, 16, 12, 0.9)',
+            border: '1px solid rgba(41, 212, 255, 0.35)',
+            borderLeft: '4px solid #29d4ff',
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(41, 212, 255, 0.1)',
+            backdropFilter: 'blur(8px)',
+          }}
+        >
+          <Grid align="center" gap="xl">
+            <Grid>
+              <Stack gap="xs">
+                <Group gap="xs">
+                  <ThemeIcon
+                    size="md"
+                    radius="sm"
+                    style={{ backgroundColor: 'rgba(41, 212, 255, 0.15)', color: '#29d4ff' }}
+                  >
+                    <IconSparkles size={16} />
+                  </ThemeIcon>
+                  <Badge color="cyan" variant="outline" size="sm">
+                    {tCommon('playerFree.badge')}
+                  </Badge>
+                </Group>
+                <Title
+                  order={3}
+
+                  className="brand-logo"
+                  style={{ fontSize: 'clamp(1.15rem, 2.5vw, 1.5rem)' }}
+                >
+                  {tCommon('playerFree.title')}
+                </Title>
+                <Text size="sm" c="gray.3" lh={1.6}>
+                  {tCommon('playerFree.description')}
+                </Text>
+              </Stack>
+            </Grid>
+            <Grid>
+              <Button
+                component="a"
+                href={`/${locale}/players`}
+                size="lg"
+                radius="md"
+                fullWidth
+                rightSection={<IconArrowRight size={18} />}
+                className="brand-logo"
+                styles={{
+                  root: {
+                    backgroundColor: 'rgba(41, 212, 255, 0.15)',
+                    border: '1px solid #29d4ff',
+                    color: '#fff',
+                    height: 'auto',
+                    minHeight: '3rem',
+                    padding: '0.6rem 1rem',
+                  },
+                  label: {
+                    whiteSpace: 'normal',
+                    textAlign: 'center',
+                  },
+                }}
+              >
+                {tCommon('playerFree.cta')}
+              </Button>
+            </Grid>
+          </Grid>
+        </Paper>
+      </Container>
 
       {/* 2. General Core Engine Section */}
       <Section
         id="general"
-        variant="hub"
         badge={t('general.badge')}
         title={t('general.title')}
         description={t('general.description')}
+        graphicSlot={(progress) => <CommandHubGraphic progress={progress} />}
       >
         <SubSection
           icon={<IconCalendarEvent size={20} />}
@@ -79,11 +173,11 @@ export default function HomePage() {
       {/* 3. Tabletop Section (Reversed for alternating flow) */}
       <Section
         id="tabletop"
-        variant="d6"
         reverse
         badge={t('tabletop.badge')}
         title={t('tabletop.title')}
         description={t('tabletop.description')}
+        graphicSlot={(progress) => <FallingD6Graphic progress={progress} />}
       >
         <SubSection
           icon={<IconSwords size={20} />}
@@ -105,10 +199,10 @@ export default function HomePage() {
       {/* 4. RPG Section */}
       <Section
         id="rpg"
-        variant="d20"
         badge={t('rpg.badge')}
         title={t('rpg.title')}
         description={t('rpg.description')}
+        graphicSlot={(progress) => <RotatingD20Graphic progress={progress} />}
       >
         <SubSection
           icon={<IconUserScan size={20} />}
@@ -130,11 +224,11 @@ export default function HomePage() {
       {/* 5. TCG Section (Reversed) */}
       <Section
         id="tcg"
-        variant="tcg"
         reverse
         badge={t('tcg.badge')}
         title={t('tcg.title')}
         description={t('tcg.description')}
+        graphicSlot={(progress) => <FanningCardsGraphic progress={progress} />}
       >
         <SubSection
           icon={<IconCards size={20} />}
@@ -171,10 +265,10 @@ export default function HomePage() {
         privacyHref={`/${locale}/privacy`}
         termsHref={`/${locale}/terms`}
         labels={{
-          rights: tFooter('copyright'),
-          imprint: tFooter('imprint'),
-          privacy: tFooter('privacy'),
-          terms: tFooter('terms'),
+          rights: tCommon('footer.copyright'),
+          imprint: tCommon('footer.imprint'),
+          privacy: tCommon('footer.privacy'),
+          terms: tCommon('footer.terms'),
         }}
       />
     </main>

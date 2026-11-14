@@ -1,6 +1,6 @@
 'use client';
 
-import { Paper, Group, Badge, Text, Stack, Button, Grid, Box } from '@mantine/core';
+import { Paper, Group, Badge, Text, Stack, Button, Box } from '@mantine/core';
 import {
   IconClock,
   IconShield,
@@ -63,6 +63,7 @@ export function GameCard({
 
   // --- TEAM SPLIT (1v1 & 2v2) ---
   const is2v2 = game.format_type === '2v2';
+  const maxPerSide = is2v2 ? 2 : 1;
 
   let team1Players: UIPlayer[] = [];
   let team2Players: UIPlayer[] = [];
@@ -82,35 +83,45 @@ export function GameCard({
     if (game.players.length > 1) team2Players.push(game.players[1]);
   }
 
+  const team1EmptyCount = Math.max(0, maxPerSide - team1Players.length);
+  const team2EmptyCount = Math.max(0, maxPerSide - team2Players.length);
+
   const renderPlayerSlot = (p: UIPlayer, alignRight = false) => {
     const isMe = p.user_id === currentUserId;
     return (
-      <Stack key={p.user_id} gap={2} align={alignRight ? 'flex-end' : 'flex-start'}>
-        <Group
-          gap={6}
-          wrap="nowrap"
-          className={alignRight ? 'gts-game-player-row-right' : undefined}
-        >
+      <div key={p.user_id} className="gts-game-player-slot">
+        <div className={alignRight ? 'gts-game-player-row-right' : 'gts-game-player-row'}>
           <IconShield
-            size={16}
+            size={15}
             className={isMe ? 'gts-game-player-icon-me' : 'gts-game-player-icon'}
           />
-          <Text   fw={700} size="sm" lineClamp={1}>
+          <span className="gts-game-player-name" title={p.display_name}>
             {p.display_name}
-          </Text>
-        </Group>
+          </span>
+        </div>
         <Text
           c={isMe ? 'brandCyan.4' : 'gray.4'}
           size="xs"
           fw={600}
           ta={alignRight ? 'right' : 'left'}
           className={alignRight ? 'gts-game-army-right' : 'gts-game-army-left'}
+          title={p.army || 'Unbekannt'}
         >
           {p.army || 'Unbekannt'}
         </Text>
-      </Stack>
+      </div>
     );
   };
+
+  const renderEmptySlot = (idx: number, alignRight = false) => (
+    <div
+      key={`empty-${idx}`}
+      className="gts-game-empty-slot"
+      style={{ textAlign: alignRight ? 'right' : 'left' }}
+    >
+      OFFENER SLOT
+    </div>
+  );
 
   return (
     <Paper
@@ -120,99 +131,99 @@ export function GameCard({
       data-matched={isMatched ? 'true' : undefined}
       data-pending={!isApproved ? 'true' : undefined}
     >
-      <Stack gap="sm">
-        <Group justify="space-between" wrap="wrap">
-          <Badge variant="outline" size="md" className="brand-logo gts-game-badge">
+      <Stack gap="xs">
+        {/* Top bar: Status Badge + Date/Time */}
+        <div className="gts-game-header-bar">
+          <Badge variant="outline" size="sm" className="brand-logo gts-game-badge">
             {!isApproved
               ? 'AUSSTEHEND'
               : isMatched
                 ? 'MATCHED (LOCK)'
-                : 'OFFENE HERAUSFORDERUNG'}
+                : 'HERAUSFORDERUNG'}
           </Badge>
 
-          <Group gap={6} c="gray.4">
-            <IconClock size={15} />
-            <Text size="xs" fw={600}>
+          <Group gap={5} wrap="nowrap" className="gts-game-time">
+            <IconClock size={14} />
+            <span>
               {gameDate.toLocaleDateString('de-DE')} •{' '}
               {gameDate.toLocaleTimeString('de-DE', {
                 hour: '2-digit',
                 minute: '2-digit',
               })}{' '}
               Uhr
-            </Text>
+            </span>
           </Group>
-        </Group>
+        </div>
 
-        <Group justify="space-between" align="center" wrap="wrap" gap="xs">
-          <Text fw={700}   className="brand-logo gts-game-system-title">
-            {game.system}
-          </Text>
+        {/* Game System Title */}
+        <Text fw={700} className="brand-logo gts-game-system-title" title={game.system}>
+          {game.system}
+        </Text>
 
-          <Group gap={6}>
-            <Badge
-              size="xs"
-              variant="outline"
-              className="gts-game-meta-tag"
-              leftSection={
-                isVirtual ? <IconDeviceDesktop size={11} /> : <IconBuilding size={11} />
-              }
-            >
-              {isVirtual ? 'REMOTE' : 'VOR ORT'}
+        {/* Meta Pills Row */}
+        <Group gap={6} wrap="wrap">
+          <Badge
+            size="xs"
+            variant="outline"
+            className="gts-game-meta-tag"
+            leftSection={
+              isVirtual ? <IconDeviceDesktop size={11} /> : <IconBuilding size={11} />
+            }
+          >
+            {isVirtual ? 'REMOTE' : 'VOR ORT'}
+          </Badge>
+          {game.format_type && (
+            <Badge size="xs" variant="outline" className="gts-game-meta-tag">
+              {game.format_type}
             </Badge>
-            {game.format_type && (
-              <Badge size="xs" variant="outline" className="gts-game-meta-tag">
-                {game.format_type}
-              </Badge>
-            )}
-            {game.points && (
-              <Badge size="xs" variant="outline" className="gts-game-meta-tag">
-                {game.points} PTS
-              </Badge>
-            )}
-          </Group>
+          )}
+          {game.points && (
+            <Badge size="xs" variant="outline" className="gts-game-meta-tag">
+              {game.points} PTS
+            </Badge>
+          )}
         </Group>
       </Stack>
 
+      {/* Matchup Arena Box: 3-Column Strict CSS Grid */}
       <Box p="sm" my="md" className="gts-game-arena-box">
-        <Grid align="center" gap="xs">
-          <Grid.Col span={5}>
-            <Stack gap="sm">
-              <Text c="gray.5" fw={700} className="brand-logo gts-game-team-header">
-                TEAM 1
-              </Text>
-              {team1Players.map((p) => renderPlayerSlot(p, false))}
-            </Stack>
-          </Grid.Col>
+        {/* Team 1 Column */}
+        <div className="gts-game-team-col">
+          <Text fw={700} className="brand-logo gts-game-team-header">
+            TEAM 1
+          </Text>
+          {team1Players.map((p) => renderPlayerSlot(p, false))}
+          {Array.from({ length: team1EmptyCount }).map((_, i) =>
+            renderEmptySlot(i, false)
+          )}
+        </div>
 
-          <Grid.Col span={2}>
-            <Stack align="center" justify="center" gap={2}>
-              <IconSwords size={20} className="gts-game-vs-icon" />
-              <Text className="brand-logo gts-game-vs-text">VS</Text>
-            </Stack>
-          </Grid.Col>
+        {/* Center VS Column */}
+        <div className="gts-game-vs-col">
+          <IconSwords size={20} className="gts-game-vs-icon" />
+          <Text className="brand-logo gts-game-vs-text">VS</Text>
+        </div>
 
-          <Grid.Col span={5}>
-            <Stack gap="sm" align="flex-end">
-              <Text
-                c="gray.5"
-                fw={700}
-                ta="right"
-                className="brand-logo gts-game-team-header"
-              >
-                TEAM 2
-              </Text>
-              {team2Players.map((p) => renderPlayerSlot(p, true))}
-            </Stack>
-          </Grid.Col>
-        </Grid>
+        {/* Team 2 Column */}
+        <div className="gts-game-team-col-right">
+          <Text fw={700} className="brand-logo gts-game-team-header">
+            TEAM 2
+          </Text>
+          {team2Players.map((p) => renderPlayerSlot(p, true))}
+          {Array.from({ length: team2EmptyCount }).map((_, i) =>
+            renderEmptySlot(i, true)
+          )}
+        </div>
       </Box>
 
+      {/* Bottom Action CTA */}
       {isAuthenticated && (
         <Stack gap="xs" mt="auto">
           {!isMatched && !userIsInGame && onJoinClick && (
             <Button
               fullWidth
               radius="md"
+              variant="default"
               leftSection={<IconSwords size={18} />}
               className="brand-logo gts-game-cta-join"
               onClick={() => onJoinClick(game.id)}

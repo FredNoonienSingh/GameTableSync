@@ -1,4 +1,3 @@
-import PrivacyPage from '@/app/[locale]/privacy/page';
 import { getRequestConfig } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
@@ -10,7 +9,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   const [intro, features, subpages, 
       pricing ,common, imprint, 
-      privacy, terms] = await Promise.all([
+      privacy, terms, PlayersPage, BattleCompanion40k] = await Promise.all([
     import(`../../messages/${locale}/intro.json`),
     import(`../../messages/${locale}/features.json`),
     import(`../../messages/${locale}/subpages.json`),
@@ -19,6 +18,8 @@ export default getRequestConfig(async ({ requestLocale }) => {
     import(`../../messages/${locale}/legal/imprint.json`),
     import(`../../messages/${locale}/legal/privacy.json`),
     import(`../../messages/${locale}/legal/terms.json`),
+    import(`../../messages/${locale}/PlayersPage.json`),
+    import(`../../messages/${locale}/BattleCompanion40k.json`)
   ]);
 
   return {
@@ -44,6 +45,12 @@ export default getRequestConfig(async ({ requestLocale }) => {
       Common: {
         ...common.default,
       },
+      PlayersPage: {
+        ...PlayersPage.default,
+      },
+      BattleCompanion40k: {
+        ...BattleCompanion40k.default,
+      }
     },
   };
 });

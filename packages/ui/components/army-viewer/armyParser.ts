@@ -1,8 +1,12 @@
+// packages/ui/components/army-viewer/armyParser.ts
+
 export interface ArmyMetadata {
   name: string;
   system: string;
   faction: string;
   detachment?: string;
+  forceDisposition?: string;
+  detachmentPoints?: number;
   points: number;
   points_limit?: number;
   raw_system?: string;
@@ -44,6 +48,7 @@ export interface ParsedUnit {
   modelsText: string;
   wargearText: string;
   totalModels: number;
+  totalWounds: number;
   leadsNames: string[];
   ledByNames: string[];
   keywords: string[];
@@ -115,7 +120,11 @@ const getSpecialUpgrades = (unit: any) => {
 
   const walk = (sels: any[] = []) => {
     sels.forEach((s) => {
-      if (s.name === 'Warlord' || s.name === 'General' || s.categories?.some((c: any) => c.name === 'Warlord')) {
+      if (
+        s.name === 'Warlord' ||
+        s.name === 'General' ||
+        s.categories?.some((c: any) => c.name === 'Warlord' || c.name === 'Supreme Commander')
+      ) {
         isWarlord = true;
       }
       const grp = (s.group || '').toLowerCase();
@@ -138,14 +147,37 @@ const getSpecialUpgrades = (unit: any) => {
   return { isWarlord, badges };
 };
 
+const extractWoundsFromProfiles = (profiles: any[] = []): number | null => {
+  for (const p of profiles) {
+    const tName = (p.typeName || '').toLowerCase().trim();
+    if (tName === 'unit' || tName === 'model' || tName === 'profile' || tName === 'vehicle') {
+      const wChar = (p.characteristics || []).find(
+        (c: any) => c.name === 'W' || c.name === 'Wounds'
+      );
+      if (wChar && wChar.$text !== undefined) {
+        const parsed = parseInt(String(wChar.$text), 10);
+        if (!Number.isNaN(parsed) && parsed > 0) return parsed;
+      }
+    }
+  }
+  return null;
+};
+
 const getModelBreakdown = (unit: any) => {
   const subModels = (unit.selections || []).filter((s: any) => s.type === 'model');
   const commandUpgrades = (unit.selections || []).filter(
     (s: any) => s.type === 'upgrade' && s.group === 'Command'
   );
+  const unitDefaultWounds = extractWoundsFromProfiles(unit.profiles) ?? 1;
 
   if (subModels.length > 0) {
     const totalModels = subModels.reduce((acc: number, m: any) => acc + (m.number || 1), 0);
+    const totalWounds = subModels.reduce((acc: number, m: any) => {
+      const count = m.number || 1;
+      const mWounds = extractWoundsFromProfiles(m.profiles) ?? unitDefaultWounds;
+      return acc + count * mWounds;
+    }, 0);
+
     const modelParts = subModels.map((m: any) => `${m.number || 1}x ${m.name}`);
     if (commandUpgrades.length > 0) {
       modelParts.push(`Command: ${commandUpgrades.map((c: any) => c.name).join(', ')}`);
@@ -153,13 +185,19 @@ const getModelBreakdown = (unit: any) => {
     const modelsText = modelParts.join(', ');
 
     const gearCounts = new Map<string, number>();
-    subModels.forEach((m: any) => {
-      (m.selections || []).forEach((g: any) => {
-        gearCounts.set(g.name, (gearCounts.get(g.name) || 0) + (g.number || 1));
+    const collectGear = (sels: any[] = []) => {
+      sels.forEach((g: any) => {
+        if (g.selections && g.selections.length > 0 && (!g.profiles || g.profiles.length === 0)) {
+          collectGear(g.selections);
+        } else {
+          gearCounts.set(g.name, (gearCounts.get(g.name) || 0) + (g.number || 1));
+        }
       });
-    });
+    };
+
+    subModels.forEach((m: any) => collectGear(m.selections));
     (unit.selections || []).forEach((u: any) => {
-      if (u.type === 'upgrade' && u.group !== 'Command' && u.name !== 'Prime Unit') {
+      if (u.type === 'upgrade' && u.group !== 'Command' && u.name !== 'Prime Unit' && u.name !== 'Warlord') {
         gearCounts.set(u.name, (gearCounts.get(u.name) || 0) + (u.number || 1));
       }
     });
@@ -168,7 +206,7 @@ const getModelBreakdown = (unit: any) => {
       .map(([name, count]) => (count > 1 ? `${count}x ${name}` : name))
       .join(', ');
 
-    return { modelsText, wargearText, totalModels };
+    return { modelsText, wargearText, totalModels, totalWounds: Math.max(1, totalWounds) };
   } else {
     const upgrades = (unit.selections || []).filter(
       (s: any) => s.type === 'upgrade' && s.name !== 'Warlord'
@@ -176,10 +214,12 @@ const getModelBreakdown = (unit: any) => {
     const wargearText = upgrades
       .map((u: any) => (u.number > 1 ? `${u.number}x ${u.name}` : u.name))
       .join(', ');
+    const count = unit.number || 1;
     return {
-      modelsText: `${unit.number || 1}x ${unit.name}`,
+      modelsText: `${count}x ${unit.name}`,
       wargearText,
-      totalModels: unit.number || 1,
+      totalModels: count,
+      totalWounds: Math.max(1, count * unitDefaultWounds),
     };
   }
 };
@@ -239,13 +279,15 @@ const extractAllProfiles = (node: any) => {
 
   walk(node);
 
-  const dedup = (arr: ParsedProfile[]) => {
+  const dedup = (arr: ParsedProfile[], isStat = false) => {
     const map = new Map<string, ParsedProfile>();
     arr.forEach((item) => {
-      const key = `${item.typeName}::${item.id || item.name}`;
+      const key = isStat
+        ? `${item.typeName}::${item.name}`
+        : `${item.typeName}::${item.id || item.name}`;
       if (!map.has(key)) {
         map.set(key, { ...item });
-      } else {
+      } else if (!isStat) {
         const existing = map.get(key)!;
         existing._count = (existing._count || 1) + (item._count || 1);
       }
@@ -254,10 +296,10 @@ const extractAllProfiles = (node: any) => {
   };
 
   return {
-    statProfiles: dedup(statProfiles),
-    rangedWeapons: dedup(rangedWeapons),
-    meleeWeapons: dedup(meleeWeapons),
-    abilities: dedup(abilities),
+    statProfiles: dedup(statProfiles, true),
+    rangedWeapons: dedup(rangedWeapons, false),
+    meleeWeapons: dedup(meleeWeapons, false),
+    abilities: dedup(abilities, false),
   };
 };
 
@@ -272,11 +314,52 @@ const extractRules = (node: any): ParsedRule[] => {
   return Array.from(new Map(results.map((r) => [r.id || r.name, r])).values());
 };
 
-export function parseArmyListData(listData: { metadata: ArmyMetadata; roster_data: any }): ParsedArmyRoster {
-  const { metadata, roster_data } = listData;
-  const roster = roster_data?.roster || {};
-  const rootForces = roster?.forces || [];
+/** Extracts ArmyMetadata automatically from a raw NewRecruit / BattleScribe roster JSON */
+export function extractMetadataFromRoster(rawJson: any): ArmyMetadata {
+  const roster = rawJson?.roster || rawJson?.roster_data?.roster || {};
+  const firstForce = roster?.forces?.[0] || {};
+  const pts = roster?.costs?.find(isPointCost)?.value ?? 0;
+  const ptsLimit = roster?.costLimits?.find(isPointCost)?.value ?? 2000;
 
+  let detachment: string | undefined;
+  let forceDisposition: string | undefined;
+  let detachmentPoints: number | undefined;
+
+  (firstForce.selections || []).forEach((sel: any) => {
+    if (sel.name === 'Detachment' && sel.selections?.[0]) {
+      const det = sel.selections[0];
+      detachment = det.name;
+      const dp = det.costs?.find((c: any) => c.name === 'Detachment Points')?.value;
+      if (dp !== undefined) detachmentPoints = Number(dp);
+    }
+    if (sel.name === 'Force Disposition' && sel.selections?.[0]) {
+      forceDisposition = sel.selections[0].name;
+    }
+  });
+
+  return {
+    name: roster.name || 'Unnamed Roster',
+    system: roster.gameSystemName || 'Warhammer 40,000 11th Edition',
+    raw_system: roster.gameSystemName,
+    faction: (firstForce.catalogueName || 'Unknown Faction').replace(/^(Imperium|Chaos|Xenos)\s*-\s*/i, ''),
+    detachment,
+    forceDisposition,
+    detachmentPoints,
+    points: Number(pts),
+    points_limit: Number(ptsLimit),
+  };
+}
+
+export function parseArmyListData(
+  inputData: { metadata?: ArmyMetadata; roster_data?: any; roster?: any } | any
+): ParsedArmyRoster {
+  const roster = inputData?.roster_data?.roster || inputData?.roster || {};
+  const autoMeta = extractMetadataFromRoster(inputData);
+  const metadata: ArmyMetadata = inputData?.metadata
+    ? { ...autoMeta, ...inputData.metadata }
+    : autoMeta;
+
+  const rootForces = roster?.forces || [];
   const rawUnits: any[] = [];
   const configRules: any[] = [];
 
@@ -302,7 +385,7 @@ export function parseArmyListData(listData: { metadata: ArmyMetadata; roster_dat
 
   const traverseForces = (forceList: any[]) => {
     forceList.forEach((force: any) => {
-      const fName = force.name || '';
+      const fName = force.catalogueName || force.name || '';
       if (force.rules) configRules.push(...force.rules);
       if (force.selections) collectFromSelections(force.selections, fName);
       if (force.forces) traverseForces(force.forces);
@@ -314,13 +397,15 @@ export function parseArmyListData(listData: { metadata: ArmyMetadata; roster_dat
   const unitNameMap = new Map<string, string>();
   rawUnits.forEach((u) => unitNameMap.set(u.id, u.name));
 
+  // Supports both 10th/11th Ed "Leading" and 11th Ed "Supporting" associations!
   const ledByMap = new Map<string, string[]>();
   rawUnits.forEach((u) => {
     (u.associations || []).forEach((assoc: any) => {
-      if (assoc.name === 'Leading' && assoc.to) {
+      if ((assoc.name === 'Leading' || assoc.name === 'Supporting') && assoc.to) {
         const current = ledByMap.get(assoc.to) || [];
-        if (!current.includes(u.name)) {
-          ledByMap.set(assoc.to, [...current, u.name]);
+        const tag = assoc.name === 'Supporting' ? `${u.name} (Support)` : u.name;
+        if (!current.includes(tag)) {
+          ledByMap.set(assoc.to, [...current, tag]);
         }
       }
     });
@@ -336,7 +421,7 @@ export function parseArmyListData(listData: { metadata: ArmyMetadata; roster_dat
     const role = getPrimaryRole(unit);
     const keywords = getAllKeywords(unit);
     const { isWarlord, badges } = getSpecialUpgrades(unit);
-    const { modelsText, wargearText, totalModels } = getModelBreakdown(unit);
+    const { modelsText, wargearText, totalModels, totalWounds } = getModelBreakdown(unit);
     const { statProfiles, rangedWeapons, meleeWeapons, abilities } = extractAllProfiles(unit);
     const rules = extractRules(unit);
 
@@ -345,7 +430,7 @@ export function parseArmyListData(listData: { metadata: ArmyMetadata; roster_dat
     });
 
     const leadsNames = (unit.associations || [])
-      .filter((a: any) => a.name === 'Leading')
+      .filter((a: any) => a.name === 'Leading' || a.name === 'Supporting')
       .map((a: any) => unitNameMap.get(a.to))
       .filter(Boolean) as string[];
 
@@ -362,6 +447,7 @@ export function parseArmyListData(listData: { metadata: ArmyMetadata; roster_dat
       modelsText,
       wargearText,
       totalModels,
+      totalWounds,
       leadsNames,
       ledByNames,
       keywords,

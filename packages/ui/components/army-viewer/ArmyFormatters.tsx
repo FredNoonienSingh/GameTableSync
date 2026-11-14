@@ -1,5 +1,6 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import { Stack, Table } from '@mantine/core';
 import { ParsedProfile } from './armyParser';
 
@@ -10,7 +11,7 @@ export function renderInlineMarkdown(text: string) {
   return parts.map((part, idx) => {
     if (part.startsWith('**') && part.endsWith('**')) {
       return (
-        <strong key={idx} style={{ color: '#e9ecef', fontWeight: 700 }}>
+        <strong key={idx} className="gts-army-markdown-strong">
           {part.slice(2, -2)}
         </strong>
       );
@@ -29,20 +30,22 @@ export function FormattedRuleText({ text }: { text: string }) {
         const trimmed = line.trim();
         const indentMatch = line.match(/^(\s*)/);
         const indentLevel = indentMatch ? Math.floor(indentMatch[1].length / 2) : 0;
-        const isBullet = trimmed.startsWith('- ') || trimmed.startsWith('• ') || trimmed.startsWith('* ');
+        const isBullet =
+          trimmed.startsWith('- ') || trimmed.startsWith('• ') || trimmed.startsWith('* ');
         const content = isBullet ? trimmed.slice(2) : trimmed;
 
         return (
           <div
             key={idx}
-            style={{
-              paddingLeft: `${indentLevel * 12 + (isBullet ? 8 : 0)}px`,
-              fontSize: '12px',
-              color: '#adb5bd',
-              lineHeight: 1.45,
-            }}
+            className="gts-army-rule-line"
+            style={
+              {
+                '--indent-level': indentLevel,
+                '--bullet-offset': isBullet ? '8px' : '0px',
+              } as CSSProperties
+            }
           >
-            {isBullet && <span style={{ color: '#e0282b', marginRight: 6 }}>•</span>}
+            {isBullet && <span className="gts-army-rule-bullet">•</span>}
             {renderInlineMarkdown(content)}
           </div>
         );
@@ -52,7 +55,14 @@ export function FormattedRuleText({ text }: { text: string }) {
 }
 
 const LEFT_ALIGNED_COLS = new Set([
-  'Keywords', 'Abilities', 'Special Rules', 'Traits', 'Notes', 'Type', 'Troop Type', 'Access Points'
+  'Keywords',
+  'Abilities',
+  'Special Rules',
+  'Traits',
+  'Notes',
+  'Type',
+  'Troop Type',
+  'Access Points',
 ]);
 
 export function ArmyStatTablesBySchema({
@@ -72,7 +82,8 @@ export function ArmyStatTablesBySchema({
     if (cols.length === 0) return;
     const sig = cols.join('|');
     if (!groups.has(sig)) {
-      const title = p.typeName && !p.typeName.toLowerCase().includes('weapon') ? p.typeName : defaultTitle;
+      const title =
+        p.typeName && !p.typeName.toLowerCase().includes('weapon') ? p.typeName : defaultTitle;
       groups.set(sig, { title, cols, items: [] });
     }
     groups.get(sig)!.items.push(p);
@@ -81,54 +92,55 @@ export function ArmyStatTablesBySchema({
   return (
     <>
       {Array.from(groups.values()).map((grp, idx) => (
-        <Table
-          key={idx}
-          mb="md"
-          withRowBorders={true}
-          styles={{
-            th: { color: '#a6a7ab', fontSize: '11px', borderBottom: '1px solid #354b60', padding: '6px 8px' },
-            td: { color: 'white', fontSize: '13px', borderColor: '#1a1d24', padding: '6px 8px' },
-          }}
-        >
-          <Table.Thead style={{ backgroundColor: '#1a1d24' }}>
-            <Table.Tr>
-              <Table.Th ta="left">{grp.title}</Table.Th>
-              {grp.cols.map((col) => {
-                const isLeft = LEFT_ALIGNED_COLS.has(col);
-                return (
-                  <Table.Th key={col} ta={isLeft ? 'left' : 'center'}>
-                    {col}
-                  </Table.Th>
-                );
-              })}
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {grp.items.map((prof) => (
-              <Table.Tr key={`${prof.id}-${prof.name}`}>
-                <Table.Td fw={700}>
-                  {prof.name}
-                  {showCount && (prof._count || 1) > 1 ? ` (x${prof._count})` : ''}
-                </Table.Td>
+        <Table.ScrollContainer key={idx} minWidth={420}>
+          <Table
+            mb="md"
+            withRowBorders={true}
+            classNames={{
+              thead: 'gts-army-table-head',
+              th: 'gts-army-table-th',
+              td: 'gts-army-table-td',
+            }}
+          >
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th ta="left">{grp.title}</Table.Th>
                 {grp.cols.map((col) => {
-                  const rawVal = prof.characteristics?.find((c) => c.name === col)?.$text || '-';
                   const isLeft = LEFT_ALIGNED_COLS.has(col);
                   return (
-                    <Table.Td
-                      key={col}
-                      ta={isLeft ? 'left' : 'center'}
-                      fw={!isLeft && defaultTitle === 'Model' ? 700 : 400}
-                      c={isLeft ? 'gray.4' : 'white'}
-                      style={isLeft ? { fontSize: '11px' } : undefined}
-                    >
-                      {renderInlineMarkdown(String(rawVal))}
-                    </Table.Td>
+                    <Table.Th key={col} ta={isLeft ? 'left' : 'center'}>
+                      {col}
+                    </Table.Th>
                   );
                 })}
               </Table.Tr>
-            ))}
-          </Table.Tbody>
-        </Table>
+            </Table.Thead>
+            <Table.Tbody>
+              {grp.items.map((prof) => (
+                <Table.Tr key={`${prof.id}-${prof.name}`}>
+                  <Table.Td fw={700}>
+                    {prof.name}
+                    {showCount && (prof._count || 1) > 1 ? ` (x${prof._count})` : ''}
+                  </Table.Td>
+                  {grp.cols.map((col) => {
+                    const rawVal = prof.characteristics?.find((c) => c.name === col)?.$text || '-';
+                    const isLeft = LEFT_ALIGNED_COLS.has(col);
+                    return (
+                      <Table.Td
+                        key={col}
+                        ta={isLeft ? 'left' : 'center'}
+                        fw={!isLeft && defaultTitle === 'Model' ? 700 : 400}
+                        className={isLeft ? 'gts-army-stat-cell-notes' : 'gts-army-stat-cell-val'}
+                      >
+                        {renderInlineMarkdown(String(rawVal))}
+                      </Table.Td>
+                    );
+                  })}
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
       ))}
     </>
   );

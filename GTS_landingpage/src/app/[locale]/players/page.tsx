@@ -1,57 +1,122 @@
+'use client';
+
+import type { CSSProperties } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { Container, Title, Text, Badge, Stack, Paper, Button } from '@mantine/core';
-import { IconArrowLeft } from '@tabler/icons-react';
-import { AnimatedBackground, LandingNavbar, SimpleHeader, Footer } from '@gts/ui';
-import {ProfileSmall} from '@gts/ui';
+import { Container, Paper, Stack, Group, Badge, Title, Text, Box } from '@mantine/core';
+import {
+  IconSwords,
+  IconCards,
+  IconDice2,
+  IconSparkles,
+} from '@tabler/icons-react';
+import {
+  AnimatedBackground,
+  LandingNavbar,
+  TabbedShowcase,
+  Footer,
+  type TabbedShowcaseItem,
+} from '@gts/ui';
+
+import { WargamingTab } from './tabs/WargamingTab';
+import { TcgTab } from './tabs/TcgTab';
+import { RpgTab } from './tabs/RpgTab';
 
 export default function PlayersPage() {
-  const t = useTranslations('Common.PlayersPage');
+  const t = useTranslations('PlayersPage');
   const tFooter = useTranslations('Common.footer');
   const locale = useLocale();
 
+  const playerTabs: TabbedShowcaseItem[] = [
+    {
+      value: 'wargaming',
+      label: t('tabs.wargaming'),
+      icon: <IconSwords size={18} />,
+      color: '#1864ff',
+      content: () => <WargamingTab />,
+    },
+    {
+      value: 'tcg',
+      label: t('tabs.tcg'),
+      icon: <IconCards size={18} />,
+      color: '#7c3aed',
+      content: () => <TcgTab />,
+    },
+    {
+      value: 'rpg',
+      label: t('tabs.rpg'),
+      icon: <IconDice2 size={18} />,
+      color: '#d97706',
+      content: () => <RpgTab />,
+    },
+  ];
+
   return (
-    <main style={{ position: 'relative', overflowX: 'hidden', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <main style={{ position: 'relative', overflowX: 'clip', minHeight: '100vh' }}>
       <LandingNavbar />
       <AnimatedBackground />
-      <SimpleHeader href={`/${locale}`} />
 
-      <Container size="md" py={{ base: 60, md: 100 }} style={{ flex: 1, position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center' }}>
-        <ProfileSmall/>
-        <Paper
-          p={{ base: 'xl', sm: '3rem' }}
-          radius="md"
-          w="100%"
-          style={{
-            backgroundColor: 'rgba(15, 16, 12, 0.88)',
-            border: '1px solid rgba(41, 212, 255, 0.25)',
-            borderTop: '3px solid #29d4ff',
-            backdropFilter: 'blur(8px)',
-          }}
-        >
-          <Stack gap="lg" align="flex-start">
-            <Badge color="cyan" variant="outline" size="lg">
-              {t('badge')}
+      <Box component="section" pt={{ base: 110, md: 140 }} pb={{ base: 20, md: 30 }} style={{ position: 'relative', zIndex: 2 }}>
+        <Container size="lg">
+          <Stack align="center" ta="center" gap="md" mb="xl">
+            <Badge variant="outline" size="lg" className="brand-logo gts-game-meta-tag">
+              {t('hero.badge')}
             </Badge>
-            <Title order={1}   className="brand-logo" style={{ fontSize: 'clamp(1.6rem, 4vw, 2.5rem)' }}>
-              {t('title')}
+            <Title order={1} className="brand-logo gts-section-intro-title">
+              {t('hero.title')}
             </Title>
-            <Text size="lg" c="gray.3" lh={1.6}>
-              {t('description')}
+            <Text size="lg" maw={680} style={{ color: 'var(--gts-text-secondary)' }}>
+              {t('hero.subtitle')}
             </Text>
-            <Button
-              component="a"
-              href={`/${locale}`}
-              variant="outline"
-              color="cyan"
-              leftSection={<IconArrowLeft size={18} />}
-              mt="md"
-            >
-              {t('back')}
-            </Button>
           </Stack>
+
+
+        </Container>
+      </Box>
+
+      {/* 2. Dynamic Tabbed Showcase (Wargaming | TCG | RPG) */}
+      <TabbedShowcase
+        //badge={t('switcher.badge')}
+        //title={t('switcher.title')}
+        //subtitle={t('switcher.subtitle')}
+        tabs={playerTabs}
+        fullHeight
+        containerSize="xl"
+      />
+
+      <Container size="xl" style={{ paddingBottom: 100 }}>
+        <Paper
+          p={{ base: 'lg', md: 'xl' }}
+          radius="md"
+          className="gts-price-card"
+          style={{ '--card-color': 'var(--gts-accent)' } as CSSProperties}
+        >
+          <Group justify="space-between" align="center" wrap="wrap" gap="lg">
+            <Stack gap={6} style={{ flex: 1, minWidth: 260 }}>
+              <Group gap="xs">
+                <Badge
+                  variant="outline"
+                  size="sm"
+                  leftSection={<IconSparkles size={12} />}
+                  className="brand-logo gts-game-badge"
+                >
+                  {t('promise.badge')}
+                </Badge>
+                <Badge variant="outline" size="sm" className="brand-logo gts-game-meta-tag">
+                  0,00 € FOREVER
+                </Badge>
+              </Group>
+              <Title order={3} className="brand-logo gts-army-title">
+                {t('promise.title')}
+              </Title>
+              <Text size="sm" style={{ color: 'var(--gts-text-secondary)', lineHeight: 1.6 }}>
+                {t('promise.description')}
+              </Text>
+            </Stack>
+          </Group>
         </Paper>
       </Container>
 
+      {/* 3. Footer */}
       <Footer
         imprintHref={`/${locale}/imprint`}
         privacyHref={`/${locale}/privacy`}

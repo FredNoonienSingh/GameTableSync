@@ -1,0 +1,131 @@
+{
+  "hero": {
+    "badge": "PLAYER HUB & COMMAND DECK",
+    "title": "YOUR HOBBY. YOUR ARMIES. YOUR CHRONICLE.",
+    "subtitle": "Whether it's a 2000-point Grand Tournament, Friday Night Draft, or an epic West Marches campaign: manage your rosters, challengers, and game nights in one place."
+  },
+  "promise": {
+    "badge": "PLAYER PROMISE",
+    "title": "FREE FOR PLAYERS FOREVER – ACROSS THE ENTIRE UNIVERSE",
+    "description": "GameTableSync costs individual players nothing—not today, not tomorrow, and not even in the 41st Millennium. Army list viewers, digital RPG character sheets, the live TCG companion, and your global ELO profile remain free forever.",
+    "cta": "LAUNCH LIVE DEMO"
+  },
+  "switcher": {
+    "badge": "SYSTEM SELECTOR",
+    "title": "CHOOSE YOUR DISCIPLINE",
+    "subtitle": "Explore the dedicated player toolkits built for Wargaming, Trading Card Games, and Pen & Paper RPGs."
+  },
+  "tabs": {
+    "wargaming": "WARGAMING & TABLETOP",
+    "tcg": "TRADING CARD GAMES",
+    "rpg": "PEN & PAPER RPG"
+  },
+  "wargaming": {
+    "arsenal": {
+      "badge": "WARGAMING & TABLETOP",
+      "title": "YOUR DIGITAL WARLORD ARSENAL",
+      "description": "No more crumpled PDF printouts or endless group-chat scrolling just to find an open table and an opponent.",
+      "subListViewer": {
+        "title": "INTERACTIVE ARMY LIST VIEWER",
+        "description": "Import rosters straight from NewRecruit or BattleScribe. Inspect weapon profiles, unit datasheets, and keywords in one tap."
+      },
+      "subMatchmaking": {
+        "title": "LFG MATCHMAKING & TABLE BOOKING",
+        "description": "Post open challenges for 40k, Horus Heresy, AoS, or Old World and reserve the exact table at your local club or store."
+      },
+      "subCrusade": {
+        "title": "CRUSADE & NARRATIVE CAMPAIGNS",
+        "description": "Track unit XP, battle scars, crusade relics, and planetary hex-map territories across year-long narrative campaigns."
+      }
+    },
+    "competitive": {
+      "badge": "TOURNAMENTS & RANKINGS",
+      "title": "FROM GARAGE HAMMER TO GRAND TOURNAMENTS",
+      "description": "Compete in your local club league or major WTC and Swiss circuits with instant mobile score submission.",
+      "subElo": {
+        "title": "GLOBAL & CLUB ELO PROFILE",
+        "description": "Collect podium trophies, track win rates by faction, and climb your club's seasonal leaderboard."
+      },
+      "subTournaments": {
+        "title": "LIVE PAIRINGS & ROUND CLOCKS",
+        "description": "See your table assignment, opponent, and their army list on your phone the second the next round goes live."
+      },
+      "subDiscord": {
+        "title": "NATIVE DISCORD SYNC",
+        "description": "Receive challenge pings, round alerts, and match reminders directly inside your club's Discord server."
+      }
+    }
+  },
+  "tcg": {
+    "companion": {
+      "badge": "TRADING CARD GAMES",
+      "title": "HIGH-SPEED COMPANION FOR EVERY MATCH",
+      "description": "Engineered for fast weekly pods, Commander nights, and major store qualifiers without paper slips.",
+      "subDeckViewer": {
+        "title": "VISUAL DECK VIEWER & LEGALITY CHECK",
+        "description": "Submit decklists digitally, inspect mana curves, and automatically validate format ban-lists before round one."
+      },
+      "subIngame": {
+        "title": "LIVE IN-GAME COMPANION APP",
+        "description": "Synchronized mobile life counters, commander damage trackers, round timers, and instant two-player result sign-off."
+      },
+      "subDraft": {
+        "title": "DRAFT PODS & CUBE TRACKING",
+        "description": "Automated pod seating, cross-pod pairing protection, and digital tracking for your drafted card pool."
+      }
+    },
+    "leagues": {
+      "badge": "FRIDAY NIGHTS & STORE CREDIT",
+      "title": "SKIP THE LINE AT THE JUDGE COUNTER",
+      "description": "All pairings, round clocks, and store-credit balances live on your phone.",
+      "subPodTimer": {
+        "title": "INSTANT PAIRING ALERTS",
+        "description": "No crowding around a paper printout: your phone buzzes with your table number and opponent as soon as the round starts."
+      },
+      "subStandings": {
+        "title": "SEASONAL LEAGUES & TIEBREAKERS",
+        "description": "Live OMW% tiebreaker calculations, seasonal league standings, and championship qualification tracking."
+      },
+      "subCube": {
+        "title": "STORE CREDIT & PRIZE LEDGER",
+        "description": "Track your earned store credit and prize packs transparently inside your personal player wallet."
+      }
+    }
+  },
+  "rpg": {
+    "chronicles": {
+      "badge": "PEN & PAPER ROLEPLAYING",
+      "title": "LIVING CAMPAIGN CHRONICLES",
+      "description": "Keep all your party's character sheets, lore handouts, and world maps in one permanent hub.",
+      "subSheets": {
+        "title": "DIGITAL CHARACTER SHEETS",
+        "description": "Manage stats, inventory, spell slots, and session notes right in your browser—synced live with your Game Master."
+      },
+      "subWorldMap": {
+        "title": "INTERACTIVE HEX & WORLD MAPS",
+        "description": "Explore revealed regions together, pin dungeon locations, and track your party's journey across the map."
+      },
+      "subSession": {
+        "title": "AUTOMATED SESSION LOGS",
+        "description": "Catch up on past session recaps, discovered NPCs, and active party quests anytime before game night."
+      }
+    },
+    "westMarches": {
+      "badge": "WEST MARCHES & OPEN TABLES",
+      "title": "ALWAYS FIND AN OPEN ADVENTURE",
+      "description": "Built for active clubs and multi-GM worlds where rotating parties shape a shared persistent realm.",
+      "subDropIn": {
+        "title": "DROP-IN PARTY SCHEDULING",
+        "description": "Sign up for posted GM expeditions in one click and see which party roles are still needed."
+      },
+      "subCodex": {
+        "title": "SHARED LORE CODEX",
+        "description": "Browse unlocked factions, tavern rumors, and handouts discovered by other adventuring parties in the same world."
+      },
+      "subLoot": {
+        "title": "GUILD TREASURY & RENOWN",
+        "description": "Track party gold, stronghold upgrades, and character renown across multiple Game Master tables."
+      }
+    }
+  }
+}

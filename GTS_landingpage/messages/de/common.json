@@ -5,7 +5,12 @@
     "pricing": "Preise",
     "cta": "Demo"
   },
- 
+  "playerFree": {
+    "badge": "SPIELER-VERSPRECHEN",
+    "title": "FÜR SPIELER FÜR IMMER KOSTENLOS – IM GESAMTEN UNIVERSUM",
+    "description": "GameTableSync kostet für einzelne Spieler keinen Cent – heute nicht, morgen nicht und auch im 41. Jahrtausend nicht. Armeelisten-Viewer, digitale RPG-Charakterbögen, der Live-TCG-Companion und dein globales ELO-Profil bleiben auf ewig gratis.",
+    "cta": "ZUR SPIELER SEITE"
+  },
   "OrganizersPage": {
     "badge": "B2B CLUB & STORE ENGINE",
     "title": "FÜR CLUBS, STORES & TURNIER-ORGA",

@@ -24,14 +24,14 @@ export function ArmyListView({
   const parsed = useMemo(() => parseArmyListData(data), [data]);
 
   return (
-    <Container size="xl" pt="calc(80px + 2rem)" pb="xl">
+    <Container size="xl" className="gts-army-container">
       {onBack && (
         <Button
           variant="subtle"
-          color="gray"
           leftSection={<IconArrowLeft size={16} />}
           mb="md"
           onClick={onBack}
+          className="brand-logo gts-army-back-btn"
         >
           {backLabel}
         </Button>
@@ -52,7 +52,3 @@ export function ArmyListView({
   );
 }
 
-export * from './armyParser';
-export * from './ArmyFormatters';
-export * from './ArmyRosterOverview';
-export * from './ArmyUnitDatasheet';

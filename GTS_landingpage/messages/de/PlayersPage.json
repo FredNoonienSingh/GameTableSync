@@ -1,0 +1,131 @@
+{
+  "hero": {
+    "badge": "SPIELER-HUB & KOMMANDOZENTRALE",
+    "title": "DEIN HOBBY. DEINE ARMEEN. DEINE CHRONIK.",
+    "subtitle": "Egal ob 2000-Punkte-Turnier, Friday Night Draft oder epische West-Marches-Kampagne: Verwalte deine Listen, Herausforderer und Spieltermine an einem Ort."
+  },
+  "promise": {
+    "badge": "SPIELER-VERSPRECHEN",
+    "title": "FÜR SPIELER FÜR IMMER KOSTENLOS – IM GESAMTEN UNIVERSUM",
+    "description": "GameTableSync kostet für einzelne Spieler keinen Cent – heute nicht, morgen nicht und auch im 41. Jahrtausend nicht. Armeelisten-Viewer, digitale RPG-Charakterbögen, der Live-TCG-Companion und dein globales ELO-Profil bleiben auf ewig gratis.",
+    "cta": "LIVE-DEMO STARTEN"
+  },
+  "switcher": {
+    "badge": "SYSTEM-WAHL",
+    "title": "WÄHLE DEINE DISZIPLIN",
+    "subtitle": "Entdecke die spezialisierten Spieler-Tools für Wargaming, Trading Card Games und Pen & Paper Rollenspiele."
+  },
+  "tabs": {
+    "wargaming": "WARGAMING & TABLETOP",
+    "tcg": "TRADING CARD GAMES",
+    "rpg": "PEN & PAPER RPG"
+  },
+  "wargaming": {
+    "arsenal": {
+      "badge": "WARGAMING & TABLETOP",
+      "title": "DEIN DIGITALES FELDHERREN-ARSENAL",
+      "description": "Schluss mit unleserlichen PDF-Ausdrucken und endlosen WhatsApp-Gruppen auf der Suche nach einem freien Spieltisch.",
+      "subListViewer": {
+        "title": "INTERAKTIVER ARMEELISTEN-VIEWER",
+        "description": "Importiere deine Listen aus NewRecruit oder BattleScribe. Alle Waffenprofile, Sonderregeln und Keywords auf einen Klick parat."
+      },
+      "subMatchmaking": {
+        "title": "LFG-MATCHMAKING & TISCH-RESERVIERUNG",
+        "description": "Erstelle offene Herausforderungen für 40k, Horus Heresy, AoS oder Old World und buche direkt den passenden Tisch im Club oder Store."
+      },
+      "subCrusade": {
+        "title": "CRUSADE & NARRATIVE FELDZÜGE",
+        "description": "Verfolge Erfahrungspunkte, Kampfnarben, Relikte und eroberte Planetensektoren deiner Einheiten über Monate hinweg."
+      }
+    },
+    "competitive": {
+      "badge": "TURNIERE & RANGFOLGE",
+      "title": "VOM BALKON-SPIEL ZUM GRAND TOURNAMENT",
+      "description": "Miss dich in der internen Vereins-Liga oder auf großen WTC- und Swiss-Turnieren mit automatischer Ergebnis-Übermittlung.",
+      "subElo": {
+        "title": "GLOBALES & VEREINS-INTERNES ELO-PROFIL",
+        "description": "Sammle Trophäen, verfolge deine Siegesbilanz nach Fraktion und steige in der Saison-Rangliste deines Clubs auf."
+      },
+      "subTournaments": {
+        "title": "LIVE-PAIRINGS & RUNDE-TIMERS",
+        "description": "Sieh deine Tischnummer, deinen Gegner und dessen Armeeliste sofort auf dem Smartphone, sobald die nächste Runde startet."
+      },
+      "subDiscord": {
+        "title": "DIREKTE DISCORD-SYNCHRONISATION",
+        "description": "Erhalte Herausforderungs-Pings, Runden-Benachrichtigungen und Spieltermine direkt in deinem gewohnten Club-Discord."
+      }
+    }
+  },
+  "tcg": {
+    "companion": {
+      "badge": "TRADING CARD GAMES",
+      "title": "HIGH-SPEED COMPANION FÜR JEDES MATCH",
+      "description": "Gebaut für schnelle Weekly Pods, Commander-Runden und große Store-Championships ohne Zettelwirtschaft.",
+      "subDeckViewer": {
+        "title": "VISUELLER DECK-VIEWER & LEGALITÄTS-CHECK",
+        "description": "Reiche deine Deckliste digital ein, prüfe Manakurven und lass Format-Bannlisten vor Turnierstart automatisch verifizieren."
+      },
+      "subIngame": {
+        "title": "LIVE IN-GAME COMPANION APP",
+        "description": "Synchronisierte Lebenspunkte-Zähler, Commander-Damage-Tracker, Runden-Timer und sofortige 2-Spieler-Ergebnisbestätigung."
+      },
+      "subDraft": {
+        "title": "DRAFT-PODS & CUBE-TRACKING",
+        "description": "Automatische Sitzplatz-Zuweisung am Draft-Tisch, Cross-Pod-Schutz und digitale Übersicht über deinen gepickten Card-Pool."
+      }
+    },
+    "leagues": {
+      "badge": "FRIDAY NIGHTS & STORE CREDIT",
+      "title": "KEINE SCHLANGE MEHR AM JUDGE-DESK",
+      "description": "Alle Pairings, Timer und Store-Credit-Guthaben live auf deinem Handy.",
+      "subPodTimer": {
+        "title": "MOBILE PAIRING-ALERTS",
+        "description": "Kein Gedränge vor dem Aushang: Dein Handy vibriert mit Tischnummer und Gegner, sobald der TO die Runde freigibt."
+      },
+      "subStandings": {
+        "title": "SAISON-LIGEN & TIEBREAKER",
+        "description": "Live berechnete OMW%-Tiebreaker, Liga-Punktestände und direkte Qualifikations-Tracker."
+      },
+      "subCube": {
+        "title": "STORE-CREDIT & PREIS-LEDGER",
+        "description": "Behalte dein gewonnenes Store-Guthaben und deine Promo-Packs transparent im eigenen Spieler-Wallet im Blick."
+      }
+    }
+  },
+  "rpg": {
+    "chronicles": {
+      "badge": "PEN & PAPER ROLLENSPIELE",
+      "title": "LEBENDIGE KAMPAGNEN-CHRONIKEN",
+      "description": "Alle Charakterbögen, Handouts und Weltkarten deiner Gruppe an einem dauerhaften, stimmungsvollen Ort.",
+      "subSheets": {
+        "title": "DIGITALE CHARAKTERBÖGEN",
+        "description": "Verwalte Attribute, Inventar, Zauberslots und Notizen direkt im Browser – synchronisiert mit deinem Spielleiter."
+      },
+      "subWorldMap": {
+        "title": "INTERAKTIVE HEX- & WELTKARTEN",
+        "description": "Erkunde gemeinsam aufgedeckte Regionen, markiere Dungeons und verfolge die Reiseroute deiner Abenteurergruppe."
+      },
+      "subSession": {
+        "title": "AUTOMATISCHE SESSION-LOGS",
+        "description": "Lies Zusammenfassungen vergangener Abende, entdeckte NPCs und offene Quests jederzeit vor der nächsten Sitzung nach."
+      }
+    },
+    "westMarches": {
+      "badge": "WEST MARCHES & OPEN TABLES",
+      "title": "FINDE IMMER EINE OFFENE RUNDE",
+      "description": "Ideal für große Vereine und Multi-GM-Welten, in denen wechselnde Heldengruppen dieselbe Welt formen.",
+      "subDropIn": {
+        "title": "DROP-IN TERMINFINDUNG",
+        "description": "Trage dich mit einem Klick in ausgeschriebene Expeditionen deiner GMs ein und sieh sofort, welche Klassen noch fehlen."
+      },
+      "subCodex": {
+        "title": "GETEILTER LORE-CODEX",
+        "description": "Greife auf freigeschaltete Fraktionen, Tavernen-Gerüchte und Handouts zu, die andere Gruppen in derselben Welt entdeckt haben."
+      },
+      "subLoot": {
+        "title": "GRUPPEN-SCHATZKAMMER & RUHM",
+        "description": "Verfolge Gold, Gilden-Ausbau und den Ruf deiner Charaktere über verschiedene Spielleiter-Tische hinweg."
+      }
+    }
+  }
+}

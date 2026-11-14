@@ -7,7 +7,7 @@ import {Player} from '@gts/ui';
 export function ProfileSmall(){
   
   return (
-    <Box
+      <Box
           style={{
             backgroundColor: 'rgba(15, 16, 12, 0.88)',
             border: '1px solid rgba(41, 212, 255, 0.25)',
@@ -16,6 +16,6 @@ export function ProfileSmall(){
           }}
           >
           <Text>Here i am </Text>
-    </Box>
+      </Box>
   )
 }
