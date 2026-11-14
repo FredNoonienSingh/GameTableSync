@@ -1,7 +1,7 @@
 // packages/ui/components/game/BattleCompanion40k.tsx
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, type ReactNode } from 'react';
 import {
   Paper,
   Grid,
@@ -22,6 +22,7 @@ import {
   Select,
 } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
+import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
 import {
   IconSwords,
   IconShield,
@@ -35,13 +36,16 @@ import {
   IconRefresh,
   IconTrash,
   IconCheck,
+  IconChevronLeft,
   IconChevronRight,
+  IconChevronsRight,
   IconChevronDown,
   IconChevronUp,
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarLeftExpand,
   IconArrowsLeftRight,
   IconCrown,
+  IconCrosshair,
   IconFlame,
   IconListDetails,
   IconSettings,
@@ -100,6 +104,14 @@ interface UnitLiveStatus {
 
 const PHASES: BattlePhase40k[] = ['Command', 'Movement', 'Shooting', 'Charge', 'Fight'];
 
+const PHASE_ICONS: Record<BattlePhase40k, ReactNode> = {
+  Command: <IconCrown size={14} />,
+  Movement: <IconChevronsRight size={14} />,
+  Shooting: <IconCrosshair size={14} />,
+  Charge: <IconBolt size={14} />,
+  Fight: <IconSwords size={14} />,
+};
+
 const CORE_STRATAGEMS = [
   { id: 'reroll', name: 'Command Re-roll', cost: 1, phase: 'Any' },
   { id: 'overwatch', name: 'Fire Overwatch', cost: 1, phase: 'Move / Charge' },
@@ -123,6 +135,9 @@ const TACTICAL_DECK_POOL: Omit<SecondaryMissionCard, 'scoredVp'>[] = [
   { id: 'extend-battle-lines', name: 'Extend Battle Lines', maxVp: 5 },
   { id: 'marked-for-death', name: 'Marked for Death', maxVp: 5 },
 ];
+
+const SWIPE_CONFIDENCE_THRESHOLD = 8000;
+const swipePower = (offset: number, velocity: number) => Math.abs(offset) * velocity;
 
 function calculateWtcDifferential(p1Total: number, p2Total: number): [number, number] {
   const diff = Math.abs(p1Total - p2Total);
@@ -182,7 +197,9 @@ export function BattleCompanion40k({
   onInspectFullArmy,
 }: BattleCompanion40kProps) {
   const t = useTranslations('BattleCompanion40k');
-  const isCompactHud = useMediaQuery('(max-width: 64em)');
+
+  const isPhone = useMediaQuery('(max-width: 56em), (max-height: 520px)');
+  const isCompactHud = useMediaQuery('(max-width: 64em), (max-height: 520px)');
 
   const [mobileTab, setMobileTab] = useState<MobileHudTab>('units');
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
@@ -304,6 +321,21 @@ export function BattleCompanion40k({
   const [selectedOpponentUnitId, setSelectedOpponentUnitId] = useState<string>(
     opponentArmy.units[0]?.id ?? ''
   );
+
+  // Sync selected IDs if rosters change (e.g. when swapping sides)
+  useEffect(() => {
+    if (!playerArmy.units.some((u) => u.id === selectedPlayerUnitId)) {
+      setSelectedPlayerUnitId(playerArmy.units[0]?.id ?? '');
+    }
+  }, [playerArmy.units, selectedPlayerUnitId]);
+
+  useEffect(() => {
+    if (!opponentArmy.units.some((u) => u.id === selectedOpponentUnitId)) {
+      setSelectedOpponentUnitId(opponentArmy.units[0]?.id ?? '');
+    }
+  }, [opponentArmy.units, selectedOpponentUnitId]);
+
+  const [swipeDir, setSwipeDir] = useState<number>(0);
   const [compareModalOpen, setCompareModalOpen] = useState<boolean>(false);
   const [armyViewerModalSide, setArmyViewerModalSide] = useState<'player' | 'opponent' | null>(
     null
@@ -426,7 +458,6 @@ export function BattleCompanion40k({
     }
   };
 
-  // Deducting/Adding Wounds automatically sets destroyed = true when Wounds === 0
   const adjustUnitWounds = (side: 'player' | 'opponent', unit: ParsedUnit, delta: number) => {
     const key = `${side}:${unit.id}`;
     setUnitStatuses((prev) => {
@@ -452,7 +483,6 @@ export function BattleCompanion40k({
     });
   };
 
-  // Deducting/Adding Models automatically sets destroyed = true when Models === 0
   const adjustUnitModels = (side: 'player' | 'opponent', unit: ParsedUnit, delta: number) => {
     const key = `${side}:${unit.id}`;
     setUnitStatuses((prev) => {
@@ -496,10 +526,39 @@ export function BattleCompanion40k({
     }
   };
 
+  // SEPARATE, INDEPENDENT INDEXES FOR OWN UNITS AND ENEMY UNITS
+  const playerUnitIndex = Math.max(
+    0,
+    playerArmy.units.findIndex((u) => u.id === selectedPlayerUnitId)
+  );
+  const opponentUnitIndex = Math.max(
+    0,
+    opponentArmy.units.findIndex((u) => u.id === selectedOpponentUnitId)
+  );
+
+  const paginateUnit = (direction: number) => {
+    setSwipeDir(direction);
+    if (inspectorSide === 'player') {
+      const list = playerArmy.units;
+      if (list.length <= 1) return;
+      let nextIdx = playerUnitIndex + direction;
+      if (nextIdx < 0) nextIdx = list.length - 1;
+      if (nextIdx >= list.length) nextIdx = 0;
+      setSelectedPlayerUnitId(list[nextIdx].id);
+    } else {
+      const list = opponentArmy.units;
+      if (list.length <= 1) return;
+      let nextIdx = opponentUnitIndex + direction;
+      if (nextIdx < 0) nextIdx = list.length - 1;
+      if (nextIdx >= list.length) nextIdx = 0;
+      setSelectedOpponentUnitId(list[nextIdx].id);
+    }
+  };
+
   const selectedPlayerUnit =
-    playerArmy.units.find((u) => u.id === selectedPlayerUnitId) ?? playerArmy.units[0];
+    playerArmy.units[playerUnitIndex] ?? playerArmy.units[0];
   const selectedOpponentUnit =
-    opponentArmy.units.find((u) => u.id === selectedOpponentUnitId) ?? opponentArmy.units[0];
+    opponentArmy.units[opponentUnitIndex] ?? opponentArmy.units[0];
 
   const activeInspectedUnit =
     inspectorSide === 'player' ? selectedPlayerUnit : selectedOpponentUnit;
@@ -566,7 +625,6 @@ export function BattleCompanion40k({
             </Text>
           </Group>
 
-          {/* Fixed-width right slot: swaps in-place between Points, Shocked, or Destroyed */}
           <Group gap={4} wrap="nowrap">
             {st.destroyed ? (
               <Badge size="xs" color="red" variant="filled" miw={74} ta="center">
@@ -711,27 +769,33 @@ export function BattleCompanion40k({
         )}
       </div>
 
-      {/* 1. FIXED 3-COLUMN TOP HUD BAR */}
-      <Paper px="sm" py={6} radius="md" className="gts-battle-topbar">
-        <div className="gts-battle-topbar-grid">
-          <Group gap={6} wrap="nowrap">
+      {/* 1. STRICT SINGLE-ROW TOPBAR (BLUE BORDER = OWN TURN, RED = ENEMY TURN) */}
+      <Paper
+        px="xs"
+        py={4}
+        radius="md"
+        className="gts-battle-topbar"
+        data-turn={activeSide}
+      >
+        <div className="gts-battle-topbar-row">
+          <Group gap={5} wrap="nowrap">
             {onBack && (
               <Tooltip label={backLabel || t('back')}>
                 <ActionIcon
-                  size="md"
+                  size="sm"
                   variant="default"
                   className="gts-tournament-secondary-btn"
                   onClick={onBack}
                 >
-                  <IconArrowLeft size={16} />
+                  <IconArrowLeft size={14} />
                 </ActionIcon>
               </Tooltip>
             )}
 
             <div className="gts-battle-round-pill">
-              <Group gap={4} justify="center" align="center" wrap="nowrap">
-                <Text size="10px" fw={700} className="brand-logo" c="dimmed">
-                  {t('round')}
+              <Group gap={3} justify="center" align="center" wrap="nowrap">
+                <Text size="9px" fw={700} className="brand-logo" c="dimmed">
+                  R
                 </Text>
                 <ActionIcon
                   size="xs"
@@ -740,7 +804,7 @@ export function BattleCompanion40k({
                 >
                   <IconMinus size={10} />
                 </ActionIcon>
-                <Text size="sm" fw={900} className="brand-logo">
+                <Text size="xs" fw={900} className="brand-logo">
                   {battleRound}/5
                 </Text>
                 <ActionIcon
@@ -753,72 +817,86 @@ export function BattleCompanion40k({
               </Group>
             </div>
 
-            <Badge
-              size="sm"
-              variant="filled"
-              color={activeSide === 'player' ? 'brandBlue.6' : 'red.6'}
-              className="brand-logo"
-              maw={130}
-            >
-              {activeSide === 'player'
-                ? playerArmy.playerName
-                : opponentArmy.playerName}
-            </Badge>
-
-            <Button
-              size="compact-xs"
-              variant="subtle"
-              onClick={() =>
-                setActiveSide((s) => (s === 'player' ? 'opponent' : 'player'))
-              }
-            >
-              {t('swapTurn')}
-            </Button>
+            <Tooltip label={t('swapTurn')}>
+              <ActionIcon
+                size="sm"
+                variant="filled"
+                color={activeSide === 'player' ? 'brandBlue.6' : 'red.6'}
+                onClick={() =>
+                  setActiveSide((s) => (s === 'player' ? 'opponent' : 'player'))
+                }
+              >
+                <IconArrowsLeftRight size={13} />
+              </ActionIcon>
+            </Tooltip>
           </Group>
 
           <div className="gts-battle-phase-scroll">
             {PHASES.map((phase, idx) => (
-              <button
-                key={phase}
-                type="button"
-                className="brand-logo gts-battle-phase-step"
-                data-active={idx === phaseIdx ? 'true' : undefined}
-                onClick={() => setPhaseIdx(idx)}
-              >
-                {idx + 1}. {phaseLabels[phase]}
-              </button>
+              <Tooltip key={phase} label={`${idx + 1}. ${phaseLabels[phase]}`}>
+                <button
+                  type="button"
+                  className="brand-logo gts-battle-phase-step"
+                  data-active={idx === phaseIdx ? 'true' : undefined}
+                  onClick={() => setPhaseIdx(idx)}
+                >
+                  {PHASE_ICONS[phase]}
+                  <span className="gts-battle-phase-label">{phaseLabels[phase]}</span>
+                </button>
+              </Tooltip>
             ))}
-            <Button
-              size="compact-xs"
-              variant="default"
-              rightSection={<IconChevronRight size={12} />}
-              className="brand-logo gts-game-cta-join"
-              onClick={handleAdvancePhase}
-            >
-              {phaseIdx === PHASES.length - 1 ? t('endTurn') : t('nextPhase')}
-            </Button>
+
+            {isCompactHud ? (
+              <Tooltip label={phaseIdx === PHASES.length - 1 ? t('endTurn') : t('nextPhase')}>
+                <ActionIcon
+                  size="sm"
+                  variant="default"
+                  className="gts-game-cta-join"
+                  onClick={handleAdvancePhase}
+                >
+                  <IconChevronRight size={14} />
+                </ActionIcon>
+              </Tooltip>
+            ) : (
+              <Button
+                size="compact-xs"
+                variant="default"
+                rightSection={<IconChevronRight size={12} />}
+                className="brand-logo gts-game-cta-join"
+                onClick={handleAdvancePhase}
+              >
+                {phaseIdx === PHASES.length - 1 ? t('endTurn') : t('nextPhase')}
+              </Button>
+            )}
           </div>
 
-          <Group gap={6} justify="flex-end" wrap="nowrap">
+          <Group gap={5} justify="flex-end" wrap="nowrap">
             <div
               className="gts-battle-score-summary-pill"
-              onClick={() => setScoreboardCollapsed((c) => !c)}
+              onClick={() => {
+                if (isCompactHud) {
+                  setMobileTab((tab) => (tab === 'score' ? 'units' : 'score'));
+                } else {
+                  setScoreboardCollapsed((c) => !c);
+                }
+              }}
               title={t('toggleScoreboard')}
             >
               <Text size="xs" fw={900} className="brand-logo" c="var(--gts-primary)">
-                {String(p1TotalVp).padStart(2, '0')} VP
+                {String(p1TotalVp).padStart(2, '0')}
               </Text>
               <Badge size="xs" variant="outline" className="brand-logo">
-                WTC {p1Wtc}:{p2Wtc}
+                {p1Wtc}:{p2Wtc}
               </Badge>
               <Text size="xs" fw={900} className="brand-logo" c="red.4">
-                {String(p2TotalVp).padStart(2, '0')} VP
+                {String(p2TotalVp).padStart(2, '0')}
               </Text>
-              {scoreboardCollapsed ? (
-                <IconChevronDown size={13} />
-              ) : (
-                <IconChevronUp size={13} />
-              )}
+              {!isCompactHud &&
+                (scoreboardCollapsed ? (
+                  <IconChevronDown size={12} />
+                ) : (
+                  <IconChevronUp size={12} />
+                ))}
             </div>
 
             {settings.clockMode !== 'off' && (
@@ -830,9 +908,9 @@ export function BattleCompanion40k({
                 title={t('toggleClock')}
               >
                 {clockRunning ? (
-                  <IconPlayerPause size={14} />
+                  <IconPlayerPause size={13} />
                 ) : (
-                  <IconPlayerPlay size={14} />
+                  <IconPlayerPlay size={13} />
                 )}
               </ActionIcon>
             )}
@@ -844,14 +922,14 @@ export function BattleCompanion40k({
                 color={isFullscreen ? 'brandBlue.6' : undefined}
                 onClick={handleToggleFullscreen}
               >
-                {isFullscreen ? <IconMinimize size={15} /> : <IconMaximize size={15} />}
+                {isFullscreen ? <IconMinimize size={14} /> : <IconMaximize size={14} />}
               </ActionIcon>
             </Tooltip>
 
             {onOpenSettings && (
               <Tooltip label={t('settings')}>
                 <ActionIcon size="sm" variant="subtle" onClick={onOpenSettings}>
-                  <IconSettings size={15} />
+                  <IconSettings size={14} />
                 </ActionIcon>
               </Tooltip>
             )}
@@ -870,8 +948,8 @@ export function BattleCompanion40k({
           data={[
             {
               label: (
-                <Group gap={6} justify="center" wrap="nowrap">
-                  <IconSwords size={13} />
+                <Group gap={5} justify="center" wrap="nowrap">
+                  <IconSwords size={12} />
                   <span>{t('tabs.units')}</span>
                 </Group>
               ),
@@ -879,10 +957,10 @@ export function BattleCompanion40k({
             },
             {
               label: (
-                <Group gap={6} justify="center" wrap="nowrap">
-                  <IconTrophy size={13} />
+                <Group gap={5} justify="center" wrap="nowrap">
+                  <IconTrophy size={12} />
                   <span>
-                    {t('tabs.score')} ({p1TotalVp} : {p2TotalVp})
+                    {t('tabs.score')} ({p1TotalVp}:{p2TotalVp})
                   </span>
                 </Group>
               ),
@@ -890,8 +968,8 @@ export function BattleCompanion40k({
             },
             {
               label: (
-                <Group gap={6} justify="center" wrap="nowrap">
-                  <IconBolt size={13} />
+                <Group gap={5} justify="center" wrap="nowrap">
+                  <IconBolt size={12} />
                   <span>{t('tabs.strats')}</span>
                 </Group>
               ),
@@ -904,7 +982,7 @@ export function BattleCompanion40k({
       {/* 2. COLLAPSIBLE DUAL COMMANDER SCOREBOARDS */}
       {((!isCompactHud && !scoreboardCollapsed) ||
         (isCompactHud && mobileTab === 'score')) && (
-        <Box>
+        <Box className={isCompactHud ? 'gts-battle-datasheet-scroll' : undefined}>
           <Grid gap="xs" align="stretch">
             {[
               {
@@ -1250,133 +1328,147 @@ export function BattleCompanion40k({
         </Box>
       )}
 
-      {/* 3. INTERNAL-SCROLL WORKSPACE */}
+      {/* 3. UNITS & DATACARDS WORKSPACE */}
       {(!isCompactHud || mobileTab === 'units') && (
         <div className="gts-battle-workspace">
-          {/* LEFT: COLLAPSIBLE ROSTER SIDEBAR */}
-          <div
-            className="gts-battle-sidebar"
-            data-collapsed={sidebarCollapsed ? 'true' : undefined}
-          >
-            <Group
-              justify={sidebarCollapsed ? 'center' : 'space-between'}
-              px="xs"
-              py={6}
+          {/* LEFT SIDEBAR: RENDERED ONLY ON TABLETS & DESKTOP (!isPhone) */}
+          {!isPhone && (
+            <div
+              className="gts-battle-sidebar"
+              data-collapsed={sidebarCollapsed ? 'true' : undefined}
             >
-              {!sidebarCollapsed && (
-                <Text size="xs" fw={700} className="brand-logo">
-                  {t('unitPane.roster')}
-                </Text>
-              )}
-              <Tooltip
-                label={
-                  sidebarCollapsed ? t('expandSidebar') : t('collapseSidebar')
-                }
+              <Group
+                justify={sidebarCollapsed ? 'center' : 'space-between'}
+                px="xs"
+                py={6}
               >
-                <ActionIcon
-                  size="sm"
-                  variant="subtle"
-                  onClick={() => setSidebarCollapsed((c) => !c)}
+                {!sidebarCollapsed && (
+                  <Text size="xs" fw={700} className="brand-logo">
+                    {t('unitPane.roster')}
+                  </Text>
+                )}
+                <Tooltip
+                  label={
+                    sidebarCollapsed ? t('expandSidebar') : t('collapseSidebar')
+                  }
                 >
-                  {sidebarCollapsed ? (
-                    <IconLayoutSidebarLeftExpand size={16} />
-                  ) : (
-                    <IconLayoutSidebarLeftCollapse size={16} />
-                  )}
-                </ActionIcon>
-              </Tooltip>
-            </Group>
-
-            {!sidebarCollapsed && (
-              <div className="gts-battle-sidebar-scroll">
-                <Stack gap="sm">
-                  <div>
-                    <button
-                      type="button"
-                      className="gts-battle-roster-header"
-                      onClick={() => setOwnListOpen((o) => !o)}
-                    >
-                      <Group gap={6} wrap="nowrap">
-                        <IconSwords size={14} color="var(--gts-primary)" />
-                        <Text size="xs" fw={700} className="brand-logo">
-                          {t('own')}: {playerArmy.metadata.faction.toUpperCase()} (
-                          {playerArmy.units.length})
-                        </Text>
-                      </Group>
-                      {ownListOpen ? (
-                        <IconChevronUp size={14} />
-                      ) : (
-                        <IconChevronDown size={14} />
-                      )}
-                    </button>
-
-                    {ownListOpen && (
-                      <Stack gap={6} mt={6}>
-                        {playerArmy.units.map((unit) =>
-                          renderSidebarUnitRow('player', unit)
-                        )}
-                      </Stack>
+                  <ActionIcon
+                    size="sm"
+                    variant="subtle"
+                    onClick={() => setSidebarCollapsed((c) => !c)}
+                  >
+                    {sidebarCollapsed ? (
+                      <IconLayoutSidebarLeftExpand size={16} />
+                    ) : (
+                      <IconLayoutSidebarLeftCollapse size={16} />
                     )}
-                  </div>
+                  </ActionIcon>
+                </Tooltip>
+              </Group>
 
-                  <div>
-                    <button
-                      type="button"
-                      className="gts-battle-roster-header"
-                      onClick={() => setEnemyListOpen((o) => !o)}
-                    >
-                      <Group gap={6} wrap="nowrap">
-                        <IconShield size={14} color="var(--gts-danger)" />
-                        <Text size="xs" fw={700} className="brand-logo">
-                          {t('enemy')}: {opponentArmy.metadata.faction.toUpperCase()} (
-                          {opponentArmy.units.length})
-                        </Text>
-                      </Group>
-                      {enemyListOpen ? (
-                        <IconChevronUp size={14} />
-                      ) : (
-                        <IconChevronDown size={14} />
-                      )}
-                    </button>
-
-                    {enemyListOpen && (
-                      <Stack gap={6} mt={6}>
-                        {opponentArmy.units.map((unit) =>
-                          renderSidebarUnitRow('opponent', unit)
+              {!sidebarCollapsed && (
+                <div className="gts-battle-sidebar-scroll">
+                  <Stack gap="sm">
+                    <div>
+                      <button
+                        type="button"
+                        className="gts-battle-roster-header"
+                        onClick={() => setOwnListOpen((o) => !o)}
+                      >
+                        <Group gap={6} wrap="nowrap">
+                          <IconSwords size={14} color="var(--gts-primary)" />
+                          <Text size="xs" fw={700} className="brand-logo">
+                            {t('own')}: {playerArmy.metadata.faction.toUpperCase()} (
+                            {playerArmy.units.length})
+                          </Text>
+                        </Group>
+                        {ownListOpen ? (
+                          <IconChevronUp size={14} />
+                        ) : (
+                          <IconChevronDown size={14} />
                         )}
-                      </Stack>
-                    )}
-                  </div>
-                </Stack>
-              </div>
-            )}
-          </div>
+                      </button>
 
-          {/* RIGHT: MAIN DATASHEET INSPECTOR + LIVE CASUALTY/WOUND CONTROL BAR */}
+                      {ownListOpen && (
+                        <Stack gap={6} mt={6}>
+                          {playerArmy.units.map((unit) =>
+                            renderSidebarUnitRow('player', unit)
+                          )}
+                        </Stack>
+                      )}
+                    </div>
+
+                    <div>
+                      <button
+                        type="button"
+                        className="gts-battle-roster-header"
+                        onClick={() => setEnemyListOpen((o) => !o)}
+                      >
+                        <Group gap={6} wrap="nowrap">
+                          <IconShield size={14} color="var(--gts-danger)" />
+                          <Text size="xs" fw={700} className="brand-logo">
+                            {t('enemy')}: {opponentArmy.metadata.faction.toUpperCase()} (
+                            {opponentArmy.units.length})
+                          </Text>
+                        </Group>
+                        {enemyListOpen ? (
+                          <IconChevronUp size={14} />
+                        ) : (
+                          <IconChevronDown size={14} />
+                        )}
+                      </button>
+
+                      {enemyListOpen && (
+                        <Stack gap={6} mt={6}>
+                          {opponentArmy.units.map((unit) =>
+                            renderSidebarUnitRow('opponent', unit)
+                          )}
+                        </Stack>
+                      )}
+                    </div>
+                  </Stack>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* MAIN DATASHEET PANE */}
           <div className="gts-battle-main-pane">
-            <Paper p="xs" radius="md" className="gts-army-panel">
+            <Paper p={6} radius="md" className="gts-army-panel">
               <Group justify="space-between" wrap="nowrap" gap="xs">
-                <Group gap="xs" wrap="nowrap" miw={0}>
+                <Group gap={6} wrap="nowrap" miw={0}>
+                  {/* Uses separate playerUnitIndex and opponentUnitIndex so advancing one never advances the other! */}
                   <SegmentedControl
                     size="xs"
                     value={inspectorSide}
-                    onChange={(val) => setInspectorSide(val as 'player' | 'opponent')}
+                    onChange={(val) => {
+                      setSwipeDir(0);
+                      setInspectorSide(val as 'player' | 'opponent');
+                    }}
                     data={[
                       {
-                        label: `${t('own')} (${playerArmy.units.length})`,
+                        label: `${t('own')} (${playerUnitIndex + 1}/${playerArmy.units.length})`,
                         value: 'player',
                       },
                       {
-                        label: `${t('enemy')} (${opponentArmy.units.length})`,
+                        label: `${t('enemy')} (${opponentUnitIndex + 1}/${opponentArmy.units.length})`,
                         value: 'opponent',
                       },
                     ]}
                   />
 
+                  <ActionIcon
+                    size="md"
+                    variant="default"
+                    onClick={() => paginateUnit(-1)}
+                  >
+                    <IconChevronLeft size={14} />
+                  </ActionIcon>
+
                   <Select
                     size="xs"
-                    searchable
-                    w={260}
+                    searchable={!isPhone}
+                    w={isPhone ? 190 : 250}
                     value={
                       inspectorSide === 'player'
                         ? selectedPlayerUnitId
@@ -1393,30 +1485,40 @@ export function BattleCompanion40k({
                         : opponentUnitSelectData
                     }
                   />
+
+                  <ActionIcon
+                    size="md"
+                    variant="default"
+                    onClick={() => paginateUnit(1)}
+                  >
+                    <IconChevronRight size={14} />
+                  </ActionIcon>
                 </Group>
 
-                <Group gap="xs" wrap="nowrap">
-                  {!isCompactHud && (
+                {!isPhone && (
+                  <Group gap="xs" wrap="nowrap">
+                    {!isCompactHud && (
+                      <Button
+                        size="xs"
+                        variant="subtle"
+                        leftSection={<IconBolt size={14} />}
+                        onClick={() => setBottomTrayOpen((o) => !o)}
+                      >
+                        {t('tabs.strats')}
+                      </Button>
+                    )}
+
                     <Button
                       size="xs"
-                      variant="subtle"
-                      leftSection={<IconBolt size={14} />}
-                      onClick={() => setBottomTrayOpen((o) => !o)}
+                      variant="default"
+                      leftSection={<IconArrowsLeftRight size={14} />}
+                      className="brand-logo gts-game-cta-join"
+                      onClick={() => setCompareModalOpen(true)}
                     >
-                      {t('tabs.strats')}
+                      {t('vsCompare')}
                     </Button>
-                  )}
-
-                  <Button
-                    size="xs"
-                    variant="default"
-                    leftSection={<IconArrowsLeftRight size={14} />}
-                    className="brand-logo gts-game-cta-join"
-                    onClick={() => setCompareModalOpen(true)}
-                  >
-                    {t('vsCompare')}
-                  </Button>
-                </Group>
+                  </Group>
+                )}
               </Group>
             </Paper>
 
@@ -1449,9 +1551,11 @@ export function BattleCompanion40k({
                 <Group gap="sm" wrap="nowrap">
                   <Group gap={4} wrap="nowrap">
                     <IconUsers size={14} color="var(--gts-text-secondary)" />
-                    <Text size="11px" fw={700} className="brand-logo" c="dimmed">
-                      {t('modelsLabel')}:
-                    </Text>
+                    {!isPhone && (
+                      <Text size="11px" fw={700} className="brand-logo" c="dimmed">
+                        {t('modelsLabel')}:
+                      </Text>
+                    )}
                     <ActionIcon
                       size="sm"
                       variant="default"
@@ -1461,7 +1565,7 @@ export function BattleCompanion40k({
                     >
                       <IconMinus size={12} />
                     </ActionIcon>
-                    <Badge size="md" variant="outline" w={68} ta="center">
+                    <Badge size="md" variant="outline" w={64} ta="center">
                       {activeInspectedStatus.currentModels}/{activeInspectedStatus.maxModels}
                     </Badge>
                     <ActionIcon
@@ -1477,9 +1581,11 @@ export function BattleCompanion40k({
 
                   <Group gap={4} wrap="nowrap">
                     <IconHeartFilled size={14} color="var(--gts-danger)" />
-                    <Text size="11px" fw={700} className="brand-logo" c="dimmed">
-                      {t('woundsLabel')}:
-                    </Text>
+                    {!isPhone && (
+                      <Text size="11px" fw={700} className="brand-logo" c="dimmed">
+                        {t('woundsLabel')}:
+                      </Text>
+                    )}
                     <ActionIcon
                       size="sm"
                       variant="default"
@@ -1492,7 +1598,7 @@ export function BattleCompanion40k({
                     <Badge
                       size="md"
                       variant="filled"
-                      w={82}
+                      w={78}
                       ta="center"
                       color={
                         activeInspectedStatus.destroyed
@@ -1518,13 +1624,12 @@ export function BattleCompanion40k({
                     </ActionIcon>
                   </Group>
 
-                  {/* Fixed-width status slot: shows Destroyed badge at 0 W, or Shock toggle when alive */}
                   {activeInspectedStatus.destroyed ? (
                     <Badge
                       size="lg"
                       color="red"
                       variant="filled"
-                      w={115}
+                      w={110}
                       ta="center"
                       className="brand-logo"
                     >
@@ -1538,7 +1643,7 @@ export function BattleCompanion40k({
                         activeInspectedStatus.battleShocked ? 'filled' : 'default'
                       }
                       leftSection={<IconAlertTriangle size={12} />}
-                      w={115}
+                      w={110}
                       onClick={() =>
                         toggleUnitBattleShock(inspectorSide, activeInspectedUnit)
                       }
@@ -1552,7 +1657,29 @@ export function BattleCompanion40k({
 
             <div className="gts-battle-datasheet-scroll">
               {activeInspectedUnit && (
-                <ArmyUnitDatasheet unit={activeInspectedUnit} />
+                <AnimatePresence initial={false} mode="wait" custom={swipeDir}>
+                  <motion.div
+                    key={`${inspectorSide}-${activeInspectedUnit.id}`}
+                    className="gts-battle-swipe-deck"
+                    initial={{ opacity: 0, x: swipeDir >= 0 ? 48 : -48 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: swipeDir >= 0 ? -48 : 48 }}
+                    transition={{ duration: 0.16 }}
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.65}
+                    onDragEnd={(_e, { offset, velocity }: PanInfo) => {
+                      const swipe = swipePower(offset.x, velocity.x);
+                      if (swipe < -SWIPE_CONFIDENCE_THRESHOLD || offset.x < -75) {
+                        paginateUnit(1);
+                      } else if (swipe > SWIPE_CONFIDENCE_THRESHOLD || offset.x > 75) {
+                        paginateUnit(-1);
+                      }
+                    }}
+                  >
+                    <ArmyUnitDatasheet unit={activeInspectedUnit} />
+                  </motion.div>
+                </AnimatePresence>
               )}
             </div>
 
@@ -1700,69 +1827,71 @@ export function BattleCompanion40k({
         </Box>
       )}
 
-      {/* 5. DEDICATED SIDE-BY-SIDE VS UNIT COMPARISON MODAL */}
-      <Modal
-        opened={compareModalOpen}
-        onClose={() => setCompareModalOpen(false)}
-        size="96%"
-        centered
-        title={
-          <Group gap="xs">
-            <IconArrowsLeftRight size={18} color="var(--gts-accent)" />
-            <Text fw={700} className="brand-logo">
-              {t('vsModalTitle')}
-            </Text>
-          </Group>
-        }
-        classNames={{
-          content: 'gts-modal-content',
-          header: 'gts-modal-header',
-        }}
-      >
-        <Grid gap="md">
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <Stack gap="sm">
-              <Select
-                label={`${t('selectOwnUnit')} (${playerArmy.metadata.faction})`}
-                searchable
-                value={selectedPlayerUnitId}
-                onChange={(val) => val && setSelectedPlayerUnitId(val)}
-                data={playerUnitSelectData}
-                classNames={{
-                  input: 'gts-input-field',
-                  label: 'gts-input-label',
-                }}
-              />
-              <ScrollArea.Autosize mah="72dvh" offsetScrollbars>
-                {selectedPlayerUnit && (
-                  <ArmyUnitDatasheet unit={selectedPlayerUnit} />
-                )}
-              </ScrollArea.Autosize>
-            </Stack>
-          </Grid.Col>
+      {/* 5. DEDICATED SIDE-BY-SIDE VS UNIT COMPARISON MODAL (TABLET & DESKTOP ONLY) */}
+      {!isPhone && (
+        <Modal
+          opened={compareModalOpen}
+          onClose={() => setCompareModalOpen(false)}
+          size="96%"
+          centered
+          title={
+            <Group gap="xs">
+              <IconArrowsLeftRight size={18} color="var(--gts-accent)" />
+              <Text fw={700} className="brand-logo">
+                {t('vsModalTitle')}
+              </Text>
+            </Group>
+          }
+          classNames={{
+            content: 'gts-modal-content',
+            header: 'gts-modal-header',
+          }}
+        >
+          <Grid gap="md">
+            <Grid.Col span={{ base: 12, md: 6 }}>
+              <Stack gap="sm">
+                <Select
+                  label={`${t('selectOwnUnit')} (${playerArmy.metadata.faction})`}
+                  searchable
+                  value={selectedPlayerUnitId}
+                  onChange={(val) => val && setSelectedPlayerUnitId(val)}
+                  data={playerUnitSelectData}
+                  classNames={{
+                    input: 'gts-input-field',
+                    label: 'gts-input-label',
+                  }}
+                />
+                <ScrollArea.Autosize mah="72dvh" offsetScrollbars>
+                  {selectedPlayerUnit && (
+                    <ArmyUnitDatasheet unit={selectedPlayerUnit} />
+                  )}
+                </ScrollArea.Autosize>
+              </Stack>
+            </Grid.Col>
 
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <Stack gap="sm">
-              <Select
-                label={`${t('selectEnemyUnit')} (${opponentArmy.metadata.faction})`}
-                searchable
-                value={selectedOpponentUnitId}
-                onChange={(val) => val && setSelectedOpponentUnitId(val)}
-                data={opponentUnitSelectData}
-                classNames={{
-                  input: 'gts-input-field',
-                  label: 'gts-input-label',
-                }}
-              />
-              <ScrollArea.Autosize mah="72dvh" offsetScrollbars>
-                {selectedOpponentUnit && (
-                  <ArmyUnitDatasheet unit={selectedOpponentUnit} />
-                )}
-              </ScrollArea.Autosize>
-            </Stack>
-          </Grid.Col>
-        </Grid>
-      </Modal>
+            <Grid.Col span={{ base: 12, md: 6 }}>
+              <Stack gap="sm">
+                <Select
+                  label={`${t('selectEnemyUnit')} (${opponentArmy.metadata.faction})`}
+                  searchable
+                  value={selectedOpponentUnitId}
+                  onChange={(val) => val && setSelectedOpponentUnitId(val)}
+                  data={opponentUnitSelectData}
+                  classNames={{
+                    input: 'gts-input-field',
+                    label: 'gts-input-label',
+                  }}
+                />
+                <ScrollArea.Autosize mah="72dvh" offsetScrollbars>
+                  {selectedOpponentUnit && (
+                    <ArmyUnitDatasheet unit={selectedOpponentUnit} />
+                  )}
+                </ScrollArea.Autosize>
+              </Stack>
+            </Grid.Col>
+          </Grid>
+        </Modal>
+      )}
 
       {/* 6. FULL ARMY VIEWER MODAL */}
       <Modal
