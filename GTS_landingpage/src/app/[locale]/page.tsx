@@ -51,7 +51,7 @@ export default function HomePage() {
 
   return (
     <main style={{ position: 'relative', overflowX: 'hidden' }}>
-      <LandingNavbar />
+      {/*<LandingNavbar /> */}
       <AnimatedBackground />
 
       {/* 1. Intro Section with Shimmering Logo & Countdown */}
@@ -71,9 +71,10 @@ export default function HomePage() {
           }}
         />
       </Section>
+      {/* 
       <Container size="xl" py={{ base: 40, md: 70 }} style={{ flex: 1, position: 'relative', zIndex: 2 }}>
 
-        {/* 1. Free Forever for Players Callout Banner */}
+
         <Paper
           p={{ base: 'lg', sm: 'xl' }}
           radius="md"
@@ -145,7 +146,6 @@ export default function HomePage() {
         </Paper>
       </Container>
 
-      {/* 2. General Core Engine Section */}
       <Section
         id="general"
         badge={t('general.badge')}
@@ -170,7 +170,6 @@ export default function HomePage() {
         />
       </Section>
 
-      {/* 3. Tabletop Section (Reversed for alternating flow) */}
       <Section
         id="tabletop"
         reverse
@@ -196,7 +195,6 @@ export default function HomePage() {
         />
       </Section>
 
-      {/* 4. RPG Section */}
       <Section
         id="rpg"
         badge={t('rpg.badge')}
@@ -221,7 +219,6 @@ export default function HomePage() {
         />
       </Section>
 
-      {/* 5. TCG Section (Reversed) */}
       <Section
         id="tcg"
         reverse
@@ -247,7 +244,7 @@ export default function HomePage() {
         />
       </Section>
 
-      {/* 6. Contact & Footer */}
+      */}
       <ContactForm
         labels={{
           title: t('Contact.title'),
