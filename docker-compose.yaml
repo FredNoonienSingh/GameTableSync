@@ -12,8 +12,6 @@ networks:
 volumes:
   pgdata:
   seaweed_data:
-  certbot-data:
-  certbot-certs:
 
 services:
   nginx:
@@ -27,8 +25,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - certbot-data:/var/www/certbot
-      - certbot-certs:/etc/letsencrypt
+      - /etc/letsencrypt:/etc/letsencrypt:ro  # Direct read-only mount to the host's physical certs
     depends_on:
       app-frontend:
         condition: service_started
