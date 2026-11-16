@@ -5,6 +5,8 @@ from .armylists import armylists_bp
 from .games import games_bp
 from .admin import admin_bp
 from .tournaments import tournaments_bp
+from .club import clubs_bp
+from .sanity import sanity_bp
 
 
 
@@ -16,3 +18,5 @@ def register_blueprints(app):
     app.register_blueprint(games_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(tournaments_bp)
+    app.register_blueprint(clubs_bp)
+    app.register_blueprint(sanity_bp)

@@ -51,7 +51,7 @@ export default function HomePage() {
 
   return (
     <main style={{ position: 'relative', overflowX: 'hidden' }}>
-      {/*<LandingNavbar /> */}
+      <LandingNavbar />
       <AnimatedBackground />
 
       {/* 1. Intro Section with Shimmering Logo & Countdown */}

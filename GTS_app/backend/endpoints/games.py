@@ -3,13 +3,21 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from extensions import db
-from models import User, Game, GamePlayer, FactionCategory
+from models import User, Game, GamePlayer, FactionCategory, Club, ClubTable, infer_table_category
+from .club import find_available_club_tables
 from services.discord import (
     create_game_webhook,
     update_game_webhook,
     delete_game_webhook,
 )
-from .utils import log, validate_and_resolve_army_list
+from .utils import (
+    log, 
+    validate_and_resolve_army_list, 
+    is_banned_from_club,
+    get_banned_club_ids,
+    get_optional_jwt_user_id,
+    is_club_keymaster
+)
 
 games_bp = Blueprint("games", __name__)
 
@@ -37,15 +45,21 @@ def get_factions_structure():
 
 @games_bp.route("/api/games", methods=["GET"])
 def get_games():
-    now = datetime.now()
+    viewer_id = get_optional_jwt_user_id()
+    banned_clubs = get_banned_club_ids(viewer_id)
+
+    now = datetime.utcnow()
     games = (
-        Game.query.filter(Game.start_time >= now)
+        Game.query.filter(Game.end_time >= now)
         .order_by(Game.start_time.asc())
         .all()
     )
 
     result = []
     for g in games:
+        if g.club_id in banned_clubs:
+            continue
+            
         players = []
         for p in g.participations:
             army_name = (
@@ -75,6 +89,10 @@ def get_games():
                 "points": g.points,
                 "description": g.description,
                 "start_time": g.start_time.isoformat(),
+                "end_time": g.end_time.isoformat() if g.end_time else None,
+                "club_id": g.club_id,
+                "table_id": g.table_id,
+                "required_table_type": g.required_table_type,
                 "status": g.status,
                 "is_virtual": g.is_virtual,
                 "is_approved": g.is_approved,
@@ -89,24 +107,29 @@ def get_games():
 @games_bp.route("/api/games", methods=["POST"])
 @jwt_required()
 def create_game():
-    user_id = int(get_jwt_identity())
+    user_id = get_jwt_identity()
     user = db.session.get(User, user_id)
     data = request.get_json()
 
     if not user:
-        return (
-            jsonify(
-                {
-                    "msg": "Deine Sitzung ist ungültig (Benutzer existiert nicht mehr). Bitte logge dich einmal aus und wieder ein!"
-                }
-            ),
-            401,
-        )
+        return jsonify({"msg": "Sitzung ungültig."}), 401
+
+    club_id = data.get("club_id")
+    if not data.get("is_virtual", False) and not club_id:
+        first_club = Club.query.first()
+        if first_club:
+            club_id = first_club.id
+            
+    if club_id and is_banned_from_club(user_id, club_id):
+        return jsonify({"msg": "Du hast Hausverbot in diesem Club."}), 403
 
     try:
         start_time = datetime.fromisoformat(data["start_time"])
     except (ValueError, KeyError):
         return jsonify({"msg": "Ungültiges Datumsformat"}), 400
+
+    duration_minutes = int(data.get("duration_minutes", 180))
+    end_time = start_time + timedelta(minutes=duration_minutes)
 
     system = data.get("system")
     points = data.get("points")
@@ -116,6 +139,7 @@ def create_game():
     is_virtual = data.get("is_virtual", False)
     team = data.get("team") if format_type == "2v2" else None
     army_list_id = data.get("army_list_id")
+    required_table_type = data.get("required_table_type") or infer_table_category(system)
 
     if format_type == "2v2" and not team:
         return jsonify({"msg": "Bitte wähle ein Team (Team 1 oder Team 2) aus!"}), 400
@@ -125,7 +149,7 @@ def create_game():
 
     if army_list_id:
         _, faction_id, custom_army, err = validate_and_resolve_army_list(
-            int(army_list_id), user_id, system, points
+            str(army_list_id), user_id, system, points
         )
         if err:
             return jsonify({"msg": err}), 400
@@ -137,10 +161,17 @@ def create_game():
         if not is_structured and not custom_army:
             return jsonify({"msg": "Du musst eine Armee angeben!"}), 400
 
+    if not is_virtual and club_id:
+        free_tables = find_available_club_tables(club_id, required_table_type, start_time, end_time)
+        if not free_tables:
+            return jsonify({
+                "msg": f"Für diesen Zeitraum gibt es keine freien '{required_table_type.upper()}'-Tische im Club."
+            }), 400
+
     is_approved = (
         True
-        if is_virtual or user.is_admin
-        else data.get("is_approved", False)
+        if is_virtual or (club_id and is_club_keymaster(user.id, club_id))
+        else False
     )
 
     try:
@@ -152,6 +183,9 @@ def create_game():
             points=points,
             description=data.get("description"),
             start_time=start_time,
+            end_time=end_time,
+            club_id=club_id,
+            required_table_type=required_table_type,
             is_virtual=is_virtual,
             is_approved=is_approved,
             created_by_id=user.id,
@@ -165,7 +199,7 @@ def create_game():
             game_id=new_game.id,
             faction_id=faction_id,
             custom_army=custom_army,
-            army_list_id=int(army_list_id) if army_list_id else None,
+            army_list_id=str(army_list_id) if army_list_id else None,
             team=team,
         )
         db.session.add(creator_player)
@@ -182,18 +216,20 @@ def create_game():
         return jsonify({"msg": f"Serverfehler beim Erstellen: {str(e)}"}), 500
 
 
-@games_bp.route("/api/games/<int:game_id>/join", methods=["POST"])
+@games_bp.route("/api/games/<string:game_id>/join", methods=["POST"])
 @jwt_required()
 def join_game(game_id):
-    user_id = int(get_jwt_identity())
+    user_id = get_jwt_identity()
     user = db.session.get(User, user_id)
     if not user:
         return jsonify({"msg": "Sitzung abgelaufen. Bitte logge dich neu ein!"}), 401
 
-    data = request.get_json()
     game = db.session.get(Game, game_id)
     if not game:
         return jsonify({"msg": "Spiel nicht gefunden"}), 404
+
+    if game.club_id and is_banned_from_club(user_id, game.club_id):
+        return jsonify({"msg": "Du hast Hausverbot in diesem Club."}), 403
 
     if game.status != "Open":
         return jsonify({"msg": "Dieses Spiel ist bereits voll oder abgeschlossen."}), 400
@@ -201,6 +237,7 @@ def join_game(game_id):
     if any(p.user_id == user_id for p in game.participations):
         return jsonify({"msg": "Du bist diesem Spiel bereits beigetreten."}), 400
 
+    data = request.get_json()
     team = data.get("team") if game.format_type == "2v2" else None
     army_list_id = data.get("army_list_id")
 
@@ -216,7 +253,7 @@ def join_game(game_id):
 
     if army_list_id:
         _, faction_id, custom_army, err = validate_and_resolve_army_list(
-            int(army_list_id), user_id, game.system, game.points
+            str(army_list_id), user_id, game.system, game.points
         )
         if err:
             return jsonify({"msg": err}), 400
@@ -231,47 +268,39 @@ def join_game(game_id):
     max_players = 2 if game.format_type == "1v1" else 4
     current_players = game.participations.count()
 
-    window_start = game.start_time - timedelta(hours=2)
-    window_end = game.start_time + timedelta(hours=2)
-
     conflicting_game = (
         GamePlayer.query.join(Game)
         .filter(
             GamePlayer.user_id == user_id,
             Game.status == "Matched",
-            Game.start_time >= window_start,
-            Game.start_time <= window_end,
+            Game.start_time < game.end_time,
+            Game.end_time > game.start_time,
         )
         .first()
     )
 
     if conflicting_game:
-        return (
-            jsonify(
-                {
-                    "msg": "Du bist in diesem Zeitraum bereits für ein anderes Spiel fest eingetragen."
-                }
-            ),
-            400,
-        )
+        return jsonify({"msg": "Du bist in diesem Zeitraum bereits für ein anderes Spiel fest eingetragen."}), 400
 
     if current_players + 1 == max_players and not game.is_virtual:
-        overlapping_matches = Game.query.filter(
-            Game.status == "Matched",
-            Game.is_virtual == False,
-            Game.start_time >= window_start,
-            Game.start_time <= window_end,
-        ).count()
-
-        if overlapping_matches >= 2:
-            return (
-                jsonify(
-                    {
-                        "msg": "Die beiden Tische im Club sind zu diesem Zeitpunkt bereits durch andere Matches belegt!"
-                    }
-                ),
-                400,
+        if game.club_id:
+            free_tables = find_available_club_tables(
+                game.club_id,
+                game.required_table_type,
+                game.start_time,
+                game.end_time,
+                exclude_game_id=game.id,
             )
+            if not free_tables:
+                return jsonify({
+                    "msg": f"Alle passenden '{game.required_table_type.upper()}'-Tische im Club sind in diesem Zeitraum belegt oder geschlossen!"
+                }), 400
+
+            if game.table_id and any(t.id == game.table_id for t in free_tables):
+                assigned_table = next(t for t in free_tables if t.id == game.table_id)
+            else:
+                assigned_table = free_tables[0]
+            game.table_id = assigned_table.id
 
     try:
         new_player = GamePlayer(
@@ -279,7 +308,7 @@ def join_game(game_id):
             game_id=game.id,
             faction_id=faction_id,
             custom_army=custom_army,
-            army_list_id=int(army_list_id) if army_list_id else None,
+            army_list_id=str(army_list_id) if army_list_id else None,
             team=team,
         )
         db.session.add(new_player)
@@ -300,10 +329,10 @@ def join_game(game_id):
         return jsonify({"msg": "Serverfehler beim Beitreten."}), 500
 
 
-@games_bp.route("/api/games/<int:game_id>", methods=["DELETE"])
+@games_bp.route("/api/games/<string:game_id>", methods=["DELETE"])
 @jwt_required()
 def delete_game(game_id):
-    user_id = int(get_jwt_identity())
+    user_id = get_jwt_identity()
     user = db.session.get(User, user_id)
     if not user:
         return jsonify({"msg": "Sitzung abgelaufen."}), 401
@@ -312,7 +341,7 @@ def delete_game(game_id):
     if not game:
         return jsonify({"msg": "Spiel nicht gefunden"}), 404
 
-    if game.created_by_id != user_id and not user.is_admin:
+    if game.created_by_id != user_id and not (game.club_id and is_club_keymaster(user_id, game.club_id)):
         return jsonify({"msg": "Keine Berechtigung"}), 403
 
     try:
@@ -326,10 +355,10 @@ def delete_game(game_id):
         return jsonify({"msg": "Serverfehler beim Löschen."}), 500
 
 
-@games_bp.route("/api/games/<int:game_id>/leave", methods=["POST"])
+@games_bp.route("/api/games/<string:game_id>/leave", methods=["POST"])
 @jwt_required()
 def leave_game(game_id):
-    user_id = int(get_jwt_identity())
+    user_id = get_jwt_identity()
     game = db.session.get(Game, game_id)
 
     if not game:
@@ -340,18 +369,9 @@ def leave_game(game_id):
             delete_game_webhook(game)
             db.session.delete(game)
             db.session.commit()
-            return (
-                jsonify(
-                    {
-                        "msg": "Da du der Ersteller bist, wurde das Spiel komplett gelöscht."
-                    }
-                ),
-                200,
-            )
+            return jsonify({"msg": "Da du der Ersteller bist, wurde das Spiel komplett gelöscht."}), 200
 
-        participation = GamePlayer.query.filter_by(
-            game_id=game.id, user_id=user_id
-        ).first()
+        participation = GamePlayer.query.filter_by(game_id=game.id, user_id=user_id).first()
         if not participation:
             return jsonify({"msg": "Du bist nicht in diesem Spiel."}), 400
 
@@ -359,6 +379,7 @@ def leave_game(game_id):
 
         if game.status == "Matched":
             game.status = "Open"
+            game.table_id = None
 
         db.session.commit()
         update_game_webhook(game)
@@ -369,10 +390,10 @@ def leave_game(game_id):
         return jsonify({"msg": "Serverfehler beim Verlassen."}), 500
 
 
-@games_bp.route("/api/games/<int:game_id>/result", methods=["POST"])
+@games_bp.route("/api/games/<string:game_id>/result", methods=["POST"])
 @jwt_required()
 def submit_game_result(game_id):
-    user_id = int(get_jwt_identity())
+    user_id = get_jwt_identity()
     game = db.session.get(Game, game_id)
 
     if not game:

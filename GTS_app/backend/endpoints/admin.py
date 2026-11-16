@@ -1,206 +1,154 @@
-from datetime import datetime
+import uuid
+from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify
 from werkzeug.security import check_password_hash
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from extensions import db
-from models import User, Event, Game
-from services.discord import (
-    create_event_webhook,
-    update_event_webhook,
-    update_game_webhook,
-)
-from .utils import is_admin
+from models import User, Club, ClubLicense, get_all_tiers
+from .utils import is_app_admin
 
 admin_bp = Blueprint("admin", __name__)
 
 
 @admin_bp.route("/api/admin/users", methods=["GET"])
 @jwt_required()
-def get_users():
-    if not is_admin():
-        return jsonify({"msg": "Zugriff verweigert"}), 403
+def get_all_users():
+    if not is_app_admin():
+        return jsonify({"msg": "Sudo-Zugriff verweigert (Nur AppAdmin)."}), 403
 
-    users = User.query.all()
-    return (
-        jsonify(
-            [
-                {
-                    "id": u.id,
-                    "display_name": u.display_name,
-                    "email": u.email,
-                    "is_admin": u.is_admin,
-                }
-                for u in users
-            ]
-        ),
-        200,
-    )
+    users = User.query.order_by(User.created_at.desc()).all()
+    return jsonify([
+        {
+            "id": u.id,
+            "display_name": u.display_name,
+            "email": u.email,
+            "discord_account": u.discord_account,
+            "is_app_admin": u.is_app_admin,
+            "owned_clubs_count": u.owned_clubs.count(),
+            "created_at": u.created_at.isoformat() if u.created_at else None,
+        }
+        for u in users
+    ]), 200
 
 
-@admin_bp.route("/api/admin/users/<int:user_id>/role", methods=["PUT"])
+@admin_bp.route("/api/admin/users/<string:user_id>/sudo-role", methods=["PUT"])
 @jwt_required()
-def toggle_user_role(user_id):
-    if not is_admin():
-        return jsonify({"msg": "Zugriff verweigert"}), 403
+def toggle_app_admin_role(user_id):
+    if not is_app_admin():
+        return jsonify({"msg": "Sudo-Zugriff verweigert."}), 403
+
+    admin_id = get_jwt_identity()
+    if str(admin_id) == str(user_id):
+        return jsonify({"msg": "Du kannst dir nicht selbst den AppAdmin-Status entziehen."}), 400
 
     user = db.session.get(User, user_id)
     if not user:
-        return jsonify({"msg": "Benutzer nicht gefunden"}), 404
+        return jsonify({"msg": "Benutzer nicht gefunden."}), 404
 
-    user.is_admin = not user.is_admin
+    user.is_app_admin = not user.is_app_admin
     db.session.commit()
-    return jsonify({"msg": "Rolle aktualisiert"}), 200
+    return jsonify({"msg": "AppAdmin-Rolle aktualisiert.", "is_app_admin": user.is_app_admin}), 200
 
 
-@admin_bp.route("/api/admin/users/<int:user_id>", methods=["DELETE"])
+@admin_bp.route("/api/admin/users/<string:user_id>", methods=["DELETE"])
 @jwt_required()
-def delete_user(user_id):
-    if not is_admin():
-        return jsonify({"msg": "Zugriff verweigert"}), 403
+def sudo_delete_user(user_id):
+    """Global account deletion — strictly reserved for AppAdmin."""
+    if not is_app_admin():
+        return jsonify({"msg": "Sudo-Zugriff verweigert."}), 403
 
-    data = request.get_json()
+    data = request.get_json() or {}
     admin_password = data.get("password")
 
-    admin_id = int(get_jwt_identity())
+    admin_id = get_jwt_identity()
     admin_user = db.session.get(User, admin_id)
 
-    if not admin_user or not check_password_hash(
-        admin_user.password_hash, admin_password
-    ):
-        return (
-            jsonify({"msg": "Falsches Admin-Passwort. Löschung abgebrochen."}),
-            401,
-        )
+    if not admin_user or not admin_password or not check_password_hash(admin_user.password_hash, admin_password):
+        return jsonify({"msg": "Falsches AppAdmin-Passwort. Löschung abgebrochen."}), 401
 
     if str(admin_user.id) == str(user_id):
-        return jsonify({"msg": "Du kannst dich nicht selbst löschen."}), 400
+        return jsonify({"msg": "Du kannst deinen eigenen Sudo-Account nicht löschen."}), 400
 
     user_to_delete = db.session.get(User, user_id)
     if not user_to_delete:
-        return jsonify({"msg": "Benutzer nicht gefunden"}), 404
+        return jsonify({"msg": "Benutzer nicht gefunden."}), 404
 
     db.session.delete(user_to_delete)
     db.session.commit()
+    return jsonify({"msg": f"Benutzer '{user_to_delete.display_name}' global gelöscht."}), 200
 
-    return jsonify({"msg": "Benutzer erfolgreich gelöscht"}), 200
 
-
-@admin_bp.route("/api/admin/events", methods=["POST"])
+@admin_bp.route("/api/admin/clubs", methods=["GET"])
 @jwt_required()
-def create_event():
-    if not is_admin():
-        return jsonify({"msg": "Zugriff verweigert"}), 403
+def sudo_get_all_clubs():
+    if not is_app_admin():
+        return jsonify({"msg": "Sudo-Zugriff verweigert."}), 403
 
-    data = request.get_json()
-    title = data.get("title")
-    start_time_str = data.get("start_time")
-    description = data.get("description")
+    clubs = Club.query.order_by(Club.created_at.desc()).all()
+    return jsonify([
+        {
+            "id": c.id,
+            "name": c.name,
+            "slug": c.slug,
+            "owner_id": c.owner_id,
+            "owner_name": c.owner.display_name if c.owner else None,
+            "tier": c.tier,
+            "tables_count": c.tables.count(),
+            "employees_count": c.employees.count(),
+            "bans_count": c.bans.count(),
+        }
+        for c in clubs
+    ]), 200
 
-    if not title or not start_time_str:
-        return jsonify({"msg": "Titel und Startzeit sind erforderlich"}), 400
 
-    try:
-        start_time = datetime.fromisoformat(start_time_str)
-    except ValueError:
-        return jsonify({"msg": "Ungültiges Datumsformat"}), 400
+@admin_bp.route("/api/admin/clubs/<string:club_id>/tier", methods=["PUT"])
+@jwt_required()
+def sudo_override_club_tier(club_id):
+    """Allows AppAdmin to manually set or upgrade any Club's tier without Stripe."""
+    if not is_app_admin():
+        return jsonify({"msg": "Sudo-Zugriff verweigert."}), 403
 
-    new_event = Event(title=title, start_time=start_time, description=description)
-    db.session.add(new_event)
+    club = db.session.get(Club, club_id)
+    if not club:
+        return jsonify({"msg": "Club nicht gefunden."}), 404
+
+    data = request.get_json() or {}
+    tier = data.get("tier")
+    tiers = get_all_tiers()
+    if tier not in tiers:
+        return jsonify({"msg": f"Ungültiges Tier. Verfügbar: {list(tiers.keys())}"}), 400
+
+    if club.license:
+        club.license.tier = tier
+        club.license.status = "active"
+    else:
+        lic = ClubLicense(
+            owner_id=club.owner_id,
+            tier=tier,
+            status="active",
+            is_mock=True,
+            stripe_subscription_id=f"sub_sudo_{uuid.uuid4().hex[:12]}",
+            valid_until=datetime.utcnow() + timedelta(days=3650),
+        )
+        db.session.add(lic)
+        db.session.flush()
+        club.license_id = lic.id
+
     db.session.commit()
+    return jsonify({"msg": f"Club '{club.name}' durch AppAdmin auf '{tier}' gesetzt!"}), 200
 
-    create_event_webhook(new_event)
+
+@admin_bp.route("/api/admin/clubs/<string:club_id>", methods=["DELETE"])
+@jwt_required()
+def sudo_delete_club(club_id):
+    if not is_app_admin():
+        return jsonify({"msg": "Sudo-Zugriff verweigert."}), 403
+
+    club = db.session.get(Club, club_id)
+    if not club:
+        return jsonify({"msg": "Club nicht gefunden."}), 404
+
+    db.session.delete(club)
     db.session.commit()
-
-    return jsonify({"msg": "Event erfolgreich erstellt!"}), 201
-
-
-@admin_bp.route("/api/admin/events", methods=["GET"])
-@jwt_required()
-def get_admin_events():
-    if not is_admin():
-        return jsonify({"msg": "Zugriff verweigert"}), 403
-
-    events = Event.query.order_by(Event.start_time.desc()).all()
-
-    return (
-        jsonify(
-            [
-                {
-                    "id": e.id,
-                    "title": e.title,
-                    "start_time": e.start_time.isoformat(),
-                    "description": e.description,
-                    "attendees": [
-                        {"id": a.id, "display_name": a.display_name}
-                        for a in e.attendees.all()
-                    ],
-                }
-                for e in events
-            ]
-        ),
-        200,
-    )
-
-
-@admin_bp.route("/api/admin/events/<int:event_id>", methods=["PUT", "DELETE"])
-@jwt_required()
-def manage_event(event_id):
-    if not is_admin():
-        return jsonify({"msg": "Zugriff verweigert"}), 403
-
-    event_target = db.session.get(Event, event_id)
-    if not event_target:
-        return jsonify({"msg": "Event nicht gefunden"}), 404
-
-    if request.method == "DELETE":
-        db.session.delete(event_target)
-        db.session.commit()
-        return jsonify({"msg": "Event erfolgreich gelöscht"}), 200
-
-    if request.method == "PUT":
-        data = request.get_json()
-        title = data.get("title")
-        start_time_str = data.get("start_time")
-        description = data.get("description")
-
-        if title:
-            event_target.title = title
-        if description is not None:
-            event_target.description = description
-        if start_time_str:
-            try:
-                event_target.start_time = datetime.fromisoformat(start_time_str)
-            except ValueError:
-                return jsonify({"msg": "Ungültiges Datumsformat"}), 400
-
-        db.session.commit()
-        update_event_webhook(event_target)
-        return jsonify({"msg": "Event erfolgreich aktualisiert"}), 200
-
-
-@admin_bp.route("/api/admin/games/<int:game_id>/approve", methods=["PUT"])
-@jwt_required()
-def toggle_game_approval(game_id):
-    if not is_admin():
-        return jsonify({"msg": "Zugriff verweigert"}), 403
-
-    game = db.session.get(Game, game_id)
-    if not game:
-        return jsonify({"msg": "Spiel nicht gefunden"}), 404
-
-    game.is_approved = not game.is_approved
-    db.session.commit()
-
-    update_game_webhook(game)
-
-    status_text = "genehmigt" if game.is_approved else "auf 'wartend' gesetzt"
-    return (
-        jsonify(
-            {
-                "msg": f"Spiel erfolgreich {status_text}!",
-                "is_approved": game.is_approved,
-            }
-        ),
-        200,
-    )
+    return jsonify({"msg": f"Club '{club.name}' vollständig gelöscht."}), 200

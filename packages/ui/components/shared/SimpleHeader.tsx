@@ -12,7 +12,7 @@ export function SimpleHeader({ href = '/' }: { href?: string }) {
         <Group gap="sm" align="center">
           <img src={logoSrc} alt="GameTableSync Logo" className="gts-simple-header-logo" />
           <Text className="brand-logo gts-simple-header-text"  >
-            GAMETABLESYNC
+            GameTableSync
           </Text>
         </Group>
       </Anchor>

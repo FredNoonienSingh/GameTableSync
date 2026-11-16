@@ -60,6 +60,10 @@ import {
   ArmyUnitDatasheet,
   ArmyRulesGlossary,
   BattleCompanion40k,
+  TacticalTableGraphic,
+  TacticalTableGrid,
+  TournamentBracketGraphic,
+  type TacticalTableProps,
   type UIGame,
   type GameFilterValues,
   type UITournament,
@@ -67,7 +71,12 @@ import {
   type UILeaderboardSystemBoard,
   type ArmyMetadata,
   type ParsedUnit,
+  type BracketRound,
 } from '@gts/ui';
+
+/* ============================================================================
+ * MOCK DATA
+ * ========================================================================== */
 
 export const MOCK_ARMY_METADATA: ArmyMetadata = {
   name: 'Omnissiahs Vengeance',
@@ -259,6 +268,39 @@ const TENANT_PRESETS: Record<string, { label: string; primary: string; accent: s
   necron: { label: 'Tomb World Gauss', primary: '#10b981', accent: '#6ee7b7' },
 };
 
+const INITIAL_ARENA_TABLES: TacticalTableProps[] = [
+  {
+    id: 'tbl-alpha-01',
+    name: 'SECTOR ALPHA-01',
+    category: 'wargaming',
+    status: 'occupied',
+    occupiedUntil: new Date(Date.now() + 1000 * 60 * 95),
+    dimensionsLabel: '60" × 44" STRIKE FORCE (WTC)',
+  },
+  {
+    id: 'tbl-alpha-02',
+    name: 'SECTOR ALPHA-02',
+    category: 'wargaming',
+    status: 'free',
+    dimensionsLabel: '60" × 44" PERMAFROST SECTOR',
+  },
+  {
+    id: 'tbl-pod-c01',
+    name: 'ARCANE POD C-01',
+    category: 'card_board',
+    status: 'occupied',
+    occupiedUntil: new Date(Date.now() + 1000 * 60 * 32),
+    dimensionsLabel: '4-PLAYER COMMANDER POD',
+  },
+  {
+    id: 'tbl-pod-c02',
+    name: 'DUEL TABLE C-02',
+    category: 'card_board',
+    status: 'free',
+    dimensionsLabel: '2-PLAYER SWISS TCG MAT',
+  },
+];
+
 const MOCK_GAMES: UIGame[] = [
   {
     id: 1,
@@ -408,6 +450,73 @@ const MOCK_GALLERY_IMAGES = [
   { src: 'https://placehold.co/900x500/1c1e24/c084fc?text=TABLE+3+:+CITADEL+ARENA', alt: 'Table 3' },
 ];
 
+const MOCK_BRACKET_DATA: BracketRound[] = [
+  {
+    id: 'r1',
+    title: 'QUARTERFINALS',
+    matches: [
+      {
+        id: '101',
+        status: 'finished',
+        top: { id: 'p1', name: 'TechPriest_Frederic', score: '20', isWinner: true },
+        bottom: { id: 'p2', name: 'HiveTyrant_Max', score: '0', isWinner: false },
+      },
+      {
+        id: '102',
+        status: 'finished',
+        top: { id: 'p3', name: 'Praetor_Basti', score: '13', isWinner: true },
+        bottom: { id: 'p4', name: 'Neophyte_Lukas', score: '7', isWinner: false },
+      },
+      {
+        id: '103',
+        status: 'open',
+        top: { id: 'p5', name: 'KriegMarshal', score: '8', isWinner: false },
+        bottom: { id: 'p6', name: 'SigmarHelden', score: '8', isWinner: false },
+      },
+      {
+        id: '104',
+        status: 'canceled',
+        top: { id: 'p7', name: 'Erebus_WordBearer', score: '0', isWinner: false },
+        bottom: { id: 'p8', name: 'SkavenLord', score: '0', isWinner: false },
+      },
+    ],
+  },
+  {
+    id: 'r2',
+    title: 'SEMIFINALS',
+    matches: [
+      {
+        id: '201',
+        status: 'open',
+        top: { id: 'p1', name: 'TechPriest_Frederic', score: null, isWinner: false },
+        bottom: { id: 'p3', name: 'Praetor_Basti', score: null, isWinner: false },
+      },
+      {
+        id: '202',
+        status: 'open',
+        top: { id: null, name: '', score: null, isWinner: false },
+        bottom: { id: null, name: '', score: null, isWinner: false },
+      },
+    ],
+  },
+  {
+    id: 'r3',
+    title: 'GRAND FINAL',
+    matches: [
+      {
+        id: '301',
+        status: 'open',
+        top: { id: null, name: '', score: null, isWinner: false },
+        bottom: { id: null, name: '', score: null, isWinner: false },
+      },
+    ],
+  },
+];
+
+/* ============================================================================
+ * HELPER COMPONENT
+ * ========================================================================== */
+
 function ClassTag({ name, desc }: { name: string; desc?: string }) {
   return (
     <Group justify="space-between" mb="xs" wrap="wrap" gap="xs">
@@ -432,12 +541,17 @@ function ClassTag({ name, desc }: { name: string; desc?: string }) {
   );
 }
 
+/* ============================================================================
+ * MAIN PAGE
+ * ========================================================================== */
+
 export default function DevKitchenSinkPage() {
   const [sliderVal, setSliderVal] = useState<number>(50);
   const [autoPlay, setAutoPlay] = useState<boolean>(true);
   const [tenantKey, setTenantKey] = useState<string>('default');
   const [cookieOpen, setCookieOpen] = useState<boolean>(false);
   const [loginOpen, setLoginOpen] = useState<boolean>(false);
+  const [arenaTables, setArenaTables] = useState<TacticalTableProps[]>(INITIAL_ARENA_TABLES);
 
   const [filterVals, setFilterVals] = useState<GameFilterValues>({
     system: null,
@@ -472,14 +586,29 @@ export default function DevKitchenSinkPage() {
     return () => cancelAnimationFrame(frameId);
   }, [autoPlay, progress]);
 
+  const handleToggleTableStatus = (id: string) => {
+    setArenaTables((prev) =>
+      prev.map((table) => {
+        if (table.id !== id) return table;
+        const nextStatus = table.status === 'free' ? 'occupied' : 'free';
+        return {
+          ...table,
+          status: nextStatus,
+          occupiedUntil:
+            nextStatus === 'occupied' ? new Date(Date.now() + 1000 * 60 * 90) : null,
+        };
+      })
+    );
+  };
+
   const activePreset = TENANT_PRESETS[tenantKey] ?? TENANT_PRESETS.default;
   const tenantOverrideStyle = (
     tenantKey === 'default'
       ? {}
       : {
-        '--gts-primary': activePreset.primary,
-        '--gts-accent': activePreset.accent,
-      }
+          '--gts-primary': activePreset.primary,
+          '--gts-accent': activePreset.accent,
+        }
   ) as CSSProperties;
 
   return (
@@ -541,6 +670,7 @@ export default function DevKitchenSinkPage() {
 
       <Container size="xl" pt={110} pb={120} style={{ position: 'relative', zIndex: 2 }}>
         <Stack gap={60}>
+          {/* SECTION 1 */}
           <Stack gap="md">
             <Title order={2} className="brand-logo">
               1. GLOBAL CSS VARIABLES (:root & [data-mantine-color-scheme])
@@ -588,6 +718,7 @@ export default function DevKitchenSinkPage() {
 
           <Divider color="var(--gts-border-subtle)" />
 
+          {/* SECTION 2 */}
           <Stack gap="md">
             <Title order={2} className="brand-logo">
               2. CONTAINER & SURFACE CLASSES
@@ -656,6 +787,7 @@ export default function DevKitchenSinkPage() {
 
           <Divider color="var(--gts-border-subtle)" />
 
+          {/* SECTION 3 */}
           <Stack gap="md">
             <Title order={2} className="brand-logo">
               3. TYPOGRAPHY, BUTTONS, INPUTS & BADGES
@@ -738,6 +870,7 @@ export default function DevKitchenSinkPage() {
 
           <Divider color="var(--gts-border-subtle)" />
 
+          {/* SECTION 4 */}
           <Stack gap="md">
             <Title order={2} className="brand-logo">
               4. PRICING TIER FORTIFICATION GRAPHICS
@@ -806,6 +939,7 @@ export default function DevKitchenSinkPage() {
 
           <Divider color="var(--gts-border-subtle)" />
 
+          {/* SECTION 5 */}
           <Stack gap="md">
             <Title order={2} className="brand-logo">
               5. SCROLL & FEATURE ANIMATION GRAPHICS (.gts-graphic-scope)
@@ -843,6 +977,7 @@ export default function DevKitchenSinkPage() {
 
           <Divider color="var(--gts-border-subtle)" />
 
+          {/* SECTION 6 */}
           <Stack gap="md">
             <Title order={2} className="brand-logo">
               6. COMPOSITE UI COMPONENTS (MATCHMAKING & OVERLAYS)
@@ -877,9 +1012,9 @@ export default function DevKitchenSinkPage() {
                     game={game}
                     currentUserId={10}
                     isAuthenticated={true}
-                    onJoinClick={() => { }}
-                    onLeaveClick={() => { }}
-                    onDeleteClick={() => { }}
+                    onJoinClick={() => {}}
+                    onLeaveClick={() => {}}
+                    onDeleteClick={() => {}}
                   />
                 </Grid.Col>
               ))}
@@ -943,9 +1078,7 @@ export default function DevKitchenSinkPage() {
 
           <Divider color="var(--gts-border-subtle)" />
 
-          {/* ================================================================
-              7. ARMY ROSTER & DATASHEETS
-             ================================================================ */}
+          {/* SECTION 7 */}
           <Stack gap="md">
             <Title order={2} className="brand-logo">
               7. ARMY ROSTER & DATASHEETS
@@ -969,9 +1102,7 @@ export default function DevKitchenSinkPage() {
 
           <Divider color="var(--gts-border-subtle)" />
 
-          {/* ================================================================
-              8. TOURNAMENTS, STANDINGS, LEADERBOARD & GALLERY (EXTRACTED POC)
-             ================================================================ */}
+          {/* SECTION 8 */}
           <Stack gap="md">
             <Title order={2} className="brand-logo">
               8. TOURNAMENTS, LEADERBOARD & GALLERY
@@ -985,9 +1116,9 @@ export default function DevKitchenSinkPage() {
               tournament={MOCK_TOURNAMENT}
               isAuthenticated={true}
               isRegistered={false}
-              onRegisterClick={() => { }}
-              onUnregisterClick={() => { }}
-              onViewDetails={() => { }}
+              onRegisterClick={() => {}}
+              onUnregisterClick={() => {}}
+              onViewDetails={() => {}}
             />
 
             <ClassTag
@@ -1008,6 +1139,78 @@ export default function DevKitchenSinkPage() {
             />
             <GalleryShowcase images={MOCK_GALLERY_IMAGES} />
           </Stack>
+
+          <Divider color="var(--gts-border-subtle)" />
+
+          {/* SECTION 9 */}
+          <Stack gap="md">
+            <Title order={2} className="brand-logo">
+              9. WARHAMMER 40,000 IN-GAME BATTLE COMPANION
+            </Title>
+            <ClassTag
+              name="<BattleCompanion40k />"
+              desc="Live CP/VP ledger, WTC 20-0 matrix, phase stepper, chess clock, wound/battle-shock tracker & dual datasheet inspector"
+            />
+            <BattleCompanion40k
+              playerArmy={{
+                playerName: 'TechPriest_Frederic',
+                metadata: MOCK_ARMY_METADATA,
+                units: MOCK_ARMY_UNITS,
+              }}
+              opponentArmy={{
+                playerName: 'Warsmith_Basti',
+                metadata: MOCK_OPPONENT_METADATA,
+                units: MOCK_OPPONENT_UNITS,
+              }}
+            />
+          </Stack>
+
+          <Divider color="var(--gts-border-subtle)" />
+
+          {/* SECTION 10 */}
+          <Stack gap="md">
+            <Group justify="space-between" align="center" wrap="wrap">
+              <Title order={2} className="brand-logo">
+                10. CLUB FLOOR & TACTICAL TABLE TELEMETRY
+              </Title>
+              <Badge variant="outline" className="brand-logo gts-price-badge">
+                CLICK ANY TABLE TO TOGGLE FREE / OCCUPIED
+              </Badge>
+            </Group>
+
+            <ClassTag
+              name="<TacticalTableGrid /> & <TacticalTableGraphic />"
+              desc="Wargaming (60x44 battlemat + radar sweep) & Card/Boardgame pods with live Date countdown"
+            />
+
+            <TacticalTableGrid
+              tables={arenaTables}
+              onSelectTable={handleToggleTableStatus}
+            />
+          </Stack>
+
+          <Divider color="var(--gts-border-subtle)" />
+
+          {/* SECTION 11 */}
+          <Stack gap="md">
+            <Group justify="space-between" align="center" wrap="wrap">
+              <Title order={2} className="brand-logo">
+                11. K.O. TOURNAMENT BRACKET GRAPHIC
+              </Title>
+              <Badge variant="outline" className="brand-logo gts-price-badge">
+                HORIZONTAL SCROLL ENABLED
+              </Badge>
+            </Group>
+
+            <ClassTag
+              name="<TournamentBracketGraphic />"
+              desc="Dynamic flex-based data tree with active pulse states, TBD tracking, and Framer Motion stagger."
+            />
+
+            <Paper p="md" radius="md" className="gts-section-paper">
+              <TournamentBracketGraphic rounds={MOCK_BRACKET_DATA} />
+            </Paper>
+          </Stack>
         </Stack>
       </Container>
 
@@ -1017,32 +1220,6 @@ export default function DevKitchenSinkPage() {
         onLogin={() => setLoginOpen(false)}
         onRegister={() => setLoginOpen(false)}
       />
-      <Divider color="var(--gts-border-subtle)" />
-
-      {/* ================================================================
-              9. WARHAMMER 40,000 LIVE BATTLE COMPANION
-             ================================================================ */}
-      <Stack gap="md">
-        <Title order={2} className="brand-logo">
-          9. WARHAMMER 40,000 IN-GAME BATTLE COMPANION
-        </Title>
-        <ClassTag
-          name="<BattleCompanion40k />"
-          desc="Live CP/VP ledger, WTC 20-0 matrix, phase stepper, chess clock, wound/battle-shock tracker & dual datasheet inspector"
-        />
-        <BattleCompanion40k
-          playerArmy={{
-            playerName: 'TechPriest_Frederic',
-            metadata: MOCK_ARMY_METADATA,
-            units: MOCK_ARMY_UNITS,
-          }}
-          opponentArmy={{
-            playerName: 'Warsmith_Basti',
-            metadata: MOCK_OPPONENT_METADATA,
-            units: MOCK_OPPONENT_UNITS,
-          }}
-        />
-      </Stack>
       <CookieBanner opened={cookieOpen} onAccept={() => setCookieOpen(false)} />
     </Box>
   );

@@ -1,17 +1,93 @@
 import sys
+
+from datetime import datetime
+from flask_jwt_extended import get_jwt, get_jwt_identity, verify_jwt_in_request
+from extensions import db
+from models import User, Club, ClubEmployee, ClubBan
 from sqlalchemy import func
 from flask_jwt_extended import get_jwt
 from extensions import db
 from models import ArmyList, Faction
+from models import Club, ClubEmployee
+
+
+def is_club_owner(user_id: str, club_id: str) -> bool:
+    if not user_id or not club_id:
+        return False
+    club = db.session.get(Club, club_id)
+    return bool(club and club.owner_id == user_id)
+
+
+def get_club_employee(user_id: str, club_id: str) -> ClubEmployee | None:
+    if not user_id or not club_id:
+        return None
+    return ClubEmployee.query.filter_by(club_id=club_id, user_id=user_id).first()
+
+
+def is_club_keymaster(user_id: str, club_id: str) -> bool:
+    """True if the user owns the club OR is an employee with the KEYMASTER attribute."""
+    if is_club_owner(user_id, club_id):
+        return True
+    emp = get_club_employee(user_id, club_id)
+    return bool(emp and emp.is_keymaster)
+
+
+def can_manage_club_tournaments(user_id: str, club_id: str) -> bool:
+    """True if the user owns the club OR is an employee with tournament permissions."""
+    if is_club_owner(user_id, club_id):
+        return True
+    emp = get_club_employee(user_id, club_id)
+    return bool(emp and (emp.can_manage_tournaments or emp.is_keymaster))
+
+
+def can_manage_club_events(user_id: str, club_id: str) -> bool:
+    """True if the user owns the club OR is an employee with event permissions."""
+    if is_club_owner(user_id, club_id):
+        return True
+    emp = get_club_employee(user_id, club_id)
+    return bool(emp and (emp.can_manage_events or emp.is_keymaster))
+
+
+def get_user_club_roles(user_id: str) -> list[dict]:
+    """Returns a summary of all clubs the user owns or works at (used for JWT/frontend UI)."""
+    owned = Club.query.filter_by(owner_id=user_id).all()
+    employed = ClubEmployee.query.filter_by(user_id=user_id).all()
+
+    roles = []
+    for c in owned:
+        roles.append({
+            "club_id": c.id,
+            "club_name": c.name,
+            "club_slug": c.slug,
+            "tier": c.tier,
+            "tier_limits": c.tier_limits,
+            "is_owner": True,
+            "is_keymaster": True,
+            "can_manage_tournaments": True,
+            "can_manage_events": True,
+        })
+
+    owned_ids = {c.id for c in owned}
+    for e in employed:
+        if e.club_id in owned_ids or not e.club:
+            continue
+        roles.append({
+            "club_id": e.club_id,
+            "club_name": e.club.name,
+            "club_slug": e.club.slug,
+            "tier": e.club.tier,
+            "tier_limits": e.club.tier_limits,
+            "is_owner": False,
+            "role_title": e.role_title,
+            "is_keymaster": e.is_keymaster,
+            "can_manage_tournaments": e.can_manage_tournaments,
+            "can_manage_events": e.can_manage_events,
+        })
+    return roles
 
 
 def log(msg):
     print(msg, file=sys.stderr, flush=True)
-
-
-def is_admin():
-    claims = get_jwt()
-    return claims.get("is_admin") is True
 
 
 def systems_match(game_sys: str, list_sys: str) -> bool:
@@ -126,10 +202,13 @@ def validate_and_resolve_army_list(army_list_id, user_id, game_system, game_poin
     if not army_list or army_list.user_id != user_id:
         return None, None, None, "Ungültige Armeeliste ausgewählt."
 
-    meta = parse_roster_metadata(army_list.roster_data) if army_list.roster_data else {}
+    meta = parse_roster_metadata(
+        army_list.roster_data) if army_list.roster_data else {}
     list_sys = meta.get("system") or army_list.system
-    list_faction = meta.get("faction") if army_list.faction in (None, "Unknown Faction") else army_list.faction
-    list_pts = meta.get("points") if meta.get("points") is not None else (army_list.points or 0)
+    list_faction = meta.get("faction") if army_list.faction in (
+        None, "Unknown Faction") else army_list.faction
+    list_pts = meta.get("points") if meta.get(
+        "points") is not None else (army_list.points or 0)
 
     if not systems_match(game_system, list_sys):
         return (
@@ -154,3 +233,94 @@ def validate_and_resolve_army_list(army_list_id, user_id, game_system, game_poin
     custom_army = list_faction or army_list.name
 
     return army_list, faction_id, custom_army, None
+
+
+def is_app_admin() -> bool:
+    """True if the current JWT belongs to a platform-level AppAdmin (sudo)."""
+    try:
+        claims = get_jwt()
+        if claims.get("is_app_admin") is True:
+            return True
+        uid = get_jwt_identity()
+        if uid:
+            u = db.session.get(User, uid)
+            return bool(u and u.is_app_admin)
+    except Exception:
+        pass
+    return False
+
+
+def get_optional_jwt_user_id() -> str | None:
+    """Extracts user_id on public GET endpoints if a Bearer token is present, else None."""
+    try:
+        verify_jwt_in_request(optional=True)
+        return get_jwt_identity()
+    except Exception:
+        return None
+
+
+def is_banned_from_club(user_id: str | None, club_id: str | None) -> bool:
+    """Checks if a user has an active Store Ban for the given club (AppAdmins cannot be banned)."""
+    if not user_id or not club_id:
+        return False
+    user = db.session.get(User, user_id)
+    if user and user.is_app_admin:
+        return False
+    ban = ClubBan.query.filter_by(club_id=club_id, user_id=user_id).first()
+    if not ban:
+        return False
+    if ban.expires_at and datetime.utcnow() > ban.expires_at:
+        db.session.delete(ban)
+        db.session.commit()
+        return False
+    return True
+
+
+def get_banned_club_ids(user_id: str | None) -> set[str]:
+    """Returns the set of club_ids the user is currently banned from."""
+    if not user_id:
+        return set()
+    now = datetime.utcnow()
+    bans = ClubBan.query.filter_by(user_id=user_id).all()
+    active_banned_clubs = set()
+    for b in bans:
+        if b.expires_at and now > b.expires_at:
+            continue
+        active_banned_clubs.add(b.club_id)
+    return active_banned_clubs
+
+
+def is_club_owner(user_id: str, club_id: str) -> bool:
+    if is_app_admin():
+        return True
+    if not user_id or not club_id:
+        return False
+    club = db.session.get(Club, club_id)
+    return bool(club and club.owner_id == user_id)
+
+
+def get_club_employee(user_id: str, club_id: str) -> ClubEmployee | None:
+    if not user_id or not club_id:
+        return None
+    return ClubEmployee.query.filter_by(club_id=club_id, user_id=user_id).first()
+
+
+def is_club_keymaster(user_id: str, club_id: str) -> bool:
+    if is_club_owner(user_id, club_id):
+        return True
+    emp = get_club_employee(user_id, club_id)
+    return bool(emp and emp.is_keymaster)
+
+
+def can_manage_club_tournaments(user_id: str, club_id: str) -> bool:
+    if is_club_owner(user_id, club_id):
+        return True
+    emp = get_club_employee(user_id, club_id)
+    return bool(emp and (emp.can_manage_tournaments or emp.is_keymaster))
+
+
+def can_manage_club_events(user_id: str, club_id: str) -> bool:
+    if is_club_owner(user_id, club_id):
+        return True
+    emp = get_club_employee(user_id, club_id)
+    return bool(emp and (emp.can_manage_events or emp.is_keymaster))

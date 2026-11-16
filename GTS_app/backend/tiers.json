@@ -1,0 +1,38 @@
+{
+  "default_tier": "tier_1",
+  "tiers": {
+    "tier_1": {
+      "name": "Outpost",
+      "display_label": "Outpost (Tier 1)",
+      "monthly_price_eur": 19,
+      "stripe_price_id": "price_replace_me_tier_1",
+      "max_active_signup_tournaments": 1,
+      "max_tables": 4,
+      "can_schedule_employees": false,
+      "discord_bot_access_level": "basic",
+      "custom_theming": true
+    },
+    "tier_2": {
+      "name": "Stronghold",
+      "display_label": "Stronghold (Tier 2)",
+      "monthly_price_eur": 49,
+      "stripe_price_id": "price_replace_me_tier_2",
+      "max_active_signup_tournaments": 3,
+      "max_tables": 12,
+      "can_schedule_employees": true,
+      "discord_bot_access_level": "standard",
+      "custom_theming": true
+    },
+    "tier_3": {
+      "name": "Fortress",
+      "display_label": "Fortress (Tier 3)",
+      "monthly_price_eur": 99,
+      "stripe_price_id": "price_replace_me_tier_3",
+      "max_active_signup_tournaments": 999,
+      "max_tables": 999,
+      "can_schedule_employees": true,
+      "discord_bot_access_level": "full",
+      "custom_theming": true
+    }
+  }
+}

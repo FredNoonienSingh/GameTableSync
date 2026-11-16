@@ -12,7 +12,7 @@ armylists_bp = Blueprint("armylists", __name__)
 @armylists_bp.route("/api/armylists", methods=["POST"])
 @jwt_required()
 def upload_army_list():
-    user_id = int(get_jwt_identity())
+    user_id = get_jwt_identity()
 
     if "file" not in request.files:
         return jsonify({"msg": "Keine Datei hochgeladen"}), 400
@@ -51,7 +51,7 @@ def upload_army_list():
 @armylists_bp.route("/api/armylists", methods=["GET"])
 @jwt_required()
 def get_user_army_lists():
-    user_id = int(get_jwt_identity())
+    user_id = get_jwt_identity()
     lists = ArmyList.query.filter_by(user_id=user_id).order_by(ArmyList.created_at.desc()).all()
 
     result = []
@@ -72,7 +72,7 @@ def get_user_army_lists():
     return jsonify(result), 200
 
 
-@armylists_bp.route("/api/armylists/<int:list_id>", methods=["GET"])
+@armylists_bp.route("/api/armylists/<string:list_id>", methods=["GET"])
 def get_army_list_detail(list_id):
     army_list = db.session.get(ArmyList, list_id)
     if not army_list:
@@ -98,10 +98,10 @@ def get_army_list_detail(list_id):
     )
 
 
-@armylists_bp.route("/api/armylists/<int:list_id>", methods=["DELETE"])
+@armylists_bp.route("/api/armylists/<string:list_id>", methods=["DELETE"])
 @jwt_required()
 def delete_army_list(list_id):
-    user_id = int(get_jwt_identity())
+    user_id = get_jwt_identity()
     army_list = db.session.get(ArmyList, list_id)
 
     if not army_list:

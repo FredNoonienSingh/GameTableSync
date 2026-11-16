@@ -12,4 +12,5 @@ Flask-Cors==4.0.0
 psycopg[binary]
 psycopg2-binary
 requests
-
+flasgger>=0.9.7
+stripe>=10.0.0

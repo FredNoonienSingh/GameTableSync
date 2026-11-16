@@ -165,3 +165,20 @@ export { OutpostGraphic } from './components/animations/pricedetail/OutpostGraph
 export { StrongholdGraphic } from './components/animations/pricedetail/StrongholdGraphic';
 export { CitadelGraphic } from './components/animations/pricedetail/CitadelGraphic';
 export { FortressOfTerraGraphic } from './components/animations/pricedetail/FortressOfTerraGraphic';
+
+// Functional Animations 
+export { 
+  TacticalTableGraphic, 
+  TacticalTableGrid, 
+  type TacticalTableProps,
+  type TableCategory,
+  type TableStatus
+} from './components/animations/TacticalTableGraphic';
+
+export {
+  TournamentBracketGraphic,
+  type TournamentBracketProps,
+  type BracketRound,
+  type BracketMatch,
+  type BracketParticipant
+} from './components/animations/TournamentBracketGraphic';

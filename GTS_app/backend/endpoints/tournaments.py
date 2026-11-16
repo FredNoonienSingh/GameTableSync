@@ -4,7 +4,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from extensions import db
-from models import Tournament, TournamentParticipant, ArmyList, TournamentMatch, User
+from models import Tournament, TournamentParticipant, ArmyList, TournamentMatch, User, Club
 from services.discord import (
     ensure_tournament_forum_thread,
     post_tournament_round_to_discord,
@@ -12,24 +12,140 @@ from services.discord import (
     post_tournament_reminder_to_discord,
 )
 
-from .utils import is_admin
+from .utils import (
+    is_app_admin, 
+    can_manage_club_tournaments, 
+    is_banned_from_club, 
+    get_banned_club_ids, 
+    get_optional_jwt_user_id
+)
 
 tournaments_bp = Blueprint("tournaments", __name__)
 
 
+def compute_swiss_standings(tournament: Tournament, active_participants: list[TournamentParticipant]):
+    completed_matches = tournament.matches.filter(
+        TournamentMatch.status.in_(["Completed", "Disqualified"])
+    ).all()
+
+    stats = {}
+    for p in active_participants:
+        elo = p.user.get_elo_for_system(tournament.system) if p.user else 1500
+        stats[p.user_id] = {
+            "user_id": p.user_id,
+            "display_name": p.user.display_name if p.user else "Unbekannt",
+            "wins": 0,
+            "draws": 0,
+            "losses": 0,
+            "tournament_points": 0,
+            "vp_for": 0,
+            "vp_against": 0,
+            "vp_diff": 0,
+            "opponents": [],
+            "buchholz": 0,
+            "elo": elo,
+        }
+
+    played_pairs = set()
+    past_bye_users = set()
+
+    for m in completed_matches:
+        p1, p2 = m.player1_id, m.player2_id
+        s1 = m.score_player1 or 0
+        s2 = m.score_player2 or 0
+
+        if p1 and p2 is None:
+            past_bye_users.add(p1)
+            if p1 in stats:
+                stats[p1]["wins"] += 1
+                stats[p1]["tournament_points"] += 3
+                stats[p1]["vp_for"] += s1
+                stats[p1]["vp_diff"] += s1
+            continue
+
+        if p1 and p2:
+            played_pairs.add(frozenset([p1, p2]))
+
+        if p1 in stats:
+            stats[p1]["vp_for"] += s1
+            stats[p1]["vp_against"] += s2
+            stats[p1]["vp_diff"] += (s1 - s2)
+            if p2:
+                stats[p1]["opponents"].append(p2)
+            if m.winner_id == p1:
+                stats[p1]["wins"] += 1
+                stats[p1]["tournament_points"] += 3
+            elif m.winner_id is None and m.status == "Completed":
+                stats[p1]["draws"] += 1
+                stats[p1]["tournament_points"] += 1
+            else:
+                stats[p1]["losses"] += 1
+
+        if p2 in stats:
+            stats[p2]["vp_for"] += s2
+            stats[p2]["vp_against"] += s1
+            stats[p2]["vp_diff"] += (s2 - s1)
+            if p1:
+                stats[p2]["opponents"].append(p1)
+            if m.winner_id == p2:
+                stats[p2]["wins"] += 1
+                stats[p2]["tournament_points"] += 3
+            elif m.winner_id is None and m.status == "Completed":
+                stats[p2]["draws"] += 1
+                stats[p2]["tournament_points"] += 1
+            else:
+                stats[p2]["losses"] += 1
+
+    for uid, st in stats.items():
+        st["buchholz"] = sum(
+            stats[opp_id]["tournament_points"] for opp_id in st["opponents"] if opp_id in stats
+        )
+
+    sorted_stats = sorted(
+        stats.values(),
+        key=lambda x: (
+            x["tournament_points"],
+            x["buchholz"],
+            x["vp_diff"],
+            x["vp_for"],
+            x["elo"],
+        ),
+        reverse=True,
+    )
+
+    ordered_user_ids = [s["user_id"] for s in sorted_stats]
+    return ordered_user_ids, played_pairs, past_bye_users, sorted_stats
+
+
+def pair_players_swiss(ordered_players: list[str], played_pairs: set[frozenset]) -> list[tuple[str, str]]:
+    def backtrack(remaining: list[str], allow_repeats: bool):
+        if not remaining:
+            return []
+        first = remaining[0]
+        for i in range(1, len(remaining)):
+            candidate = remaining[i]
+            if not allow_repeats and frozenset([first, candidate]) in played_pairs:
+                continue
+            next_remaining = remaining[1:i] + remaining[i + 1:]
+            sub_result = backtrack(next_remaining, allow_repeats)
+            if sub_result is not None:
+                return [(first, candidate)] + sub_result
+        return None
+
+    pairs = backtrack(ordered_players, allow_repeats=False)
+    if pairs is None:
+        pairs = backtrack(ordered_players, allow_repeats=True)
+    return pairs or []
+
+
 def enforce_match_deadlines(tournament: Tournament):
-    """
-    1. Prüft, ob für offene Matches die 24h-Vorwarnzeit erreicht ist, und sendet einen Ping in den Forum-Thread.
-    2. Prüft auf abgelaufene Abgabefristen (hand_in_by) und disqualifiziert säumige Spieler.
-    """
     now = datetime.utcnow()
     dirty = False
 
-    for match in tournament.matches.filter_by(status="Pending").all():
+    for match in tournament.matches.filter(TournamentMatch.status.in_(["Pending", "Disputed"])).all():
         if not match.hand_in_by:
             continue
 
-        # A) 24-Stunden-Erinnerung prüfen (falls Frist noch nicht abgelaufen, aber <= 24h verbleiben)
         time_left = match.hand_in_by - now
         if timedelta(seconds=0) < time_left <= timedelta(hours=24) and not match.reminder_sent:
             if not (match.p1_submitted and match.p2_submitted):
@@ -37,8 +153,7 @@ def enforce_match_deadlines(tournament: Tournament):
                     match.reminder_sent = True
                     dirty = True
 
-        # B) Frist abgelaufen -> Disqualifikation prüfen
-        if now > match.hand_in_by:
+        if now > match.hand_in_by and match.status == "Pending":
             dirty = True
             p1_part = TournamentParticipant.query.filter_by(
                 tournament_id=tournament.id, user_id=match.player1_id
@@ -58,21 +173,25 @@ def enforce_match_deadlines(tournament: Tournament):
                 if p1_part:
                     p1_part.is_disqualified = True
                 match.winner_id = match.player2_id
+                match.score_player1 = match.p2_reported_s1 if match.p2_reported_s1 is not None else 0
+                match.score_player2 = match.p2_reported_s2 if match.p2_reported_s2 is not None else 100
                 match.status = "Completed"
                 if match.player1 and match.player2 and not match.elo_processed:
-                    s1 = match.score_player1 if match.score_player1 is not None else 0
-                    s2 = match.score_player2 if match.score_player2 is not None else 100
-                    User.update_system_elos(match.player1, match.player2, tournament.system, s1, s2)
+                    User.update_system_elos(
+                        match.player1, match.player2, tournament.system, match.score_player1, match.score_player2
+                    )
                     match.elo_processed = True
             elif not match.p2_submitted:
                 if p2_part:
                     p2_part.is_disqualified = True
                 match.winner_id = match.player1_id
+                match.score_player1 = match.p1_reported_s1 if match.p1_reported_s1 is not None else 100
+                match.score_player2 = match.p1_reported_s2 if match.p1_reported_s2 is not None else 0
                 match.status = "Completed"
                 if match.player1 and match.player2 and not match.elo_processed:
-                    s1 = match.score_player1 if match.score_player1 is not None else 100
-                    s2 = match.score_player2 if match.score_player2 is not None else 0
-                    User.update_system_elos(match.player1, match.player2, tournament.system, s1, s2)
+                    User.update_system_elos(
+                        match.player1, match.player2, tournament.system, match.score_player1, match.score_player2
+                    )
                     match.elo_processed = True
 
             update_tournament_match_widget(match, tournament)
@@ -84,6 +203,10 @@ def enforce_match_deadlines(tournament: Tournament):
 def serialize_tournament(t: Tournament):
     enforce_match_deadlines(t)
 
+    all_participants = t.participants.all()
+    active_parts = [p for p in all_participants if not p.is_disqualified]
+    _, _, _, standings_data = compute_swiss_standings(t, all_participants)
+
     participants = [
         {
             "id": p.id,
@@ -91,9 +214,9 @@ def serialize_tournament(t: Tournament):
             "display_name": p.user.display_name if p.user else "Unbekannt",
             "army_list_id": p.army_list_id,
             "army_list_name": p.army_list.name if p.army_list else None,
-            "is_disqualified": p.is_disqualified
+            "is_disqualified": p.is_disqualified,
         }
-        for p in t.participants
+        for p in all_participants
     ]
 
     matches = [
@@ -106,44 +229,59 @@ def serialize_tournament(t: Tournament):
             "player2_name": m.player2.display_name if m.player2 else None,
             "score_player1": m.score_player1,
             "score_player2": m.score_player2,
+            "p1_reported_s1": m.p1_reported_s1,
+            "p1_reported_s2": m.p1_reported_s2,
+            "p2_reported_s1": m.p2_reported_s1,
+            "p2_reported_s2": m.p2_reported_s2,
             "hand_in_by": m.hand_in_by.isoformat() if m.hand_in_by else None,
             "p1_submitted": m.p1_submitted,
             "p2_submitted": m.p2_submitted,
             "winner_id": m.winner_id,
-            "status": m.status
+            "status": m.status,
         }
-        for m in t.matches
+        for m in t.matches.order_by(TournamentMatch.round_number.asc()).all()
     ]
 
     return {
         "id": t.id,
         "name": t.name,
+        "club_id": t.club_id,
         "system": t.system,
         "format_type": t.format_type,
+        "is_virtual": t.is_virtual,
         "max_players": t.max_players,
         "round_duration_days": t.round_duration_days,
         "discord_thread_id": t.discord_thread_id,
         "status": t.status,
         "start_date": t.start_date.isoformat(),
-        "participants_count": t.participants.count(),
+        "participants_count": len(all_participants),
+        "active_participants_count": len(active_parts),
         "participants": participants,
-        "matches": matches
+        "standings": standings_data,
+        "matches": matches,
     }
 
 
-# --- ADMIN ROUND GENERATION ---
-
-@tournaments_bp.route("/api/admin/tournaments/<int:tournament_id>/generate-round", methods=["POST"])
+@tournaments_bp.route("/api/admin/tournaments/<string:tournament_id>/generate-round", methods=["POST"])
 @jwt_required()
 def generate_swiss_round(tournament_id):
-    if not is_admin():
-        return jsonify({"msg": "Zugriff verweigert"}), 403
-
+    user_id = get_jwt_identity()
     tournament = db.session.get(Tournament, tournament_id)
     if not tournament:
         return jsonify({"msg": "Turnier nicht gefunden."}), 404
 
+    if not can_manage_club_tournaments(user_id, tournament.club_id):
+        return jsonify({"msg": "Keine Berechtigung."}), 403
+
     enforce_match_deadlines(tournament)
+
+    unresolved = tournament.matches.filter(
+        TournamentMatch.status.in_(["Pending", "Disputed"])
+    ).count()
+    if unresolved > 0:
+        return jsonify({
+            "msg": f"Es gibt noch {unresolved} offene oder strittige Matches in der aktuellen Runde."
+        }), 400
 
     active_participants = [p for p in tournament.participants if not p.is_disqualified]
     if len(active_participants) < 2:
@@ -152,7 +290,6 @@ def generate_swiss_round(tournament_id):
     existing_rounds = [m.round_number for m in tournament.matches]
     next_round = max(existing_rounds) + 1 if existing_rounds else 1
 
-    # Abgabefrist: Entweder explizit übergeben oder automatisch Start + round_duration_days (Standard: 14 Tage)
     data = request.get_json(silent=True) or {}
     hand_in_by_str = data.get("hand_in_by")
     if hand_in_by_str:
@@ -166,76 +303,251 @@ def generate_swiss_round(tournament_id):
 
     tournament.status = "In Progress"
 
-    players = [p.user_id for p in active_participants]
-    random.shuffle(players)
+    ordered_players, played_pairs, past_bye_users, _ = compute_swiss_standings(
+        tournament, active_participants
+    )
 
+    bye_player_id = None
+    if len(ordered_players) % 2 != 0:
+        for candidate_id in reversed(ordered_players):
+            if candidate_id not in past_bye_users:
+                bye_player_id = candidate_id
+                break
+        if bye_player_id is None:
+            bye_player_id = ordered_players[-1]
+        ordered_players = [uid for uid in ordered_players if uid != bye_player_id]
+
+    paired_tuples = pair_players_swiss(ordered_players, played_pairs)
     created_matches = []
 
-    for i in range(0, len(players) - 1, 2):
+    for p1_id, p2_id in paired_tuples:
         match = TournamentMatch(
             tournament_id=tournament_id,
             round_number=next_round,
-            player1_id=players[i],
-            player2_id=players[i+1],
+            player1_id=p1_id,
+            player2_id=p2_id,
             hand_in_by=hand_in_by,
-            status="Pending"
+            status="Pending",
         )
         db.session.add(match)
         created_matches.append(match)
 
-    # Falls ungerade Anzahl an aktiven Spielern -> Freilos (Bye)
-    if len(players) % 2 != 0:
+    if bye_player_id:
         match = TournamentMatch(
             tournament_id=tournament_id,
             round_number=next_round,
-            player1_id=players[-1],
+            player1_id=bye_player_id,
             player2_id=None,
             score_player1=100,
             score_player2=0,
+            p1_reported_s1=100,
+            p1_reported_s2=0,
             p1_submitted=True,
             p2_submitted=True,
             elo_processed=True,
             reminder_sent=True,
-            winner_id=players[-1],
-            status="Completed"
+            winner_id=bye_player_id,
+            status="Completed",
         )
         db.session.add(match)
         created_matches.append(match)
 
     db.session.flush()
-
-    # Discord Forum-Thread sicherstellen & Runden-Widgets + Pings posten
     post_tournament_round_to_discord(tournament, next_round, created_matches)
-
     db.session.commit()
-    return jsonify({"msg": f"Runde {next_round} erfolgreich generiert und auf Discord veröffentlicht!"}), 201
+
+    return jsonify({"msg": f"Runde {next_round} (Swiss) erfolgreich generiert!"}), 201
 
 
-# --- PUBLIC & PARTICIPANT ENDPOINTS ---
+@tournaments_bp.route("/api/tournaments/matches/<string:match_id>/hand-in", methods=["POST"])
+@jwt_required()
+def hand_in_match_score(match_id):
+    user_id = get_jwt_identity()
+    match = db.session.get(TournamentMatch, match_id)
+
+    if not match:
+        return jsonify({"msg": "Match nicht gefunden."}), 404
+
+    if user_id not in (match.player1_id, match.player2_id):
+        return jsonify({"msg": "Du bist kein Teilnehmer dieses Matches."}), 403
+
+    tournament = match.tournament
+    enforce_match_deadlines(tournament)
+
+    participant = TournamentParticipant.query.filter_by(
+        tournament_id=tournament.id, user_id=user_id
+    ).first()
+    if participant and participant.is_disqualified:
+        return jsonify({"msg": "Abgabefrist abgelaufen – du wurdest für dieses Turnier disqualifiziert."}), 400
+
+    if match.status in ("Completed", "Disqualified"):
+        return jsonify({"msg": "Dieses Match ist bereits abgeschlossen."}), 400
+
+    if match.hand_in_by and datetime.utcnow() > match.hand_in_by:
+        return jsonify({"msg": "Die Abgabefrist (Hand-in) für dieses Match ist abgelaufen."}), 400
+
+    data = request.get_json() or {}
+    my_score = data.get("my_score")
+    opponent_score = data.get("opponent_score")
+
+    if my_score is None or opponent_score is None:
+        return jsonify({"msg": "Bitte beide Punktestände eintragen."}), 400
+
+    my_score = int(my_score)
+    opponent_score = int(opponent_score)
+
+    if user_id == match.player1_id:
+        match.p1_reported_s1 = my_score
+        match.p1_reported_s2 = opponent_score
+        match.p1_submitted = True
+        if not match.p2_submitted:
+            match.score_player1 = my_score
+            match.score_player2 = opponent_score
+    else:
+        match.p2_reported_s1 = opponent_score
+        match.p2_reported_s2 = my_score
+        match.p2_submitted = True
+        if not match.p1_submitted:
+            match.score_player1 = opponent_score
+            match.score_player2 = my_score
+
+    if match.p1_submitted and match.p2_submitted:
+        if (
+            match.p1_reported_s1 == match.p2_reported_s1
+            and match.p1_reported_s2 == match.p2_reported_s2
+        ):
+            match.score_player1 = match.p1_reported_s1
+            match.score_player2 = match.p1_reported_s2
+            match.status = "Completed"
+
+            if match.score_player1 > match.score_player2:
+                match.winner_id = match.player1_id
+            elif match.score_player2 > match.score_player1:
+                match.winner_id = match.player2_id
+            else:
+                match.winner_id = None
+
+            if match.player1 and match.player2 and not match.elo_processed:
+                User.update_system_elos(
+                    player1=match.player1,
+                    player2=match.player2,
+                    system=tournament.system,
+                    score1=match.score_player1,
+                    score2=match.score_player2,
+                )
+                match.elo_processed = True
+
+            msg = "Ergebnis bestätigt! Beide Spieler haben identische Punkte eingereicht."
+        else:
+            match.status = "Disputed"
+            match.winner_id = None
+            msg = (
+                f"Abweichende Eingaben erkannt (Spieler 1 meldet {match.p1_reported_s1}:{match.p1_reported_s2}, "
+                f"Spieler 2 meldet {match.p2_reported_s1}:{match.p2_reported_s2}). "
+                "Das Match wurde zur Klärung markiert – ihr könnt eure Eingabe korrigieren oder einen Admin rufen."
+            )
+    else:
+        msg = "Ergebnis eingereicht! Warte auf Bestätigung durch deinen Gegner."
+
+    update_tournament_match_widget(match, tournament)
+    db.session.commit()
+
+    return jsonify({
+        "msg": msg,
+        "status": match.status,
+        "both_submitted": match.p1_submitted and match.p2_submitted,
+    }), 200
+
+
+@tournaments_bp.route("/api/admin/tournaments/matches/<string:match_id>/resolve", methods=["POST"])
+@jwt_required()
+def admin_resolve_match_dispute(match_id):
+    user_id = get_jwt_identity()
+    match = db.session.get(TournamentMatch, match_id)
+    if not match:
+        return jsonify({"msg": "Match nicht gefunden."}), 404
+        
+    if not can_manage_club_tournaments(user_id, match.tournament.club_id):
+        return jsonify({"msg": "Keine Berechtigung."}), 403
+
+    data = request.get_json() or {}
+    s1 = data.get("score_player1")
+    s2 = data.get("score_player2")
+
+    if s1 is None or s2 is None:
+        return jsonify({"msg": "score_player1 und score_player2 sind erforderlich."}), 400
+
+    s1, s2 = int(s1), int(s2)
+    match.score_player1 = s1
+    match.score_player2 = s2
+    match.p1_reported_s1 = s1
+    match.p1_reported_s2 = s2
+    match.p2_reported_s1 = s1
+    match.p2_reported_s2 = s2
+    match.p1_submitted = True
+    match.p2_submitted = True
+    match.status = "Completed"
+
+    if s1 > s2:
+        match.winner_id = match.player1_id
+    elif s2 > s1:
+        match.winner_id = match.player2_id
+    else:
+        match.winner_id = None
+
+    tournament = match.tournament
+    if match.player1 and match.player2 and not match.elo_processed:
+        User.update_system_elos(
+            player1=match.player1,
+            player2=match.player2,
+            system=tournament.system,
+            score1=s1,
+            score2=s2,
+        )
+        match.elo_processed = True
+
+    update_tournament_match_widget(match, tournament)
+    db.session.commit()
+
+    return jsonify({"msg": "Match-Ergebnis durch Admin festgesetzt und ELO aktualisiert!"}), 200
+
 
 @tournaments_bp.route("/api/tournaments", methods=["GET"])
 def get_public_tournaments():
+    viewer_id = get_optional_jwt_user_id()
+    banned_clubs = get_banned_club_ids(viewer_id)
+    
     tournaments = Tournament.query.order_by(Tournament.start_date.desc()).all()
-    return jsonify([serialize_tournament(t) for t in tournaments]), 200
+    return jsonify([
+        serialize_tournament(t) for t in tournaments
+        if t.club_id not in banned_clubs
+    ]), 200
 
 
-@tournaments_bp.route("/api/tournaments/<int:tournament_id>", methods=["GET"])
+@tournaments_bp.route("/api/tournaments/<string:tournament_id>", methods=["GET"])
 def get_tournament_detail(tournament_id):
+    viewer_id = get_optional_jwt_user_id()
     tournament = db.session.get(Tournament, tournament_id)
     if not tournament:
         return jsonify({"msg": "Turnier nicht gefunden."}), 404
+        
+    if is_banned_from_club(viewer_id, tournament.club_id):
+        return jsonify({"msg": "Du hast Hausverbot in diesem Club."}), 403
 
     return jsonify(serialize_tournament(tournament)), 200
 
 
-@tournaments_bp.route("/api/tournaments/<int:tournament_id>/register", methods=["POST"])
+@tournaments_bp.route("/api/tournaments/<string:tournament_id>/register", methods=["POST"])
 @jwt_required()
 def register_tournament(tournament_id):
-    user_id = int(get_jwt_identity())
+    user_id = get_jwt_identity()
     tournament = db.session.get(Tournament, tournament_id)
     
     if not tournament:
         return jsonify({"msg": "Turnier nicht gefunden."}), 404
+        
+    if is_banned_from_club(user_id, tournament.club_id):
+        return jsonify({"msg": "Du hast Hausverbot in diesem Club."}), 403
         
     if tournament.status != "Registration":
         return jsonify({"msg": "Die Anmeldephase für dieses Turnier ist bereits beendet."}), 400
@@ -251,7 +563,7 @@ def register_tournament(tournament_id):
     army_list_id = data.get("army_list_id")
 
     if army_list_id:
-        army_list = db.session.get(ArmyList, army_list_id)
+        army_list = db.session.get(ArmyList, str(army_list_id))
         if not army_list or army_list.user_id != user_id:
             return jsonify({"msg": "Ungültige Armeeliste ausgewählt."}), 400
 
@@ -259,7 +571,7 @@ def register_tournament(tournament_id):
         participant = TournamentParticipant(
             tournament_id=tournament_id,
             user_id=user_id,
-            army_list_id=int(army_list_id) if army_list_id else None
+            army_list_id=str(army_list_id) if army_list_id else None
         )
         db.session.add(participant)
         if participant.user:
@@ -271,10 +583,10 @@ def register_tournament(tournament_id):
         return jsonify({"msg": f"Serverfehler bei der Anmeldung: {str(e)}"}), 500
 
 
-@tournaments_bp.route("/api/tournaments/<int:tournament_id>/register", methods=["DELETE"])
+@tournaments_bp.route("/api/tournaments/<string:tournament_id>/register", methods=["DELETE"])
 @jwt_required()
 def unregister_tournament(tournament_id):
-    user_id = int(get_jwt_identity())
+    user_id = get_jwt_identity()
     tournament = db.session.get(Tournament, tournament_id)
     
     if not tournament:
@@ -296,28 +608,53 @@ def unregister_tournament(tournament_id):
         return jsonify({"msg": f"Serverfehler beim Abmelden: {str(e)}"}), 500
 
 
-# --- ADMIN ENDPOINTS ---
-
 @tournaments_bp.route("/api/admin/tournaments", methods=["GET"])
 @jwt_required()
 def get_admin_tournaments():
-    if not is_admin():
-        return jsonify({"msg": "Zugriff verweigert"}), 403
-
-    tournaments = Tournament.query.order_by(Tournament.start_date.desc()).all()
+    user_id = get_jwt_identity()
+    
+    if is_app_admin():
+        tournaments = Tournament.query.order_by(Tournament.start_date.desc()).all()
+    else:
+        tournaments = [
+            t for t in Tournament.query.order_by(Tournament.start_date.desc()).all()
+            if can_manage_club_tournaments(user_id, t.club_id)
+        ]
+        
     return jsonify([serialize_tournament(t) for t in tournaments]), 200
 
 
 @tournaments_bp.route("/api/admin/tournaments", methods=["POST"])
 @jwt_required()
 def create_tournament():
-    if not is_admin():
-        return jsonify({"msg": "Zugriff verweigert"}), 403
+    user_id = get_jwt_identity()
+    data = request.get_json() or {}
+    
+    club_id = data.get("club_id")
+    club = db.session.get(Club, club_id) if club_id else None
+    if not club:
+        return jsonify({"msg": "Jedes Turnier muss einem Club zugeordnet sein."}), 400
 
-    data = request.get_json()
+    if not can_manage_club_tournaments(user_id, club.id):
+        return jsonify({"msg": "Keine Berechtigung, Turniere für diesen Club zu erstellen."}), 403
+
+    max_signup_tournaments = club.tier_limits.get("max_active_signup_tournaments", 1)
+    current_signup_count = Tournament.query.filter_by(
+        club_id=club.id, status="Registration"
+    ).count()
+
+    if current_signup_count >= max_signup_tournaments:
+        return jsonify({
+            "msg": (
+                f"Dein Club-Tier ({club.tier_limits.get('name', 'Tier 1')}) erlaubt maximal "
+                f"{max_signup_tournaments} Turnier(e) gleichzeitig in der offenen Anmeldephase."
+            )
+        }), 403
+
     name = (data.get("name") or "").strip()
     system = (data.get("system") or "").strip()
     format_type = (data.get("format_type") or "").strip()
+    is_virtual = bool(data.get("is_virtual", False))
     max_players = int(data.get("max_players", 8))
     round_duration_days = int(data.get("round_duration_days", 14))
     start_date_str = data.get("start_date")
@@ -331,9 +668,11 @@ def create_tournament():
         return jsonify({"msg": "Ungültiges Datumsformat."}), 400
 
     new_tournament = Tournament(
+        club_id=club.id,
         name=name,
         system=system,
         format_type=format_type,
+        is_virtual=is_virtual,
         max_players=max_players,
         round_duration_days=max(1, round_duration_days),
         start_date=start_date,
@@ -343,7 +682,6 @@ def create_tournament():
     db.session.add(new_tournament)
     db.session.flush()
 
-    # Direkt beim Anlegen des Turniers den Forum-Post im Discord-Channel erstellen
     ensure_tournament_forum_thread(new_tournament)
 
     db.session.commit()
@@ -351,15 +689,16 @@ def create_tournament():
     return jsonify({"msg": "Turnier erfolgreich erstellt!", "id": new_tournament.id}), 201
 
 
-@tournaments_bp.route("/api/admin/tournaments/<int:tournament_id>", methods=["DELETE"])
+@tournaments_bp.route("/api/admin/tournaments/<string:tournament_id>", methods=["DELETE"])
 @jwt_required()
 def delete_tournament(tournament_id):
-    if not is_admin():
-        return jsonify({"msg": "Zugriff verweigert"}), 403
-
+    user_id = get_jwt_identity()
     tournament = db.session.get(Tournament, tournament_id)
     if not tournament:
         return jsonify({"msg": "Turnier nicht gefunden."}), 404
+        
+    if not can_manage_club_tournaments(user_id, tournament.club_id):
+        return jsonify({"msg": "Keine Berechtigung."}), 403
 
     db.session.delete(tournament)
     db.session.commit()
@@ -369,7 +708,7 @@ def delete_tournament(tournament_id):
 @tournaments_bp.route("/api/account/tournaments", methods=["GET"])
 @jwt_required()
 def get_account_tournaments():
-    user_id = int(get_jwt_identity())
+    user_id = get_jwt_identity()
     participations = TournamentParticipant.query.filter_by(user_id=user_id).all()
 
     result = []
@@ -417,8 +756,10 @@ def get_account_tournaments():
         result.append({
             "tournament_id": t.id,
             "tournament_name": t.name,
+            "club_id": t.club_id,
             "system": t.system,
             "format_type": t.format_type,
+            "is_virtual": t.is_virtual,
             "round_duration_days": t.round_duration_days,
             "status": t.status,
             "start_date": t.start_date.isoformat(),
@@ -429,78 +770,3 @@ def get_account_tournaments():
         })
 
     return jsonify(result), 200
-
-
-@tournaments_bp.route("/api/tournaments/matches/<int:match_id>/hand-in", methods=["POST"])
-@jwt_required()
-def hand_in_match_score(match_id):
-    user_id = int(get_jwt_identity())
-    match = db.session.get(TournamentMatch, match_id)
-
-    if not match:
-        return jsonify({"msg": "Match nicht gefunden."}), 404
-
-    if user_id not in (match.player1_id, match.player2_id):
-        return jsonify({"msg": "Du bist kein Teilnehmer dieses Matches."}), 403
-
-    tournament = match.tournament
-    enforce_match_deadlines(tournament)
-
-    participant = TournamentParticipant.query.filter_by(
-        tournament_id=tournament.id, user_id=user_id
-    ).first()
-    if participant and participant.is_disqualified:
-        return jsonify({"msg": "Abgabefrist abgelaufen – du wurdest für dieses Turnier disqualifiziert."}), 400
-
-    if match.status in ("Completed", "Disqualified"):
-        return jsonify({"msg": "Dieses Match ist bereits abgeschlossen."}), 400
-
-    if match.hand_in_by and datetime.utcnow() > match.hand_in_by:
-        return jsonify({"msg": "Die Abgabefrist (Hand-in) für dieses Match ist abgelaufen."}), 400
-
-    data = request.get_json() or {}
-    my_score = data.get("my_score")
-    opponent_score = data.get("opponent_score")
-
-    if my_score is None or opponent_score is None:
-        return jsonify({"msg": "Bitte beide Punktestände eintragen."}), 400
-
-    my_score = int(my_score)
-    opponent_score = int(opponent_score)
-
-    if user_id == match.player1_id:
-        match.score_player1 = my_score
-        match.score_player2 = opponent_score
-        match.p1_submitted = True
-    else:
-        match.score_player2 = my_score
-        match.score_player1 = opponent_score
-        match.p2_submitted = True
-
-    if match.p1_submitted and match.p2_submitted:
-        match.status = "Completed"
-        if match.score_player1 > match.score_player2:
-            match.winner_id = match.player1_id
-        elif match.score_player2 > match.score_player1:
-            match.winner_id = match.player2_id
-        else:
-            match.winner_id = None
-
-        if match.player1 and match.player2 and not match.elo_processed:
-            User.update_system_elos(
-                player1=match.player1,
-                player2=match.player2,
-                system=tournament.system,
-                score1=match.score_player1,
-                score2=match.score_player2
-            )
-            match.elo_processed = True
-
-    # Discord-Widget des Matches im Forum-Thread live aktualisieren
-    update_tournament_match_widget(match, tournament)
-
-    db.session.commit()
-    return jsonify({
-        "msg": "Ergebnis erfolgreich eingereicht!",
-        "both_submitted": match.p1_submitted and match.p2_submitted
-    }), 200

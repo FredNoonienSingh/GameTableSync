@@ -7,6 +7,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import generate_password_hash
 from flask_jwt_extended import JWTManager
 from sqlalchemy import func
+from flasgger import Swagger
 
 from extensions import db
 from models import User, FactionCategory, Faction
@@ -27,12 +28,8 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
 }
 
-app.config["SECRET_KEY"] = os.environ.get(
-    "SECRET_KEY", "blood-for-the-blood-god-skulls-for-the-skull-throne"
-)
-app.config["JWT_SECRET_KEY"] = os.environ.get(
-    "JWT_SECRET_KEY", "blood-for-the-blood-god-skulls-for-the-skull-throne"
-)
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
+app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(
     hours=int(os.environ.get("JWT_EXPIRES_HOURS", "24"))
 )
@@ -50,6 +47,19 @@ jwt = JWTManager(app)
 
 register_blueprints(app)
 
+# ==========================================
+# DEV-ONLY API DOCUMENTATION (SWAGGER)
+# ==========================================
+if os.environ.get("FLASK_ENV") == "development":
+    swagger = Swagger(app, template={
+        "info": {
+            "title": "GameTableSync API",
+            "description": "Internal API endpoints for GTS Dev Environment",
+            "version": "1.0.0"
+        }
+    })
+    log("📘 Swagger UI enabled at /apidocs")
+
 
 def init_factions():
     json_path = os.path.join(os.path.dirname(__file__), "factions.json")
@@ -60,29 +70,35 @@ def init_factions():
     with open(json_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
+    existing_categories = {
+        (c.name, c.system): c for c in FactionCategory.query.all()
+    }
+    existing_factions = {
+        (f.name, f.category_id) for f in Faction.query.all()
+    }
+
     for sys_data in data.get("systems", []):
         sys_code = sys_data["system"]
 
         for cat_data in sys_data.get("categories", []):
             cat_name = cat_data["name"]
+            cat_key = (cat_name, sys_code)
 
-            category = FactionCategory.query.filter_by(
-                name=cat_name, system=sys_code
-            ).first()
+            category = existing_categories.get(cat_key)
             if not category:
                 category = FactionCategory(name=cat_name, system=sys_code)
                 db.session.add(category)
-                db.session.commit()
+                db.session.flush()
+                existing_categories[cat_key] = category
 
             for fac_name in cat_data.get("factions", []):
-                faction = Faction.query.filter_by(
-                    name=fac_name, category_id=category.id
-                ).first()
-                if not faction:
+                fac_key = (fac_name, category.id)
+                if fac_key not in existing_factions:
                     faction = Faction(name=fac_name, category_id=category.id)
                     db.session.add(faction)
+                    existing_factions.add(fac_key)
 
-            db.session.commit()
+    db.session.commit()
     log("🎲 Fraktionen aus factions.json erfolgreich synchronisiert.")
 
 
@@ -114,46 +130,19 @@ def init_db_and_admin():
                 email=admin_email_clean,
                 discord_account=f"{admin_username.strip().lower()}_admin",
                 password_hash=generate_password_hash(admin_password),
-                is_admin=True,
+                is_app_admin=True,
             )
             db.session.add(new_admin)
             db.session.commit()
-            log(f"✅ Default admin '{admin_username}' ({admin_email_clean}) created with ID={new_admin.id}.")
+            log(f"✅ Default AppAdmin '{admin_username}' ({admin_email_clean}) created with ID={new_admin.id}.")
         else:
             existing_admin.email = admin_email_clean
-            existing_admin.is_admin = True
+            existing_admin.is_app_admin = True
             existing_admin.password_hash = generate_password_hash(admin_password)
             db.session.commit()
             log(
-                f"ℹ️ Admin '{existing_admin.display_name}' ({existing_admin.email}) verified & synced (ID={existing_admin.id})."
+                f"ℹ️ AppAdmin '{existing_admin.display_name}' ({existing_admin.email}) verified & synced (ID={existing_admin.id})."
             )
-
-        mock_usernames = [
-            "TabletopGeneral",
-            "OrkBoy123",
-            "NulnOilDrinker",
-            "BolterGoBrrr",
-            "HazardStripeEnjoyer",
-            "DiceGoblin",
-        ]
-
-        added_mocks = 0
-        for name in mock_usernames:
-            existing_mock = User.query.filter_by(display_name=name).first()
-            if not existing_mock:
-                user = User(
-                    display_name=name,
-                    email=f"{name.lower()}@mindanddice.de",
-                    discord_account=f"{name.lower()}_discord",
-                    password_hash=generate_password_hash("password123"),
-                    is_admin=False,
-                )
-                db.session.add(user)
-                added_mocks += 1
-
-        if added_mocks > 0:
-            db.session.commit()
-            log(f"✅ Successfully seeded {added_mocks} mock users into the database.")
 
 
 @app.cli.command("init-db")
