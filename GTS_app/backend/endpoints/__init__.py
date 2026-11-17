@@ -7,6 +7,7 @@ from .admin import admin_bp
 from .tournaments import tournaments_bp
 from .club import clubs_bp
 from .sanity import sanity_bp
+from .catalog import catalog_bp
 
 
 
@@ -20,3 +21,4 @@ def register_blueprints(app):
     app.register_blueprint(tournaments_bp)
     app.register_blueprint(clubs_bp)
     app.register_blueprint(sanity_bp)
+    app.register_blueprint(catalog_bp)

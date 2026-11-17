@@ -1,0 +1,212 @@
+{
+    "sidebar": {
+        "title": "KOMMANDOZENTRALE",
+        "overview": "Übersicht",
+        "clubs": "Meine Clubs",
+        "tournaments": "Turniere",
+        "games": "Spiele (LFG)",
+        "systems": "Meine Systeme",
+        "systemsWargaming": "Wargaming & Tabletop",
+        "systemsTcg": "Trading Card Games",
+        "systemsRpg": "Pen & Paper RPG",
+        "settings": "Einstellungen",
+        "logout": "Abmelden",
+        "discordVerified": "Discord verknüpft",
+        "adminBadge": "SUDO",
+        "mobileMenuButton": "Account-Menü"
+    },
+    "overview": {
+        "badge": "SPIELER-HUB & PROFIL",
+        "title": "DEINE KOMMANDOZENTRALE",
+        "subtitle": "Verwalte deine Vereinsmitgliedschaften, laufenden Turniere, offenen Herausforderungen und gespielten Systeme an einem Ort.",
+        "cardClubs": {
+            "badge": "CLUBS",
+            "title": "AKTIVE VEREINE & STORES",
+            "description": "Deine Spielergemeinschaften, Stammtische und Organisatoren-Rollen."
+        },
+        "cardTournaments": {
+            "badge": "EVENTS",
+            "title": "TURNIERE & ELO-BILANZ",
+            "description": "Aktuelle Paarungen, Swiss-Tabellenstände und deine globale Wertung."
+        },
+        "cardGames": {
+            "badge": "LFG",
+            "title": "OFFENE SPIELE & TISCHE",
+            "description": "Geplante Spieltermine, offene Herausforderungen und Tisch-Reservierungen."
+        }
+    },
+    "clubs": {
+        "badge": "VEREINE & COMMUNITIES",
+        "title": "MEINE CLUBS & STORES",
+        "subtitle": "Alle Tabletop-Vereine, lokalen Hobby-Stores und Spielgruppen, denen du angehörst oder die du verwaltest.",
+        "cardMemberships": {
+            "badge": "MITGLIED",
+            "title": "DEINE MITGLIEDSCHAFTEN",
+            "description": "Clubs und Spielorte, bei denen du als aktiver Spieler registriert bist."
+        },
+        "cardRoles": {
+            "badge": "ORGA & VORSTAND",
+            "title": "VERWALTETE CLUBS",
+            "description": "Vereine mit Admin-, Kassenwart- oder Turnierleiter-Berechtigungen."
+        },
+        "cardInvites": {
+            "badge": "ANFRAGEN",
+            "title": "OFFENE EINLADUNGEN",
+            "description": "Ausstehende Beitrittsanfragen und direkte Club-Einladungen."
+        }
+    },
+    "tournaments": {
+        "badge": "COMPETITIVE & LIGABETRIEB",
+        "title": "MEINE TURNIERE",
+        "subtitle": "Behalte deine angemeldeten Events, Live-Paarungen, Tischnummern und vergangenen Turnierergebnisse im Blick.",
+        "cardUpcoming": {
+            "badge": "GEPLANT",
+            "title": "ANSTEHENDE EVENTS",
+            "description": "Turniere, für die du angemeldet bist, inklusive Armeelisten- und Deck-Abgabestatus."
+        },
+        "cardLive": {
+            "badge": "LIVE HUD",
+            "title": "LAUFENDES TURNIERSPIEL",
+            "description": "Direktzugriff auf deine aktuelle Runde, Tischnummer und Ergebnis-Übermittlung."
+        },
+        "cardHistory": {
+            "badge": "ARCHIV",
+            "title": "TURNIER-HISTORIE & SIEGE",
+            "description": "Deine bisherigen Platzierungen, gesammelten Trophäen und ELO-Entwicklung."
+        }
+    },
+    "games": {
+        "badge": "GAME FINDER & MATCHMAKING",
+        "title": "MEINE SPIELE (LFG)",
+        "subtitle": "Verwalte deine offenen Spielgesuche, angenommenen Herausforderungen und gebuchten Spieltische.",
+        "cardHosted": {
+            "badge": "HOST",
+            "title": "EIGENE SPIELGESUCHE",
+            "description": "Von dir erstellte Herausforderungen mit offenen Plätzen für Mitspieler."
+        },
+        "cardScheduled": {
+            "badge": "BESTÄTIGT",
+            "title": "GEPLANTE MATCHES",
+            "description": "Fest vereinbarte Spieltermine inklusive System, Punktgröße und Tischnummer."
+        },
+        "cardPast": {
+            "badge": "CHRONIK",
+            "title": "GESPIELTE PARTIEN",
+            "description": "Übersicht deiner letzten freien Spiele, Crusade-Schlachten und Kampagnen-Abende."
+        }
+    },
+    "systems": {
+        "wargaming": {
+            "badge": "SYSTEME • WARGAMING",
+            "title": "WARGAMING & TABLETOP",
+            "subtitle": "Konfiguriere deine gespielten Tabletop-Systeme (z.B. Warhammer 40k, Horus Heresy, Age of Sigmar, Kill Team, Trench Crusade), Fraktionen und Punktgrößen.",
+            "cardArmies": {
+                "badge": "FRAKTIONEN",
+                "title": "MEINE ARMEEN & KONTINGENTE",
+                "description": "Hinterlege deine gesammelten Fraktionen für schnelles LFG-Matchmaking."
+            },
+            "cardElo": {
+                "badge": "RANGFOLGE",
+                "title": "SYSTEM-ELO & BILANZ",
+                "description": "Deine Siegesbilanz und ELO-Wertung aufgeschlüsselt nach Spielsystem."
+            },
+            "cardCrusade": {
+                "badge": "NARRATIVE",
+                "title": "FELDZÜGE & KAMPAGNEN",
+                "description": "Deine aktiven Crusade-Streitkräfte und narrativen Kampagnen-Fortschritte."
+            }
+        },
+        "tcg": {
+            "badge": "SYSTEME • TRADING CARD GAMES",
+            "title": "TRADING CARD GAMES (TCG)",
+            "subtitle": "Verwalte deine gespielten Kartenspiele (Magic: The Gathering, Pokémon, Yu-Gi-Oh!), Formate und registrierten Decks.",
+            "cardDecks": {
+                "badge": "DECKS",
+                "title": "REGISTRIERTE DECKLISTEN",
+                "description": "Deine hinterlegten Decks für Commander, Modern, Standard und Turniere."
+            },
+            "cardPods": {
+                "badge": "PODS & DRAFT",
+                "title": "DRAFT- & COMMANDER-PODS",
+                "description": "Deine letzten Pod-Ergebnisse, Liga-Punkte und Cube-Statistiken."
+            },
+            "cardWallet": {
+                "badge": "LEDGER",
+                "title": "STORE-CREDIT & PROMOS",
+                "description": "Übersicht über dein erspieltes Store-Guthaben und Liga-Preise."
+            }
+        },
+        "rpg": {
+            "badge": "SYSTEME • PEN & PAPER",
+            "title": "PEN & PAPER ROLLENSPIELE (RPG)",
+            "subtitle": "Alle deine aktiven Kampagnen, digitalen Charakterbögen, West-Marches-Expeditionen und Spielleiter-Runden.",
+            "cardSheets": {
+                "badge": "HELDEN",
+                "title": "MEINE CHARAKTERBÖGEN",
+                "description": "Direktzugriff auf deine aktiven Charaktere, Inventare und Stufenaufstiege."
+            },
+            "cardCampaigns": {
+                "badge": "CHRONIKEN",
+                "title": "LAUFENDE KAMPAGNEN",
+                "description": "Deine festen Abenteuergruppen, Weltkarten und anstehenden Sitzungstermine."
+            },
+            "cardGm": {
+                "badge": "GAME MASTER",
+                "title": "SPIELLEITER-BEREICH",
+                "description": "Von dir geleitete Runden, ausgeschriebene Expeditionen und Session-Logs."
+            }
+        }
+    },
+ "settings": {
+    "badge": "KONTO & PROFIL-SETUP",
+    "title": "KONTO-EINSTELLUNGEN",
+    "subtitle": "Verwalte dein Profilbild, deinen Benutzernamen, deine Kurz-Bio sowie deinen Standort für die lokale Spielersuche.",
+    "avatar": {
+      "badge": "AVATAR",
+      "title": "PROFILBILD & AVATAR",
+      "description": "Lade ein eigenes Wappen, eine bemalte Miniatur oder dein Porträt hoch.",
+      "uploadBtn": "Neues Bild hochladen",
+      "hint": "Erlaubt: PNG, JPG, WEBP oder GIF (max. 5 MB)."
+    },
+    "profile": {
+      "badge": "STECKBRIEF & LFG",
+      "title": "SPIELER-STECKBRIEF & STANDORT",
+      "description": "Diese Angaben helfen Mitspielern und Clubs in deiner Nähe, dich für Runden zu finden.",
+      "usernameLabel": "Benutzername (Anzeigename)",
+      "usernamePlaceholder": "TabletopGeneral",
+      "emailLabel": "Verknüpfte E-Mail-Adresse",
+      "realNameLabel": "Vorname / Rufname (Optional)",
+      "realNamePlaceholder": "z.B. Frederic",
+      "ageLabel": "Alter (Optional)",
+      "agePlaceholder": "z.B. 32",
+      "cityLabel": "Standort",
+      "cityPlaceholder": "Stadt oder PLZ",
+      "cityHint": "",
+      "bioLabel": "Kurz-Bio (Über mich)",
+      "bioPlaceholder": "Ein, zwei Sätze über dich, deine Armeen, Lieblingsformate oder Spielstil...",
+      "bioHint": "Kurze Vorstellung für dein Spielerprofil",
+      "saveBtn": "PROFIL SPEICHERN"
+    },
+    "discord": {
+      "badge": "DISCORD OAUTH",
+      "title": "DISCORD-VERKNÜPFUNG",
+      "description": "Verbinde deinen Discord-Account für schnellen Login, Avatar-Synchronisation und automatische Paarungs-Pings.",
+      "connectedBadge": "VERIFIZIERT",
+      "notConnectedBadge": "NICHT VERBUNDEN",
+      "connectedAs": "Verknüpft als",
+      "connectBtn": "Discord-Account jetzt verknüpfen",
+      "resyncBtn": "Neu synchronisieren"
+    },
+    "security": {
+      "badge": "SICHERHEIT",
+      "title": "PASSWORT ÄNDERN",
+      "description": "Ändere dein Passwort oder lege ein lokales Passwort für deinen Account fest.",
+      "mockBadge": "E-MAIL-FLOW FOLGT",
+      "currentPasswordLabel": "Aktuelles Passwort",
+      "newPasswordLabel": "Neues Passwort",
+      "confirmPasswordLabel": "Neues Passwort bestätigen",
+      "passwordMismatchError": "Die neuen Passwörter stimmen nicht überein.",
+      "saveBtn": "PASSWORT AKTUALISIEREN"
+    }
+  }
+}

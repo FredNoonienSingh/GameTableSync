@@ -44,12 +44,24 @@ export {
 // 4. NAVIGATION & FUNCTIONAL CONTROLS
 // ==========================================
 export { LandingNavbar } from './components/marketing/LandingNavbar';
-export { AppHeader } from './components/app/AppHeader';
+export {
+  AppHeader,
+  type AppHeaderProps,
+  type AppHeaderLabels,
+  type AppHeaderClubRole,
+} from './components/app/AppHeader';
 export { ThemeToggle } from './components/shared/ThemeToggle';
 export { LanguageSwitcher } from './components/shared/LanguageSwitcher';
 export { LoginModal } from './components/shared/LoginModal';
 export { CookieBanner } from './components/shared/CookieBanner';
 
+// ==========================================
+// 4.1. MARKETING & LANDING PAGE COMPONENTS
+// ==========================================
+export * from './components/account/AccountShell';
+export * from './components/account/AccountSectionOutline';
+export * from './components/account/AccountSettingsPanel';
+export * from './components/club/ClubShell';
 
 // ==========================================
 // 5. MARKETING & LANDING PAGE COMPONENTS
@@ -182,3 +194,11 @@ export {
   type BracketMatch,
   type BracketParticipant
 } from './components/animations/TournamentBracketGraphic';
+
+export {
+  SwissTournamentGraphic,
+  type SwissTournamentProps,
+  type SwissRound,
+  type SwissMatch,
+  type SwissParticipant
+} from './components/animations/SwissTournamentGraphic';

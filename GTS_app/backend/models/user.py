@@ -44,6 +44,11 @@ class User(db.Model):
     army_lists = db.relationship('ArmyList', backref='owner', lazy='dynamic', cascade='all, delete-orphan')
     system_elos = db.relationship('UserSystemElo', backref='user', lazy='dynamic', cascade='all, delete-orphan')
 
+    real_name = db.Column(db.String(80), nullable=True)
+    age = db.Column(db.Integer, nullable=True)
+    city_or_zip = db.Column(db.String(100), nullable=True)
+    bio = db.Column(db.String(300), nullable=True)
+
     def get_or_create_system_elo(self, system: str) -> UserSystemElo:
         elo_entry = self.system_elos.filter_by(system=system).first()
         if not elo_entry:

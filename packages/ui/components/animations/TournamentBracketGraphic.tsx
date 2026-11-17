@@ -1,15 +1,16 @@
 'use client';
 
-import type { CSSProperties } from 'react';
-import { Box, Text, Group, Badge, Stack } from '@mantine/core';
+import { Box, Text, Group, Badge, Stack, HoverCard } from '@mantine/core';
 import { motion } from 'framer-motion';
 import { IconSwords, IconTrophy, IconBan } from '@tabler/icons-react';
+import { ProfileSmall, type ProfileSmallProps } from '../player/ProfileSmall';
 
 export interface BracketParticipant {
-  id: string | null;
+  id: string | number | null;
   name: string;
   score: string | null;
   isWinner: boolean;
+  profile?: ProfileSmallProps['player'] | null;
 }
 
 export interface BracketMatch {
@@ -27,10 +28,6 @@ export interface BracketRound {
 
 export interface TournamentBracketProps {
   rounds: BracketRound[];
-  primaryColor?: string;
-  accentColor?: string;
-  surfaceColor?: string;
-  textColor?: string;
 }
 
 // Framer Motion Variants
@@ -47,26 +44,13 @@ const matchVariants = {
   show: {
     opacity: 1,
     x: 0,
-    transition: { type: 'spring', stiffness: 300, damping: 24 },
+    transition: { type: 'spring' as const, stiffness: 300, damping: 24 },
   },
 };
 
-export function TournamentBracketGraphic({
-  rounds,
-  primaryColor,
-  accentColor,
-  surfaceColor,
-  textColor,
-}: TournamentBracketProps) {
-  const customVars = {
-    ...(primaryColor ? { '--gfx-primary': primaryColor } : {}),
-    ...(accentColor ? { '--gfx-accent': accentColor } : {}),
-    ...(surfaceColor ? { '--gfx-surface': surfaceColor } : {}),
-    ...(textColor ? { '--gfx-text': textColor } : {}),
-  } as CSSProperties;
-
+export function TournamentBracketGraphic({ rounds }: TournamentBracketProps) {
   return (
-    <Box className="gts-graphic-scope gts-bracket-viewport" style={customVars}>
+    <Box className="gts-graphic-scope gts-bracket-viewport">
       <motion.div
         className="gts-bracket-container"
         variants={containerVariants}
@@ -109,7 +93,7 @@ function BracketMatchCard({ match }: { match: BracketMatch }) {
     );
   } else if (isCanceled) {
     statusBadge = (
-      <Badge size="xs" variant="outline" color="red" className="gts-bracket-badge gts-badge-canceled">
+      <Badge size="xs" variant="outline" className="gts-bracket-badge gts-badge-canceled">
         <Group gap={4}>
           <IconBan size={10} /> CANCELED
         </Group>
@@ -146,9 +130,18 @@ function BracketMatchCard({ match }: { match: BracketMatch }) {
 }
 
 function PlayerRow({ participant, isFinished }: { participant: BracketParticipant; isFinished: boolean }) {
-  const isTBD = !participant.id;
+  const isTBD = !participant.id && (!participant.name || participant.name === 'TBD' || participant.name === 'OFFENER SLOT');
   const showWinnerState = isFinished && participant.isWinner;
   const showLoserState = isFinished && !participant.isWinner && !isTBD;
+
+  const nameNode = (
+    <Text
+      truncate
+      className={isTBD ? 'gts-bracket-player-name' : 'gts-bracket-player-name gts-hover-target'}
+    >
+      {isTBD ? 'TBD' : participant.name}
+    </Text>
+  );
 
   return (
     <Group
@@ -159,11 +152,24 @@ function PlayerRow({ participant, isFinished }: { participant: BracketParticipan
       data-loser={showLoserState ? 'true' : undefined}
       data-tbd={isTBD ? 'true' : undefined}
     >
-      <Group gap={8} wrap="nowrap" style={{ overflow: 'hidden' }}>
+      <Group gap={8} wrap="nowrap" className="gts-overflow-hidden">
         {showWinnerState && <IconTrophy size={14} className="gts-bracket-winner-icon" />}
-        <Text truncate className="gts-bracket-player-name">
-          {isTBD ? 'TBD' : participant.name}
-        </Text>
+        {!isTBD ? (
+          <HoverCard width={270} shadow="lg" withArrow openDelay={120} closeDelay={80} position="top-start" withinPortal classNames={{ arrow: 'gts-hovercard-arrow' }}>
+            <HoverCard.Target>{nameNode}</HoverCard.Target>
+            <HoverCard.Dropdown className="gts-hovercard-dropdown">
+              <ProfileSmall
+                player={
+                  participant.profile || {
+                    DisplayName: participant.name,
+                  }
+                }
+              />
+            </HoverCard.Dropdown>
+          </HoverCard>
+        ) : (
+          nameNode
+        )}
       </Group>
 
       {participant.score !== null && (

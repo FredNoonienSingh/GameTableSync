@@ -1,0 +1,27 @@
+{
+  "repositories": [
+    { "name": "Warhammer 40k (11th Edition)", "repo": "BSData/wh40k-11e" },
+    { "name": "Warhammer 40k (10th Edition)", "repo": "BSData/wh40k-10e" },
+    { "name": "Horus Heresy (3rd Edition)", "repo": "BSData/horus-heresy-3rd-edition" },
+    { "name": "Horus Heresy (2nd Edition)", "repo": "BSData/horus-heresy-2nd-edition" },
+    { "name": "Age of Sigmar (4th Edition)", "repo": "BSData/age-of-sigmar-4th" },
+    { "name": "Warhammer 40k: Kill Team", "repo": "BSData/wh40k-killteam" },
+    { "name": "Warhammer: The Old World", "repo": "BSData/warhammer-the-old-world" },
+    { "name": "Legions Imperialis", "repo": "BSData/Horus-Heresy-Legions-Imperialis" },
+    { "name": "Adeptus Titanicus", "repo": "BSData/at-2018" },
+    { "name": "Warcry", "repo": "BSData/warhammer-age-of-sigmar-warcry" },
+    { "name": "Necromunda", "repo": "BSData/necromunda" },
+    { "name": "Blood Bowl", "repo": "BSData/bloodbowl" },
+    { "name": "Middle-earth SBG", "repo": "BSData/middle-earth" },
+    { "name": "Bolt Action", "repo": "BSData/boltaction" },
+    { "name": "Star Wars: Legion", "repo": "BSData/star-wars-legion" }
+  ],
+  "ignored_org_repos": [
+    "BSData/gallery",
+    "BSData/catalogue-development",
+    "BSData/bsdata",
+    "BSData/bsdata.github.io",
+    "BSData/TemplateDataRepo",
+    "BSData/.github"
+  ]
+}

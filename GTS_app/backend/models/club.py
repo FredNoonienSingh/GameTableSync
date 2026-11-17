@@ -115,6 +115,14 @@ class ClubLicense(db.Model):
     tier = db.Column(db.String(32), default="tier_1", nullable=False)
     status = db.Column(db.String(32), default="active", nullable=False)
 
+    # Single vs. Combined (Multi-Store) License metadata
+    license_type = db.Column(db.String(32), default="single", nullable=False)  # 'single' | 'combined'
+    bundle_id = db.Column(db.String(64), nullable=True, index=True)
+    is_primary_slot = db.Column(db.Boolean, default=True, nullable=False)
+    billing_cycle = db.Column(db.String(32), default="yearly", nullable=False)  # 'monthly' | 'yearly'
+    discount_percent = db.Column(db.Integer, default=0, nullable=False)
+    price_eur = db.Column(db.Float, nullable=True)
+
     stripe_subscription_id = db.Column(db.String(128), unique=True, nullable=True)
     stripe_checkout_session_id = db.Column(db.String(128), nullable=True)
     is_mock = db.Column(db.Boolean, default=False, nullable=False)
@@ -124,6 +132,21 @@ class ClubLicense(db.Model):
 
     owner = db.relationship('User', backref=db.backref('club_licenses', lazy='dynamic'))
     club = db.relationship('Club', back_populates='license', uselist=False)
+
+
+class ClubPicture(db.Model):
+    __tablename__ = 'club_pictures'
+
+    id = db.Column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
+    club_id = db.Column(UUID(as_uuid=False), db.ForeignKey('clubs.id', ondelete="CASCADE"), nullable=False, index=True)
+    uploaded_by_id = db.Column(UUID(as_uuid=False), db.ForeignKey('users.id', ondelete="SET NULL"), nullable=True)
+    gallery_name = db.Column(db.String(128), default="IMPRESSIONEN // GALERIE", nullable=False)
+    title = db.Column(db.String(128), nullable=True)
+    s3_key = db.Column(db.String(256), nullable=False)
+    url = db.Column(db.String(512), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    club = db.relationship('Club', back_populates='pictures')
 
 
 class Club(db.Model):
@@ -136,6 +159,8 @@ class Club(db.Model):
     name = db.Column(db.String(120), unique=True, nullable=False)
     slug = db.Column(db.String(120), unique=True, nullable=False, index=True)
     description = db.Column(db.Text, nullable=True)
+    logo_url = db.Column(db.String(512), nullable=True)
+    is_private = db.Column(db.Boolean, default=False, nullable=False)
 
     # Physical Address
     address_street = db.Column(db.String(256), nullable=True)
@@ -168,6 +193,21 @@ class Club(db.Model):
         nullable=False,
     )
 
+    # Global Store Weekly Opening Hours (0=Mon .. 6=Sun)
+    opening_hours = db.Column(
+        JSONB,
+        default=lambda: {
+            "0": {"is_open": True, "open": "14:00", "close": "22:00"},
+            "1": {"is_open": True, "open": "14:00", "close": "22:00"},
+            "2": {"is_open": True, "open": "14:00", "close": "22:00"},
+            "3": {"is_open": True, "open": "14:00", "close": "22:00"},
+            "4": {"is_open": True, "open": "14:00", "close": "23:00"},
+            "5": {"is_open": True, "open": "10:00", "close": "22:00"},
+            "6": {"is_open": False, "open": "12:00", "close": "18:00"},
+        },
+        nullable=True,
+    )
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     owner = db.relationship('User', backref=db.backref('owned_clubs', lazy='dynamic'))
@@ -176,6 +216,9 @@ class Club(db.Model):
     employees = db.relationship('ClubEmployee', back_populates='club', lazy='dynamic', cascade='all, delete-orphan')
     employee_shifts = db.relationship('ClubEmployeeShift', back_populates='club', lazy='dynamic', cascade='all, delete-orphan')
     bans = db.relationship('ClubBan', back_populates='club', lazy='dynamic', cascade='all, delete-orphan')
+    pictures = db.relationship('ClubPicture', back_populates='club', lazy='dynamic', cascade='all, delete-orphan')
+    table_reservations = db.relationship('ClubTableReservation', back_populates='club', lazy='dynamic', cascade='all, delete-orphan')
+    members = db.relationship('ClubMember', back_populates='club', lazy='dynamic', cascade='all, delete-orphan')
 
     @property
     def tier(self) -> str:
@@ -231,6 +274,7 @@ class ClubEmployee(db.Model):
     user_id = db.Column(UUID(as_uuid=False), db.ForeignKey('users.id', ondelete="CASCADE"), nullable=False, index=True)
 
     role_title = db.Column(db.String(64), default="Staff", nullable=False)
+    weekly_hours = db.Column(db.Float, default=20.0, nullable=False)
     is_keymaster = db.Column(db.Boolean, default=False, nullable=False)
     can_manage_tournaments = db.Column(db.Boolean, default=False, nullable=False)
     can_manage_events = db.Column(db.Boolean, default=False, nullable=False)
@@ -291,13 +335,29 @@ class ClubTable(db.Model):
         if not self.is_active:
             return False
 
-        all_schedules = self.schedules.all()
-        if not all_schedules:
-            return True
-
         target_date = start_time.date()
-        weekday = start_time.weekday()
+        weekday_str = str(start_time.weekday())
 
+        # 1. Check Global Store Opening Hours first (if configured on the Club)
+        store_hours = getattr(self.club, "opening_hours", None) if self.club else None
+        if isinstance(store_hours, dict) and weekday_str in store_hours:
+            day_cfg = store_hours[weekday_str] or {}
+            if not day_cfg.get("is_open", True):
+                return False
+            open_str = day_cfg.get("open")
+            close_str = day_cfg.get("close")
+            if open_str and close_str:
+                try:
+                    from datetime import time as dt_time
+                    s_open = datetime.combine(target_date, dt_time.fromisoformat(open_str))
+                    s_close = datetime.combine(target_date, dt_time.fromisoformat(close_str))
+                    if start_time < s_open or end_time > s_close:
+                        return False
+                except ValueError:
+                    pass
+
+        # 2. Check Date-Specific Table Blockers
+        all_schedules = self.schedules.all()
         date_overrides = [s for s in all_schedules if s.specific_date == target_date]
         for s in date_overrides:
             if s.is_blocked:
@@ -308,27 +368,7 @@ class ClubTable(db.Model):
                 if start_time < block_end and end_time > block_start:
                     return False
 
-        positive_date_windows = [s for s in date_overrides if not s.is_blocked and s.open_time and s.close_time]
-        if positive_date_windows:
-            return any(
-                datetime.combine(target_date, s.open_time) <= start_time
-                and end_time <= datetime.combine(target_date, s.close_time)
-                for s in positive_date_windows
-            )
-
-        weekly_rules = [s for s in all_schedules if s.specific_date is None and not s.is_blocked]
-        if not weekly_rules:
-            return True
-
-        day_rules = [s for s in weekly_rules if s.day_of_week == weekday and s.open_time and s.close_time]
-        if not day_rules:
-            return False
-
-        return any(
-            datetime.combine(target_date, s.open_time) <= start_time
-            and end_time <= datetime.combine(target_date, s.close_time)
-            for s in day_rules
-        )
+        return True
 
 
 class ClubTableSchedule(db.Model):
@@ -347,3 +387,48 @@ class ClubTableSchedule(db.Model):
     note = db.Column(db.String(128), nullable=True)
 
     table = db.relationship('ClubTable', back_populates='schedules')
+
+
+class ClubTableReservation(db.Model):
+    __tablename__ = 'club_table_reservations'
+
+    id = db.Column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
+    club_id = db.Column(UUID(as_uuid=False), db.ForeignKey('clubs.id', ondelete="CASCADE"), nullable=False, index=True)
+    table_id = db.Column(UUID(as_uuid=False), db.ForeignKey('club_tables.id', ondelete="CASCADE"), nullable=False, index=True)
+    user_id = db.Column(UUID(as_uuid=False), db.ForeignKey('users.id', ondelete="CASCADE"), nullable=False, index=True)
+    game_id = db.Column(UUID(as_uuid=False), db.ForeignKey('games.id', ondelete="SET NULL"), nullable=True)
+
+    system = db.Column(db.String(64), nullable=True)
+    start_time = db.Column(db.DateTime, nullable=False, index=True)
+    end_time = db.Column(db.DateTime, nullable=False, index=True)
+    # 'Pending', 'Approved', 'Rejected'
+    status = db.Column(db.String(32), default='Pending', nullable=False)
+    note = db.Column(db.String(256), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    club = db.relationship('Club', back_populates='table_reservations')
+    table = db.relationship('ClubTable', backref=db.backref('reservations', lazy='dynamic', cascade='all, delete-orphan'))
+    user = db.relationship('User', backref=db.backref('table_reservations', lazy='dynamic'))
+
+
+class ClubMember(db.Model):
+    """
+    Represents a Player's association/membership with a Club or Store.
+    - For Outpost (tier_1): Join requests start as 'Pending' and must be approved by Owner/Keymaster.
+    - For Commercial Stores (Stronghold/Citadel/Fortress): Players can associate ('Approved' or 'Pending').
+    """
+    __tablename__ = 'club_members'
+
+    id = db.Column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
+    club_id = db.Column(UUID(as_uuid=False), db.ForeignKey('clubs.id', ondelete="CASCADE"), nullable=False, index=True)
+    user_id = db.Column(UUID(as_uuid=False), db.ForeignKey('users.id', ondelete="CASCADE"), nullable=False, index=True)
+    # 'Pending', 'Approved'
+    status = db.Column(db.String(32), default="Pending", nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint('club_id', 'user_id', name='uq_club_member_user'),
+    )
+
+    club = db.relationship('Club', back_populates='members')
+    user = db.relationship('User', backref=db.backref('club_memberships', lazy='dynamic', cascade='all, delete-orphan'))

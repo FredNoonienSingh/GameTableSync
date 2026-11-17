@@ -1,0 +1,778 @@
+/* ==========================================================================
+   15. GAME CARD (LOCKED SLOT ALIGNMENT & ZERO-OVERFLOW ARENA GRID)
+   ========================================================================== */
+.gts-game-card {
+  --card-color: var(--gts-primary);
+  container-type: inline-size;
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  background-color: var(--gts-bg-card);
+  border: 1px solid color-mix(in srgb, var(--card-color) 28%, transparent);
+  border-top: 4px solid var(--card-color);
+  box-shadow: var(--gts-shadow-card), 0 0 18px color-mix(in srgb, var(--card-color) 12%, transparent);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gts-game-card[data-matched="true"] {
+  --card-color: var(--gts-accent);
+}
+
+.gts-game-card[data-pending="true"] {
+  --card-color: var(--gts-warning);
+}
+
+/* Fixed-structure top header: Badge on top, Timestamp directly below or inline without shifting height */
+.gts-game-header-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 8px;
+  min-height: 28px;
+}
+
+.gts-game-badge {
+  border-color: var(--card-color);
+  color: var(--card-color);
+  background-color: color-mix(in srgb, var(--card-color) 12%, transparent);
+  letter-spacing: 0.04em;
+  font-size: clamp(0.58rem, 2.7cqi, 0.68rem);
+  padding: 0 8px;
+  flex-shrink: 0;
+}
+
+.gts-game-time {
+  color: var(--gts-text-secondary);
+  font-size: clamp(0.68rem, 3cqi, 0.76rem);
+  font-weight: 600;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.gts-game-system-title {
+  color: var(--gts-text-heading);
+  font-size: clamp(1rem, 5.2cqi, 1.3rem);
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 0 16px color-mix(in srgb, var(--card-color) 35%, transparent);
+}
+
+.gts-game-meta-tag {
+  background-color: var(--gts-bg-glass-subtle);
+  border: 1px solid var(--gts-border-subtle);
+  color: var(--gts-text-secondary);
+  font-size: 0.65rem;
+}
+
+/* 3-Column Arena Grid: strict minmax(0, 1fr) prevents any text from bleeding into VS */
+.gts-game-arena-box {
+  background-color: var(--gts-bg-subcard);
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--card-color) 22%, transparent);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr);
+  align-items: stretch;
+  gap: 8px;
+  min-height: 108px;
+}
+
+.gts-game-team-col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.gts-game-team-col-right {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-end;
+  text-align: right;
+  gap: 8px;
+}
+
+.gts-game-team-header {
+  letter-spacing: 0.1em;
+  font-size: 0.65rem;
+  color: var(--gts-text-muted);
+  line-height: 1;
+}
+
+.gts-game-player-slot {
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gts-game-player-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  width: 100%;
+}
+
+.gts-game-player-row-right {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  width: 100%;
+}
+
+.gts-game-player-name {
+  color: var(--gts-text-heading);
+  font-weight: 700;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
+}
+
+.gts-game-player-icon {
+  flex-shrink: 0;
+  color: var(--gts-text-muted);
+}
+
+.gts-game-player-icon-me {
+  flex-shrink: 0;
+  color: var(--gts-accent);
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--gts-accent) 50%, transparent));
+}
+
+.gts-game-army-left {
+  padding-left: 22px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.gts-game-army-right {
+  padding-right: 22px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.gts-game-empty-slot {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px dashed color-mix(in srgb, var(--card-color) 30%, transparent);
+  background-color: color-mix(in srgb, var(--card-color) 5%, transparent);
+  color: var(--gts-text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  width: 100%;
+}
+
+.gts-game-vs-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  position: relative;
+}
+
+.gts-game-vs-icon {
+  color: var(--card-color);
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--card-color) 45%, transparent));
+}
+
+.gts-game-vs-text {
+  color: var(--card-color);
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.gts-game-cta-join,
+.gts-game-cta-join[data-variant] {
+  background-color: color-mix(in srgb, var(--card-color) 18%, transparent);
+  border: 1px solid var(--card-color);
+  color: var(--gts-text-heading);
+}
+
+.gts-game-cta-join:hover,
+.gts-game-cta-join[data-variant]:hover {
+  background-color: color-mix(in srgb, var(--card-color) 28%, transparent);
+  border-color: var(--card-color);
+  color: var(--gts-text-heading);
+}
+
+/* --- Gallery Showcase --- */
+@keyframes gtsGalleryFade {
+  0% {
+    opacity: 0.55;
+    filter: blur(2px);
+    transform: scale(1.015);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: scale(1);
+  }
+}
+
+.gts-gallery-frame {
+  border: 1px solid var(--gts-border-subtle);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--gts-shadow-card);
+  background-color: var(--gts-bg-subcard);
+  height: 100%;
+  display: flex;
+  position: relative;
+  animation: gtsGalleryFade 0.65s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.gts-gallery-thumb {
+  cursor: pointer;
+  opacity: 0.65;
+  transition: opacity 0.2s ease, border-color 0.2s ease;
+}
+
+.gts-gallery-thumb:hover {
+  opacity: 1;
+  border-color: var(--gts-accent);
+}
+
+/* --- Game Filter Bar --- */
+.gts-filter-bar {
+  background-color: var(--gts-bg-card);
+  border: 1px solid var(--gts-border-subtle);
+  box-shadow: var(--gts-shadow-card);
+  backdrop-filter: blur(8px);
+}
+
+/* ==========================================================================
+   21. TABBED SHOWCASE (CONSTRAINED ARENA, MOBILE ICON TABS & DOUBLE CHEVRONS)
+   ========================================================================== */
+.gts-tabbed-showcase {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.gts-tabbed-showcase[data-full-height="true"] {
+  min-height: calc(100vh - 80px);
+  justify-content: flex-start;
+}
+
+/* --- Filing Tabs Navigation --- */
+.gts-tabbed-nav-wrap {
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+  padding-left: 20px;
+  margin-bottom: -1px; /* Overlap the arena top border by 1px */
+  position: relative;
+  z-index: 10;
+}
+
+.gts-tabbed-bar {
+  display: flex;
+  gap: 8px;
+  max-width: 100%;
+  
+  /* --- Added for Horizontal Scrolling --- */
+  overflow-x: auto;
+  scrollbar-width: none; /* Hides scrollbar on Firefox */
+  padding-bottom: 4px;   /* Expands bounding box so the 2px active overlap isn't clipped */
+  margin-bottom: -4px;   /* Pulls it back down to maintain the seamless arena overlap */
+}
+
+/* Hides scrollbar on Chrome/Safari/Edge */
+.gts-tabbed-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.gts-tabbed-trigger {
+  --tab-color: var(--gts-primary);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 24px 14px;
+  border-radius: 12px 12px 0 0;
+  background-color: color-mix(in srgb, var(--gts-bg-panel) 55%, transparent);
+  border: 1px solid var(--gts-border-subtle);
+  border-bottom: none;
+  color: var(--gts-text-secondary);
+  font-size: clamp(0.76rem, 1.8vw, 0.88rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+
+  /* --- Added to prevent tabs from squishing --- */
+  flex-shrink: 0; 
+}
+
+.gts-tabbed-trigger:hover {
+  color: var(--gts-text-heading);
+  background-color: var(--gts-bg-glass-subtle);
+}
+
+.gts-tabbed-trigger[data-active="true"] {
+  color: var(--gts-text-heading);
+  background-color: color-mix(in srgb, var(--tab-color) 4%, var(--gts-bg-canvas));
+  border-color: color-mix(in srgb, var(--tab-color) 35%, var(--gts-border-subtle));
+  border-top: 3px solid var(--tab-color);
+  padding-top: 10px;
+}
+
+/* Seamlessly erases the arena top border directly underneath the active filing tab */
+.gts-tabbed-trigger[data-active="true"]::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: color-mix(in srgb, var(--tab-color) 4%, var(--gts-bg-canvas));
+  z-index: 2;
+}
+
+.gts-tabbed-trigger-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gts-text-muted);
+  transition: color 0.18s ease, transform 0.18s ease, filter 0.18s ease;
+}
+
+.gts-tabbed-trigger[data-active="true"] .gts-tabbed-trigger-icon {
+  color: var(--tab-color);
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--tab-color) 65%, transparent));
+  transform: scale(1.1);
+}
+
+.gts-tabbed-trigger-label {
+  display: inline;
+}
+
+/* --- Bordered Arena Container --- */
+.gts-tabbed-arena {
+  position: relative;
+  width: 100%;
+  border-radius: 12px;
+  background-color: color-mix(in srgb, var(--tab-active-color) 4%, var(--gts-bg-canvas));
+  border: 1px solid color-mix(in srgb, var(--tab-active-color) 35%, var(--gts-border-subtle));
+  box-shadow: 0 10px 36px color-mix(in srgb, var(--tab-active-color) 8%, transparent);
+  min-height: 500px;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  z-index: 1;
+}
+
+/* --- Frosted Edge Triggers (Replaces Sticky Arrows) --- */
+.gts-tab-edge-trigger {
+  position: relative;
+  width: 40px; /* Width of the clickable stripe */
+  flex-shrink: 0;
+  align-self: stretch; /* Stretches top-to-bottom of the arena */
+  z-index: 20;
+  background-color: color-mix(in srgb, var(--gts-bg-panel) 40%, transparent);
+  backdrop-filter: blur(6px);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gts-tab-edge-trigger:hover {
+  background-color: color-mix(in srgb, var(--tab-active-color) 12%, transparent);
+  box-shadow: inset 0 0 16px color-mix(in srgb, var(--tab-active-color) 15%, transparent);
+}
+
+/* The small indicator stripe inside the frosted button */
+.gts-tab-edge-trigger::after {
+  content: '';
+  width: 3px;
+  height: 48px;
+  border-radius: 2px;
+  background-color: color-mix(in srgb, var(--tab-active-color) 40%, var(--gts-border-subtle));
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gts-tab-edge-trigger:hover::after {
+  background-color: var(--tab-active-color);
+  box-shadow: 0 0 8px var(--tab-active-color);
+  transform: scaleY(1.3);
+}
+
+.gts-tab-edge-trigger-left {
+  border-right: 1px solid color-mix(in srgb, var(--tab-active-color) 20%, transparent);
+}
+
+.gts-tab-edge-trigger-right {
+  border-left: 1px solid color-mix(in srgb, var(--tab-active-color) 20%, transparent);
+}
+
+/* Hide on mobile (swiping is used instead) */
+@media (max-width: 48em) {
+  .gts-tab-edge-trigger {
+    display: none;
+  }
+  
+}
+.gts-tab-arrow:hover {
+  color: var(--tab-active-color);
+  filter: drop-shadow(0 0 16px var(--tab-active-color));
+}
+
+.gts-tab-arrow-left:hover {
+  transform: translateX(-5px) scale(1.08);
+}
+
+.gts-tab-arrow-right:hover {
+  transform: translateX(5px) scale(1.08);
+}
+
+.gts-tabbed-swipe-wrap {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mobile Adjustments: Icon-only filing tabs, hide desktop arrows, full-bleed padding */
+@media (max-width: 48em) {
+  .gts-tabbed-nav-wrap {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .gts-tabbed-bar {
+    width: 100%;
+  }
+
+  .gts-tabbed-trigger {
+    flex: 1 0 auto; /* Changed from flex: 1 so they can still overflow */
+    padding: 12px 16px 14px;
+  }
+
+  .gts-tabbed-trigger-label,
+  .gts-tabbed-trigger-badge {
+    display: none;
+  }
+
+  .gts-tabbed-trigger-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .gts-tab-arrow-col {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   23. COMING SOON OVERLAY BANNER (WITH HOVER FADE & MOBILE TAP-TO-PEEK)
+   ========================================================================== */
+.gts-coming-soon-wrapper {
+  position: relative;
+  width: 100%;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.gts-coming-soon-content {
+  width: 100%;
+  height: 100%;
+  opacity: var(--cs-content-opacity, 0.45);
+  pointer-events: none;
+  user-select: none;
+  filter: saturate(0.4);
+  transition: opacity 0.28s ease, filter 0.28s ease;
+}
+
+.gts-coming-soon-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: color-mix(
+    in srgb,
+    var(--gts-bg-canvas) var(--cs-backdrop-alpha, 45%),
+    transparent
+  );
+  backdrop-filter: blur(var(--cs-blur, 3px));
+  -webkit-backdrop-filter: blur(var(--cs-blur, 3px));
+  border-radius: inherit;
+  pointer-events: all;
+  cursor: not-allowed;
+  overflow: hidden;
+  transition:
+    background-color 0.28s ease,
+    backdrop-filter 0.28s ease,
+    -webkit-backdrop-filter 0.28s ease;
+}
+
+.gts-coming-soon-backdrop[data-revealable="true"] {
+  cursor: pointer;
+}
+
+/* Full-width semi-transparent horizontal banner */
+.gts-coming-soon-banner {
+  width: 100%;
+  padding: 10px 16px;
+  background-color: color-mix(
+    in srgb,
+    var(--gts-bg-panel) var(--cs-banner-alpha, 85%),
+    transparent
+  );
+  border-top: 1px solid color-mix(in srgb, var(--gts-accent) 55%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--gts-accent) 55%, transparent);
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.55),
+    0 0 20px color-mix(in srgb, var(--gts-primary) 25%, transparent);
+  backdrop-filter: blur(8px);
+  text-align: center;
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+/* Variant: Slight diagonal tactical stamp */
+.gts-coming-soon-banner[data-variant="tilted"] {
+  width: 110%;
+  transform: rotate(-3deg);
+}
+
+/* Variant: Compact center pill instead of full-width stripe */
+.gts-coming-soon-banner[data-variant="pill"] {
+  width: auto;
+  padding: 8px 22px;
+  border-radius: 999px;
+  border: 1px solid var(--gts-accent);
+}
+
+.gts-coming-soon-icon {
+  color: var(--gts-accent);
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--gts-accent) 60%, transparent));
+}
+
+.gts-coming-soon-text {
+  font-size: clamp(0.78rem, 2vw, 0.95rem);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: var(--gts-text-heading);
+  text-transform: uppercase;
+  text-shadow: 0 0 12px color-mix(in srgb, var(--gts-accent) 45%, transparent);
+}
+
+.gts-coming-soon-subtext {
+  color: var(--gts-text-secondary);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* Subtle eye icon on touch devices so mobile users know they can tap to peek */
+.gts-coming-soon-peek-hint {
+  color: var(--gts-text-muted);
+  opacity: 0.75;
+  margin-left: 4px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .gts-coming-soon-peek-hint {
+    display: none;
+  }
+}
+
+/* Small corner badge that remains visible while peeked on mobile */
+.gts-coming-soon-peek-pill {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  background-color: color-mix(in srgb, var(--gts-bg-panel) 88%, transparent);
+  border: 1px solid var(--gts-border-subtle);
+  color: var(--gts-accent);
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+/* --- Desktop Hover State (Fades out banner & restores underlying content) --- */
+@media (hover: hover) and (pointer: fine) {
+  .gts-coming-soon-wrapper[data-revealable="true"]:hover .gts-coming-soon-content {
+    opacity: 1;
+    filter: saturate(1);
+  }
+
+  .gts-coming-soon-wrapper[data-revealable="true"]:hover .gts-coming-soon-backdrop,
+  .gts-coming-soon-backdrop[data-revealable="true"]:hover {
+    background-color: transparent;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+
+  .gts-coming-soon-wrapper[data-revealable="true"]:hover .gts-coming-soon-banner,
+  .gts-coming-soon-backdrop[data-revealable="true"]:hover .gts-coming-soon-banner {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+
+  .gts-coming-soon-wrapper[data-revealable="true"]:hover
+    .gts-coming-soon-banner[data-variant="tilted"],
+  .gts-coming-soon-backdrop[data-revealable="true"]:hover
+    .gts-coming-soon-banner[data-variant="tilted"] {
+    transform: rotate(-3deg) scale(0.97);
+  }
+}
+
+/* --- Mobile / Touch Tap-to-Peek State --- */
+.gts-coming-soon-wrapper[data-peeked="true"] .gts-coming-soon-content {
+  opacity: 1;
+  filter: saturate(1);
+}
+
+.gts-coming-soon-backdrop[data-peeked="true"] {
+  background-color: transparent;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+}
+
+.gts-coming-soon-backdrop[data-peeked="true"] .gts-coming-soon-banner {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.gts-coming-soon-peek-pill[data-peeked="true"] {
+  opacity: 0.9;
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   25. REUSABLE ANIMATED DICE ROLLER MODAL (ALL SYSTEMS)
+   ========================================================================== */
+.gts-dice-modal-content {
+  max-height: 94dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.gts-dice-tray {
+  min-height: clamp(80px, 15dvh, 120px);
+  max-height: clamp(160px, 40dvh, 260px);
+  height: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: var(--gts-bg-subcard);
+  background-image: radial-gradient(
+    circle at 50% 50%,
+    color-mix(in srgb, var(--gts-primary) 14%, transparent),
+    transparent 75%
+  );
+  border: 1px solid var(--gts-border-subtle);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  /* 'flex-start' forces overflow to go DOWN into the scrollable area, never up out of bounds */
+  align-content: flex-start; 
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  perspective: 800px;
+  box-sizing: border-box;
+}
+
+.gts-die-cube {
+  width: clamp(46px, 11dvh, 58px);
+  height: clamp(46px, 11dvh, 58px);
+  border-radius: 10px;
+  background-color: var(--gts-bg-card);
+  border: 2px solid var(--gts-border-subtle);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  font-variant-numeric: tabular-nums;
+  position: relative;
+}
+
+.gts-die-cube[data-rolling="true"] {
+  border-color: var(--gts-accent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--gts-accent) 45%, transparent);
+}
+
+.gts-die-cube[data-crit="true"] {
+  border-color: #fcc419;
+  background-color: color-mix(in srgb, #fcc419 16%, var(--gts-bg-card));
+  box-shadow: 0 0 20px rgba(252, 196, 25, 0.45);
+}
+
+.gts-die-cube[data-fumble="true"] {
+  border-color: var(--gts-danger);
+  background-color: color-mix(in srgb, var(--gts-danger) 14%, var(--gts-bg-card));
+}
+
+.gts-die-val {
+  font-family: var(--gts-font-brand);
+  font-size: clamp(1.1rem, 2.8dvh, 1.4rem);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--gts-text-heading);
+}
+
+.gts-die-cube[data-crit="true"] .gts-die-val {
+  color: #fcc419;
+}
+
+.gts-die-cube[data-fumble="true"] .gts-die-val {
+  color: var(--gts-danger);
+}
+
+.gts-die-type-tag {
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--gts-text-muted);
+  margin-top: 1px;
+}
+

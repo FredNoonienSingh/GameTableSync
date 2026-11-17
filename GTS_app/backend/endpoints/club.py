@@ -1,6 +1,7 @@
 import os
 import re
 import uuid
+import secrets
 import stripe
 from datetime import datetime, time, timedelta
 from flask import Blueprint, request, jsonify
@@ -11,24 +12,32 @@ from models import (
     User,
     Club,
     ClubLicense,
+    ClubPicture,
+    ClubMember,
     ClubEmployee,
     ClubEmployeeShift,
     ClubTable,
     ClubTableSchedule,
+    ClubTableReservation,
     ClubBan,
     Game,
     GamePlayer,
     Tournament,
     TournamentParticipant,
     Event,
+    load_club_tiers,
     get_all_tiers,
     infer_table_category,
 )
+from .tournaments import serialize_tournament
+from storage import upload_bytes_to_s3
+from .auth import ALLOWED_IMAGE_MIMES
 from services.discord import update_game_webhook
 from .utils import (
     log,
     is_club_owner,
     is_club_keymaster,
+    can_manage_club_events,
     is_banned_from_club,
     get_banned_club_ids,
     get_optional_jwt_user_id,
@@ -98,6 +107,8 @@ def serialize_club(c: Club, include_internal: bool = False) -> dict:
         "name": c.name,
         "slug": c.slug,
         "description": c.description,
+        "logo_url": getattr(c, "logo_url", None) or (c.theme_config or {}).get("logo_url"),
+        "is_private": bool(getattr(c, "is_private", False)),
         "tier": c.tier,
         "tier_limits": c.tier_limits,
         "address": {
@@ -119,6 +130,16 @@ def serialize_club(c: Club, include_internal: bool = False) -> dict:
             "bot_access_level": c.tier_limits.get("discord_bot_access_level", "basic"),
         },
         "theme_config": c.theme_config or {},
+        "opening_hours": getattr(c, "opening_hours", None)
+        or {
+            "0": {"is_open": True, "open": "14:00", "close": "22:00"},
+            "1": {"is_open": True, "open": "14:00", "close": "22:00"},
+            "2": {"is_open": True, "open": "14:00", "close": "22:00"},
+            "3": {"is_open": True, "open": "14:00", "close": "22:00"},
+            "4": {"is_open": True, "open": "14:00", "close": "23:00"},
+            "5": {"is_open": True, "open": "10:00", "close": "22:00"},
+            "6": {"is_open": False, "open": "12:00", "close": "18:00"},
+        },
         "tables": [
             {
                 "id": t.id,
@@ -129,6 +150,18 @@ def serialize_club(c: Club, include_internal: bool = False) -> dict:
                 "dimensions": t.dimensions,
                 "max_players": t.max_players,
                 "is_active": t.is_active,
+                "schedules": [
+                    {
+                        "id": s.id,
+                        "day_of_week": s.day_of_week,
+                        "specific_date": s.specific_date.isoformat() if s.specific_date else None,
+                        "open_time": s.open_time.strftime("%H:%M") if s.open_time else None,
+                        "close_time": s.close_time.strftime("%H:%M") if s.close_time else None,
+                        "is_blocked": s.is_blocked,
+                        "note": s.note,
+                    }
+                    for s in t.schedules.all()
+                ] if include_internal else [],
             }
             for t in c.tables
         ],
@@ -143,6 +176,7 @@ def serialize_club(c: Club, include_internal: bool = False) -> dict:
                 "display_name": e.user.display_name if e.user else "Unbekannt",
                 "email": e.user.email if e.user else None,
                 "role_title": e.role_title,
+                "weekly_hours": float(getattr(e, "weekly_hours", None) or 20.0),
                 "is_keymaster": e.is_keymaster,
                 "can_manage_tournaments": e.can_manage_tournaments,
                 "can_manage_events": e.can_manage_events,
@@ -156,6 +190,59 @@ def serialize_club(c: Club, include_internal: bool = False) -> dict:
 # 1. STRIPE / MOCK BILLING, PORTAL & WEBHOOKS
 # ==========================================
 
+def _tier_rank(tier_key: str, tiers: dict) -> int:
+    cfg = tiers.get(tier_key) or {}
+    if "rank" in cfg:
+        return int(cfg["rank"])
+    order = {"tier_1": 1, "tier_2": 2, "tier_3": 3, "tier_4": 4}
+    return order.get(tier_key, 1)
+
+
+def _compute_slot_price(tier_cfg: dict, billing_cycle: str, discount_percent: int = 0) -> float:
+    base = (
+        float(tier_cfg.get("yearly_monthly_price_eur", tier_cfg.get("monthly_price_eur", 0)))
+        if billing_cycle == "yearly"
+        else float(tier_cfg.get("monthly_price_eur", 0))
+    )
+    if discount_percent > 0:
+        base = round(base * (1.0 - (discount_percent / 100.0)), 2)
+    return base
+
+
+def _serialize_license(lic: ClubLicense, tiers: dict) -> dict:
+    tier_cfg = tiers.get(lic.tier) or {}
+    return {
+        "id": lic.id,
+        "tier": lic.tier,
+        "tier_rank": _tier_rank(lic.tier, tiers),
+        "tier_details": tier_cfg,
+        "status": lic.status,
+        "license_type": getattr(lic, "license_type", "single") or "single",
+        "bundle_id": getattr(lic, "bundle_id", None),
+        "is_primary_slot": bool(getattr(lic, "is_primary_slot", True)),
+        "billing_cycle": getattr(lic, "billing_cycle", "yearly") or "yearly",
+        "discount_percent": int(getattr(lic, "discount_percent", 0) or 0),
+        "price_eur": getattr(lic, "price_eur", None)
+        or _compute_slot_price(
+            tier_cfg,
+            getattr(lic, "billing_cycle", "yearly") or "yearly",
+            int(getattr(lic, "discount_percent", 0) or 0),
+        ),
+        "is_mock": lic.is_mock,
+        "stripe_subscription_id": lic.stripe_subscription_id,
+        "club_id": lic.club.id if lic.club else None,
+        "club_name": lic.club.name if lic.club else None,
+        "valid_until": lic.valid_until.isoformat() if lic.valid_until else None,
+        "created_at": lic.created_at.isoformat() if lic.created_at else None,
+    }
+
+
+@clubs_bp.route("/api/billing/pricing", methods=["GET"])
+def get_pricing_catalog():
+    """Single source of truth for Landingpage and App pricing & combined license rules."""
+    return jsonify(load_club_tiers()), 200
+
+
 @clubs_bp.route("/api/billing/tiers", methods=["GET"])
 def get_available_tiers():
     return jsonify(get_all_tiers()), 200
@@ -165,32 +252,25 @@ def get_available_tiers():
 @jwt_required()
 def get_my_licenses():
     user_id = get_jwt_identity()
-    licenses = ClubLicense.query.filter_by(owner_id=user_id).order_by(ClubLicense.created_at.desc()).all()
+    licenses = (
+        ClubLicense.query.filter_by(owner_id=user_id)
+        .order_by(ClubLicense.created_at.asc())
+        .all()
+    )
     tiers = get_all_tiers()
-    return jsonify([
-        {
-            "id": lic.id,
-            "tier": lic.tier,
-            "tier_details": tiers.get(lic.tier),
-            "status": lic.status,
-            "is_mock": lic.is_mock,
-            "stripe_subscription_id": lic.stripe_subscription_id,
-            "club_id": lic.club.id if lic.club else None,
-            "club_name": lic.club.name if lic.club else None,
-            "valid_until": lic.valid_until.isoformat() if lic.valid_until else None,
-        }
-        for lic in licenses
-    ]), 200
+    return jsonify([_serialize_license(lic, tiers) for lic in licenses]), 200
 
 
 @clubs_bp.route("/api/billing/checkout", methods=["POST"])
 @jwt_required()
 def create_checkout_session():
     """
-    Initiates a Stripe Subscription Checkout Session for 'tier_1', 'tier_2', or 'tier_3'.
-    - If STRIPE_MOCK_MODE=true, immediately provisions/upgrades the ClubLicense in Postgres
-      and returns a direct frontend success URL so the frontend code stays identical.
-    - If STRIPE_MOCK_MODE=false, creates a real Stripe Checkout Session and returns session.url.
+    Initiates a Single or Combined (Multi-Store) License Checkout / Provisioning flow:
+    - Single License: mode='single', tier='tier_1'|'tier_2'|'tier_3', billing_cycle='monthly'|'yearly'
+    - Combined License: mode='combined', primary_tier='tier_3' (Citadel required),
+      additional_tiers=['tier_2', 'tier_3', ...] (each receives -10% discount).
+    - Fortress of Terra ('tier_4') is contact_only and cannot be bought via checkout.
+    - When upgrading an existing club (club_id provided), enforces strict UPGRADE-ONLY rule.
     """
     user_id = get_jwt_identity()
     user = db.session.get(User, user_id)
@@ -198,19 +278,117 @@ def create_checkout_session():
         return jsonify({"msg": "Benutzer nicht gefunden."}), 404
 
     data = request.get_json() or {}
+    mode = (data.get("mode") or data.get("license_type") or "single").strip().lower()
+    billing_cycle = (data.get("billing_cycle") or "yearly").strip().lower()
+    if billing_cycle not in ("monthly", "yearly"):
+        billing_cycle = "yearly"
+
+    pricing_doc = load_club_tiers()
+    tiers = pricing_doc.get("tiers", {})
+    combined_rules = pricing_doc.get("combined_rules", {})
+
+    frontend_url = (os.environ.get("FRONTEND_URL") or "https://app.gametablesync.com").rstrip("/")
+
+    # --- COMBINED (MULTI-STORE) LICENSE WORKFLOW ---
+    if mode == "combined":
+        req_primary = combined_rules.get("primary_required_tier", "tier_3")
+        allowed_extra = set(combined_rules.get("allowed_additional_tiers", ["tier_2", "tier_3"]))
+        extra_discount = int(combined_rules.get("additional_slot_discount_percent", 10))
+
+        primary_tier = data.get("primary_tier") or req_primary
+        if primary_tier != req_primary:
+            return jsonify({
+                "msg": f"Für eine Kombi-Lizenz (Multi-Store) muss die Hauptlizenz '{tiers.get(req_primary, {}).get('name', 'Citadel')}' sein."
+            }), 400
+
+        additional_tiers = data.get("additional_tiers") or []
+        if not isinstance(additional_tiers, list) or len(additional_tiers) < 1:
+            return jsonify({
+                "msg": "Bitte wähle mindestens einen zusätzlichen Store (Stronghold oder Citadel) für die Kombi-Lizenz aus."
+            }), 400
+
+        for extra_t in additional_tiers:
+            if extra_t not in allowed_extra:
+                return jsonify({
+                    "msg": f"Zusätzliche Lizenzen müssen Stronghold oder Citadel sein (Outpost ist nur für nicht-kommerzielle Einzel-Clubs)."
+                }), 400
+
+        bundle_id = f"bundle_{uuid.uuid4().hex[:10]}"
+        created_licenses = []
+
+        # 1. Primary Citadel slot
+        p_cfg = tiers[primary_tier]
+        p_lic = ClubLicense(
+            owner_id=user.id,
+            tier=primary_tier,
+            status="active",
+            license_type="combined",
+            bundle_id=bundle_id,
+            is_primary_slot=True,
+            billing_cycle=billing_cycle,
+            discount_percent=0,
+            price_eur=_compute_slot_price(p_cfg, billing_cycle, 0),
+            is_mock=True,
+            stripe_subscription_id=f"sub_mock_{uuid.uuid4().hex[:12]}",
+            valid_until=datetime.utcnow() + timedelta(days=365 if billing_cycle == "yearly" else 31),
+        )
+        db.session.add(p_lic)
+        created_licenses.append(p_lic)
+
+        # 2. Additional discounted slots (-10%)
+        for extra_t in additional_tiers:
+            e_cfg = tiers[extra_t]
+            e_lic = ClubLicense(
+                owner_id=user.id,
+                tier=extra_t,
+                status="active",
+                license_type="combined",
+                bundle_id=bundle_id,
+                is_primary_slot=False,
+                billing_cycle=billing_cycle,
+                discount_percent=extra_discount,
+                price_eur=_compute_slot_price(e_cfg, billing_cycle, extra_discount),
+                is_mock=True,
+                stripe_subscription_id=f"sub_mock_{uuid.uuid4().hex[:12]}",
+                valid_until=datetime.utcnow() + timedelta(days=365 if billing_cycle == "yearly" else 31),
+            )
+            db.session.add(e_lic)
+            created_licenses.append(e_lic)
+
+        db.session.commit()
+        return jsonify({
+            "msg": f"Kombi-Lizenz ({1 + len(additional_tiers)} Stores) erfolgreich eingerichtet!",
+            "bundle_id": bundle_id,
+            "licenses": [_serialize_license(l, tiers) for l in created_licenses],
+            "mock": True,
+        }), 201
+
+    # --- SINGLE LICENSE WORKFLOW ---
     tier = data.get("tier", "tier_1")
     club_id = data.get("club_id")
-    tiers = get_all_tiers()
 
     if tier not in tiers:
         return jsonify({"msg": "Ungültiges Lizenz-Tier ausgewählt."}), 400
+
+    tier_cfg = tiers[tier]
+    if tier_cfg.get("purchase_mode") == "contact_only":
+        return jsonify({
+            "msg": f"{tier_cfg.get('name', 'Fortress of Terra')} kann nur auf Anfrage per E-Mail gebucht werden."
+        }), 400
 
     if club_id:
         club = db.session.get(Club, str(club_id))
         if not club or club.owner_id != user_id:
             return jsonify({"msg": "Club nicht gefunden oder keine Berechtigung."}), 403
+        # Enforce UPGRADE-ONLY rule if club already has a license
+        if club.license:
+            current_rank = _tier_rank(club.license.tier, tiers)
+            target_rank = _tier_rank(tier, tiers)
+            if target_rank <= current_rank:
+                return jsonify({
+                    "msg": "Downgrades sind nicht möglich. Du kannst deine Lizenz nur auf ein höheres Tier upgraden."
+                }), 400
 
-    frontend_url = (os.environ.get("FRONTEND_URL") or "https://app.gametablesync.com").rstrip("/")
     success_url = data.get("success_url") or f"{frontend_url}/billing/success?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = data.get("cancel_url") or f"{frontend_url}/billing/cancel"
 
@@ -221,23 +399,32 @@ def create_checkout_session():
             if club.license:
                 club.license.tier = tier
                 club.license.status = "active"
+                club.license.billing_cycle = billing_cycle
+                club.license.price_eur = _compute_slot_price(
+                    tier_cfg, billing_cycle, club.license.discount_percent or 0
+                )
                 club.license.valid_until = datetime.utcnow() + timedelta(days=365)
                 db.session.commit()
                 return jsonify({
-                    "msg": f"[MOCK STRIPE] Club '{club.name}' erfolgreich auf {tiers[tier]['name']} aktualisiert!",
+                    "msg": f"Club '{club.name}' erfolgreich auf {tier_cfg['name']} hochgestuft!",
+                    "license": _serialize_license(club.license, tiers),
                     "license_id": club.license.id,
                     "tier": tier,
                     "mock": True,
-                    "checkout_url": f"{frontend_url}/billing/success?mock=true&tier={tier}&club_id={club.id}",
                 }), 200
 
         new_license = ClubLicense(
             owner_id=user.id,
             tier=tier,
             status="active",
+            license_type="single",
+            is_primary_slot=True,
+            billing_cycle=billing_cycle,
+            discount_percent=0,
+            price_eur=_compute_slot_price(tier_cfg, billing_cycle, 0),
             is_mock=True,
             stripe_subscription_id=f"sub_mock_{uuid.uuid4().hex[:12]}",
-            valid_until=datetime.utcnow() + timedelta(days=365),
+            valid_until=datetime.utcnow() + timedelta(days=365 if billing_cycle == "yearly" else 31),
         )
         db.session.add(new_license)
         db.session.flush()
@@ -248,60 +435,122 @@ def create_checkout_session():
 
         db.session.commit()
         return jsonify({
-            "msg": f"[MOCK STRIPE] Lizenz für {tiers[tier]['name']} erfolgreich aktiviert!",
+            "msg": f"Lizenz für {tier_cfg['name']} erfolgreich aktiviert!",
+            "license": _serialize_license(new_license, tiers),
             "license_id": new_license.id,
             "tier": tier,
             "mock": True,
-            "checkout_url": f"{frontend_url}/billing/success?mock=true&tier={tier}&license_id={new_license.id}",
         }), 201
 
-    # --- B) LIVE STRIPE CHECKOUT SESSION ---
-    _init_stripe()
-    price_id = tiers[tier].get("stripe_price_id")
-    if not price_id or price_id.startswith("price_replace_me"):
-        return jsonify({"msg": f"Stripe Price-ID für '{tier}' ist in tiers.json noch nicht hinterlegt."}), 500
 
-    try:
-        # Ensure the user has a Stripe Customer record
-        if not user.stripe_customer_id:
-            customer = stripe.Customer.create(
-                email=user.email,
-                name=user.display_name,
-                metadata={"gts_user_id": str(user.id)},
-            )
-            user.stripe_customer_id = customer.id
-            db.session.commit()
+@clubs_bp.route("/api/billing/licenses/<string:license_id>/upgrade", methods=["PUT"])
+@jwt_required()
+def upgrade_club_license(license_id):
+    """
+    Strictly upgrades an existing ClubLicense to a higher tier (no downgrades allowed).
+    If the license is part of a Combined bundle or upgrading a Single Citadel to Combined,
+    preserves discounts and updates price_eur.
+    """
+    user_id = get_jwt_identity()
+    lic = db.session.get(ClubLicense, license_id)
+    if not lic or lic.owner_id != user_id:
+        return jsonify({"msg": "Lizenz nicht gefunden."}), 404
 
-        metadata = {
-            "gts_user_id": str(user.id),
-            "tier": tier,
-        }
-        if club_id:
-            metadata["club_id"] = str(club_id)
+    data = request.get_json() or {}
+    target_tier = data.get("tier")
+    tiers = get_all_tiers()
 
-        checkout_session = stripe.checkout.Session.create(
-            customer=user.stripe_customer_id,
-            payment_method_types=["card", "paypal", "sepa_debit"],
-            mode="subscription",
-            line_items=[{"price": price_id, "quantity": 1}],
-            metadata=metadata,
-            subscription_data={"metadata": metadata},
-            allow_promotion_codes=True,
-            billing_address_collection="required",
-            tax_id_collection={"enabled": True},
-            success_url=success_url,
-            cancel_url=cancel_url,
-        )
+    if target_tier not in tiers:
+        return jsonify({"msg": "Ungültiges Ziel-Tier."}), 400
 
+    target_cfg = tiers[target_tier]
+    if target_cfg.get("purchase_mode") == "contact_only":
         return jsonify({
-            "checkout_url": checkout_session.url,
-            "session_id": checkout_session.id,
-            "mock": False,
-        }), 200
+            "msg": f"{target_cfg.get('name')} erfordert eine individuelle Anfrage per E-Mail."
+        }), 400
 
-    except Exception as e:
-        log(f"DEBUG [Stripe Checkout]: Error creating session - {e}")
-        return jsonify({"msg": f"Fehler beim Verbinden mit Stripe: {str(e)}"}), 500
+    current_rank = _tier_rank(lic.tier, tiers)
+    target_rank = _tier_rank(target_tier, tiers)
+
+    if target_rank <= current_rank:
+        return jsonify({
+            "msg": f"Ein Downgrade oder Wechsel auf dasselbe Tier ({target_cfg.get('name')}) ist nicht erlaubt. Nur Upgrades sind möglich."
+        }), 400
+
+    lic.tier = target_tier
+    lic.price_eur = _compute_slot_price(
+        target_cfg,
+        getattr(lic, "billing_cycle", "yearly") or "yearly",
+        int(getattr(lic, "discount_percent", 0) or 0),
+    )
+    db.session.commit()
+
+    return jsonify({
+        "msg": f"Lizenz erfolgreich auf {target_cfg.get('name')} hochgestuft!",
+        "license": _serialize_license(lic, tiers),
+    }), 200
+
+
+@clubs_bp.route("/api/billing/licenses/add-slot", methods=["POST"])
+@jwt_required()
+def add_combined_license_slot():
+    """
+    Adds an additional Store License slot (Stronghold or Citadel at -10% discount)
+    to an owner's existing Citadel license (converting a single Citadel license into a Combined bundle if needed).
+    """
+    user_id = get_jwt_identity()
+    data = request.get_json() or {}
+    slot_tier = data.get("tier", "tier_2")
+
+    pricing_doc = load_club_tiers()
+    tiers = pricing_doc.get("tiers", {})
+    combined_rules = pricing_doc.get("combined_rules", {})
+    req_primary = combined_rules.get("primary_required_tier", "tier_3")
+    allowed_extra = set(combined_rules.get("allowed_additional_tiers", ["tier_2", "tier_3"]))
+    extra_discount = int(combined_rules.get("additional_slot_discount_percent", 10))
+
+    if slot_tier not in allowed_extra:
+        return jsonify({
+            "msg": "Zusätzliche Store-Lizenzen müssen Stronghold oder Citadel sein."
+        }), 400
+
+    # Verify the owner has at least one active Citadel (tier_3) primary license
+    owner_licenses = ClubLicense.query.filter_by(owner_id=user_id, status="active").all()
+    primary_citadel = next((l for l in owner_licenses if l.tier == req_primary), None)
+    if not primary_citadel:
+        return jsonify({
+            "msg": "Um zusätzliche Store-Lizenzen (-10%) hinzuzufügen, benötigst du mindestens eine aktive Citadel-Hauptlizenz."
+        }), 400
+
+    bundle_id = primary_citadel.bundle_id or f"bundle_{uuid.uuid4().hex[:10]}"
+    primary_citadel.bundle_id = bundle_id
+    primary_citadel.license_type = "combined"
+    primary_citadel.is_primary_slot = True
+
+    cycle = getattr(primary_citadel, "billing_cycle", "yearly") or "yearly"
+    slot_cfg = tiers[slot_tier]
+
+    new_slot = ClubLicense(
+        owner_id=user_id,
+        tier=slot_tier,
+        status="active",
+        license_type="combined",
+        bundle_id=bundle_id,
+        is_primary_slot=False,
+        billing_cycle=cycle,
+        discount_percent=extra_discount,
+        price_eur=_compute_slot_price(slot_cfg, cycle, extra_discount),
+        is_mock=True,
+        stripe_subscription_id=f"sub_mock_{uuid.uuid4().hex[:12]}",
+        valid_until=primary_citadel.valid_until or (datetime.utcnow() + timedelta(days=365)),
+    )
+    db.session.add(new_slot)
+    db.session.commit()
+
+    return jsonify({
+        "msg": f"Zusätzliche {slot_cfg['name']}-Lizenz (-{extra_discount}%) erfolgreich zu deinem Bundle hinzugefügt!",
+        "license": _serialize_license(new_slot, tiers),
+    }), 201
 
 
 @clubs_bp.route("/api/billing/portal", methods=["POST"])
@@ -501,11 +750,36 @@ def get_clubs():
     banned_clubs = get_banned_club_ids(viewer_id)
 
     clubs = Club.query.order_by(Club.name.asc()).all()
-    return jsonify([
-        serialize_club(c, include_internal=False)
-        for c in clubs
-        if c.id not in banned_clubs
-    ]), 200
+    result = []
+    for c in clubs:
+        if c.id in banned_clubs:
+            continue
+        item = serialize_club(c, include_internal=False)
+        membership_status = None
+        is_staff = False
+        if viewer_id:
+            if is_club_keymaster(viewer_id, c.id) or ClubEmployee.query.filter_by(
+                club_id=c.id, user_id=viewer_id
+            ).first():
+                is_staff = True
+                membership_status = "Approved"
+            else:
+                mem = ClubMember.query.filter_by(club_id=c.id, user_id=viewer_id).first()
+                if mem:
+                    membership_status = mem.status
+        item["membership_status"] = membership_status
+        item["is_owner_or_staff"] = is_staff
+
+        # Hide address & contact for Outpost (tier_1) or private pages from non-members
+        is_approved = is_staff or (membership_status == "Approved")
+        if (c.tier == "tier_1" or getattr(c, "is_private", False)) and not is_approved:
+            item["address"] = None
+            item["contact"] = None
+            item["opening_hours"] = None
+            item["tables"] = []
+
+        result.append(item)
+    return jsonify(result), 200
 
 
 @clubs_bp.route("/api/clubs/<string:slug_or_id>", methods=["GET"])
@@ -521,6 +795,240 @@ def get_club_detail(slug_or_id):
     return jsonify(serialize_club(club, include_internal=False)), 200
 
 
+@clubs_bp.route("/api/clubs/<string:slug_or_id>/public", methods=["GET"])
+def get_public_club_page(slug_or_id):
+    """
+    Returns the Public Store / Club Page payload with tier-specific & membership-specific visibility:
+    - If club.is_private is True and viewer is not an approved member/employee/owner:
+      returns restricted private view (Name, Description, Join Request button).
+    - If Outpost (tier_1) and viewer is not an approved member/employee/owner:
+      hides address, contact, gallery, events, and tournaments (shows Name, Description, and Join Request button).
+    - For Stronghold (tier_2): shows Gallery, Events, Tournaments, Address, Contact, Opening Hours, and Associate button.
+    - For Citadel (tier_3+): also unlocks custom Subdomain (`slug.gametablesync.com`), custom Store Logo, and full branding.
+    """
+    viewer_id = get_optional_jwt_user_id()
+    club = Club.query.filter_by(slug=slug_or_id).first()
+    if not club:
+        try:
+            uuid.UUID(str(slug_or_id))
+            club = db.session.get(Club, slug_or_id)
+        except ValueError:
+            club = None
+
+    if not club:
+        return jsonify({"msg": "Club oder Store nicht gefunden."}), 404
+
+    if is_banned_from_club(viewer_id, club.id):
+        return jsonify({"msg": "Du hast Hausverbot in diesem Club."}), 403
+
+    is_owner_or_staff = False
+    membership_status = None  # None | 'Pending' | 'Approved'
+
+    if viewer_id:
+        if is_club_keymaster(viewer_id, club.id) or ClubEmployee.query.filter_by(
+            club_id=club.id, user_id=viewer_id
+        ).first():
+            is_owner_or_staff = True
+            membership_status = "Approved"
+        else:
+            mem = ClubMember.query.filter_by(club_id=club.id, user_id=viewer_id).first()
+            if mem:
+                membership_status = mem.status
+
+    is_approved_member = is_owner_or_staff or (membership_status == "Approved")
+    is_outpost = (club.tier == "tier_1")
+    is_private_page = bool(getattr(club, "is_private", False))
+    is_citadel_or_above = club.tier in ("tier_3", "tier_4") or bool(
+        club.tier_limits.get("can_edit_logo_and_description", False)
+    )
+
+    members_count = ClubMember.query.filter_by(club_id=club.id, status="Approved").count() + 1
+
+    # Private page guard: outsiders only see name, private badge, and join request button
+    if is_private_page and not is_approved_member:
+        return jsonify({
+            "id": club.id,
+            "name": club.name,
+            "slug": club.slug,
+            "tier": club.tier,
+            "tier_limits": club.tier_limits,
+            "is_outpost": is_outpost,
+            "is_private": True,
+            "restricted_view": True,
+            "restriction_reason": "private",
+            "description": club.description,
+            "logo_url": getattr(club, "logo_url", None) if is_citadel_or_above else None,
+            "theme_config": club.theme_config or {},
+            "membership_status": membership_status,
+            "is_owner_or_staff": is_owner_or_staff,
+            "members_count": members_count,
+            "address": None,
+            "contact": None,
+            "opening_hours": None,
+            "pictures": [],
+            "events": [],
+            "tournaments": [],
+        }), 200
+
+    # Outpost (tier_1) non-member guard: only Name, Description, and Join button (no address, no events, no tournaments)
+    if is_outpost and not is_approved_member:
+        return jsonify({
+            "id": club.id,
+            "name": club.name,
+            "slug": club.slug,
+            "tier": club.tier,
+            "tier_limits": club.tier_limits,
+            "is_outpost": True,
+            "is_private": is_private_page,
+            "restricted_view": True,
+            "restriction_reason": "outpost_members_only",
+            "description": club.description,
+            "logo_url": None,
+            "theme_config": club.theme_config or {},
+            "membership_status": membership_status,
+            "is_owner_or_staff": is_owner_or_staff,
+            "members_count": members_count,
+            "address": None,
+            "contact": None,
+            "opening_hours": None,
+            "pictures": [],
+            "events": [],
+            "tournaments": [],
+        }), 200
+
+    # Full Store / Member View
+    now = datetime.utcnow()
+    pics = club.pictures.order_by(ClubPicture.created_at.desc()).all()
+    upcoming_events = (
+        club.events.filter(Event.start_time >= now)
+        .order_by(Event.start_time.asc())
+        .all()
+    )
+    club_tournaments = (
+        Tournament.query.filter_by(club_id=club.id)
+        .order_by(Tournament.start_date.desc())
+        .all()
+    )
+
+    base_data = serialize_club(club, include_internal=False)
+
+    # Collect active reservations, games, and table blockers to compute live & future table status
+    raw_reservations = (
+        club.table_reservations.filter(
+            ClubTableReservation.status.in_(["Approved", "Pending"]),
+            ClubTableReservation.end_time >= now - timedelta(hours=12),
+        )
+        .order_by(ClubTableReservation.start_time.asc())
+        .all()
+    )
+    raw_games = (
+        Game.query.filter(
+            Game.club_id == club.id,
+            Game.is_virtual.is_(False),
+            Game.table_id.isnot(None),
+        )
+        .all()
+    )
+
+    table_bookings = []
+    for r in raw_reservations:
+        table_bookings.append({
+            "id": r.id,
+            "table_id": r.table_id,
+            "start_time": r.start_time.isoformat(),
+            "end_time": r.end_time.isoformat(),
+            "status": r.status,
+            "system": r.system or "Tabletop",
+        })
+    for g in raw_games:
+        end_dt = g.end_time or (g.start_time + timedelta(hours=3))
+        if end_dt >= now - timedelta(hours=12):
+            table_bookings.append({
+                "id": g.id,
+                "table_id": g.table_id,
+                "start_time": g.start_time.isoformat(),
+                "end_time": end_dt.isoformat(),
+                "status": "Approved" if g.is_approved else "Pending",
+                "system": g.system,
+            })
+
+    # Enrich each active table with live status & blocker schedules
+    enriched_tables = []
+    for t in club.tables.filter_by(is_active=True).all():
+        occupied_until = None
+        for b in table_bookings:
+            if b["table_id"] == t.id and b["status"] == "Approved":
+                st = datetime.fromisoformat(b["start_time"])
+                et = datetime.fromisoformat(b["end_time"])
+                if st <= now <= et:
+                    occupied_until = b["end_time"]
+                    break
+        blockers = [
+            {
+                "id": s.id,
+                "specific_date": s.specific_date.isoformat() if s.specific_date else None,
+                "open_time": s.open_time.strftime("%H:%M") if s.open_time else None,
+                "close_time": s.close_time.strftime("%H:%M") if s.close_time else None,
+                "is_blocked": s.is_blocked,
+                "note": s.note,
+            }
+            for s in t.schedules.filter_by(is_blocked=True).all()
+        ]
+        enriched_tables.append({
+            "id": t.id,
+            "name": t.name,
+            "supports_tabletop": t.supports_tabletop,
+            "supports_tcg": t.supports_tcg,
+            "supports_rpg": t.supports_rpg,
+            "dimensions": t.dimensions,
+            "max_players": t.max_players,
+            "is_active": t.is_active,
+            "status": "occupied" if occupied_until else "free",
+            "occupied_until": occupied_until,
+            "blockers": blockers,
+        })
+
+    return jsonify({
+        **base_data,
+        "tables": enriched_tables,
+        "table_bookings": table_bookings,
+        "is_outpost": is_outpost,
+        "is_private": is_private_page,
+        "restricted_view": False,
+        "restriction_reason": None,
+        "logo_url": base_data.get("logo_url") if is_citadel_or_above else None,
+        "custom_subdomain_url": f"https://{club.slug}.gametablesync.com"
+        if club.tier_limits.get("custom_subdomain")
+        else None,
+        "membership_status": membership_status,
+        "is_owner_or_staff": is_owner_or_staff,
+        "members_count": members_count,
+        "pictures": [
+            {
+                "id": p.id,
+                "gallery_name": getattr(p, "gallery_name", None) or "IMPRESSIONEN // GALERIE",
+                "title": p.title or club.name,
+                "url": p.url,
+            }
+            for p in pics
+        ],
+        "events": [
+            {
+                "id": e.id,
+                "title": e.title,
+                "start_time": e.start_time.isoformat() if e.start_time else None,
+                "description": e.description,
+                "attendees_count": e.attendees.count(),
+                "is_attending": bool(
+                    viewer_id and e.attendees.filter_by(id=viewer_id).first()
+                ),
+            }
+            for e in upcoming_events
+        ],
+        "tournaments": [serialize_tournament(t) for t in club_tournaments],
+    }), 200
+
+
 @clubs_bp.route("/api/clubs/<string:club_id>/manage", methods=["GET"])
 @jwt_required()
 def get_club_management_detail(club_id):
@@ -528,7 +1036,10 @@ def get_club_management_detail(club_id):
     club = db.session.get(Club, club_id)
     if not club:
         return jsonify({"msg": "Club nicht gefunden."}), 404
-    if not is_club_keymaster(user_id, club_id):
+    is_staff = is_club_keymaster(user_id, club_id) or bool(
+        ClubEmployee.query.filter_by(club_id=club_id, user_id=user_id).first()
+    )
+    if not is_staff:
         return jsonify({"msg": "Zugriff verweigert."}), 403
     return jsonify(serialize_club(club, include_internal=True)), 200
 
@@ -637,6 +1148,18 @@ def update_club_settings(club_id):
         if field in data:
             setattr(club, field, data[field])
 
+    if "is_private" in data:
+        club.is_private = bool(data["is_private"])
+
+    if "logo_url" in data:
+        can_edit_logo = bool(
+            club.tier_limits.get("can_edit_logo_and_description", False)
+            or club.tier in ("tier_3", "tier_4")
+        )
+        if not can_edit_logo:
+            return jsonify({"msg": "Eigenes Store-Logo erfordert mindestens Citadel (Tier 3)."}), 403
+        club.logo_url = data["logo_url"]
+
     if "social_links" in data and isinstance(data["social_links"], dict):
         club.social_links = data["social_links"]
 
@@ -644,6 +1167,9 @@ def update_club_settings(club_id):
         merged_theme = dict(club.theme_config or {})
         merged_theme.update(data["theme_config"])
         club.theme_config = merged_theme
+
+    if "opening_hours" in data and isinstance(data["opening_hours"], dict):
+        club.opening_hours = data["opening_hours"]
 
     if "discord_config" in data and isinstance(data["discord_config"], dict):
         bot_level = club.tier_limits.get("discord_bot_access_level", "basic")
@@ -699,6 +1225,7 @@ def add_club_employee(club_id):
         club_id=club.id,
         user_id=target_user.id,
         role_title=(data.get("role_title") or "Staff").strip(),
+        weekly_hours=float(data.get("weekly_hours", 20.0)),
         is_keymaster=bool(data.get("is_keymaster", False)),
         can_manage_tournaments=bool(data.get("can_manage_tournaments", False)),
         can_manage_events=bool(data.get("can_manage_events", False)),
@@ -731,6 +1258,8 @@ def manage_club_employee(club_id, employee_id):
     data = request.get_json() or {}
     if "role_title" in data:
         emp.role_title = (data["role_title"] or "Staff").strip()
+    if "weekly_hours" in data:
+        emp.weekly_hours = max(0.0, float(data["weekly_hours"]))
     if "is_keymaster" in data:
         emp.is_keymaster = bool(data["is_keymaster"])
     if "can_manage_tournaments" in data:
@@ -802,6 +1331,22 @@ def manage_employee_shifts(club_id):
     return jsonify({"msg": "Mitarbeiter-Schicht erfolgreich eingetragen!", "id": shift.id}), 201
 
 
+@clubs_bp.route("/api/clubs/<string:club_id>/shifts/<string:shift_id>", methods=["DELETE"])
+@jwt_required()
+def delete_employee_shift(club_id, shift_id):
+    user_id = get_jwt_identity()
+    if not is_club_owner(user_id, club_id):
+        return jsonify({"msg": "Nur der Club-Besitzer kann Schichten löschen."}), 403
+
+    shift = db.session.get(ClubEmployeeShift, shift_id)
+    if not shift or shift.club_id != club_id:
+        return jsonify({"msg": "Schicht nicht gefunden."}), 404
+
+    db.session.delete(shift)
+    db.session.commit()
+    return jsonify({"msg": "Schicht entfernt."}), 200
+
+
 # ==========================================
 # 4. TABLES & KEYMASTER GAME APPROVAL
 # ==========================================
@@ -842,6 +1387,61 @@ def create_club_table(club_id):
     db.session.commit()
 
     return jsonify({"msg": "Tisch erfolgreich angelegt!", "id": new_table.id}), 201
+
+
+@clubs_bp.route("/api/clubs/<string:club_id>/tables/<string:table_id>", methods=["PUT", "DELETE"])
+@jwt_required()
+def manage_club_table(club_id, table_id):
+    user_id = get_jwt_identity()
+    if not is_club_owner(user_id, club_id):
+        return jsonify({"msg": "Nur der Club-Besitzer kann Tische bearbeiten oder löschen."}), 403
+
+    table = db.session.get(ClubTable, table_id)
+    if not table or table.club_id != club_id:
+        return jsonify({"msg": "Tisch nicht gefunden."}), 404
+
+    if request.method == "DELETE":
+        db.session.delete(table)
+        db.session.commit()
+        return jsonify({"msg": "Tisch entfernt."}), 200
+
+    data = request.get_json() or {}
+    if "name" in data and (data["name"] or "").strip():
+        table.name = data["name"].strip()
+    if "supports_tabletop" in data:
+        table.supports_tabletop = bool(data["supports_tabletop"])
+    if "supports_tcg" in data:
+        table.supports_tcg = bool(data["supports_tcg"])
+    if "supports_rpg" in data:
+        table.supports_rpg = bool(data["supports_rpg"])
+    if "dimensions" in data:
+        table.dimensions = data["dimensions"]
+    if "max_players" in data:
+        table.max_players = int(data["max_players"])
+    if "is_active" in data:
+        table.is_active = bool(data["is_active"])
+
+    db.session.commit()
+    return jsonify({"msg": "Tisch aktualisiert!"}), 200
+
+
+@clubs_bp.route("/api/clubs/tables/<string:table_id>/schedules/<string:schedule_id>", methods=["DELETE"])
+@jwt_required()
+def delete_table_schedule(table_id, schedule_id):
+    user_id = get_jwt_identity()
+    table = db.session.get(ClubTable, table_id)
+    if not table:
+        return jsonify({"msg": "Tisch nicht gefunden."}), 404
+    if not is_club_keymaster(user_id, table.club_id):
+        return jsonify({"msg": "Keine Berechtigung."}), 403
+
+    sched = db.session.get(ClubTableSchedule, schedule_id)
+    if not sched or sched.table_id != table.id:
+        return jsonify({"msg": "Zeitplan-Eintrag nicht gefunden."}), 404
+
+    db.session.delete(sched)
+    db.session.commit()
+    return jsonify({"msg": "Zeitplan-Eintrag gelöscht."}), 200
 
 
 @clubs_bp.route("/api/clubs/tables/<string:table_id>/schedules", methods=["POST"])
@@ -941,6 +1541,136 @@ def keymaster_toggle_game_approval(club_id, game_id):
         "msg": f"Spiel durch Keymaster {status_text}!",
         "is_approved": game.is_approved,
     }), 200
+
+
+@clubs_bp.route("/api/clubs/<string:club_id>/reservations", methods=["GET", "POST"])
+@jwt_required()
+def manage_table_reservations(club_id):
+    """
+    Lists or creates table reservations for the club (used by LFG & Store Calendar).
+    Also returns table-bound Games in the club so Keymasters have a unified reservation view.
+    """
+    user_id = get_jwt_identity()
+    club = db.session.get(Club, club_id)
+    if not club:
+        return jsonify({"msg": "Club nicht gefunden."}), 404
+
+    if request.method == "GET":
+        reservations = club.table_reservations.order_by(ClubTableReservation.start_time.asc()).all()
+        res_list = [
+            {
+                "id": r.id,
+                "source": "reservation",
+                "club_id": r.club_id,
+                "table_id": r.table_id,
+                "table_name": r.table.name if r.table else "Tisch",
+                "user_id": r.user_id,
+                "user_name": r.user.display_name if r.user else "Unbekannt",
+                "system": r.system or "Tabletop",
+                "start_time": r.start_time.isoformat(),
+                "end_time": r.end_time.isoformat(),
+                "status": r.status,
+                "is_approved": r.status == "Approved",
+                "note": r.note,
+            }
+            for r in reservations
+        ]
+
+        # Also include store games that need or have table reservations
+        club_games = Game.query.filter_by(club_id=club_id, is_virtual=False).order_by(Game.start_time.asc()).all()
+        for g in club_games:
+            tbl = db.session.get(ClubTable, g.table_id) if g.table_id else None
+            creator = db.session.get(User, g.created_by_id) if g.created_by_id else None
+            res_list.append({
+                "id": g.id,
+                "source": "game",
+                "club_id": g.club_id,
+                "table_id": g.table_id,
+                "table_name": tbl.name if tbl else f"Auto ({g.required_table_type.upper()})",
+                "user_id": g.created_by_id,
+                "user_name": creator.display_name if creator else "LFG Match",
+                "system": f"{g.system} ({g.points} Pkt.)",
+                "start_time": g.start_time.isoformat(),
+                "end_time": g.end_time.isoformat() if g.end_time else g.start_time.isoformat(),
+                "status": "Approved" if g.is_approved else "Pending",
+                "is_approved": bool(g.is_approved),
+                "note": g.description,
+            })
+
+        res_list.sort(key=lambda x: x["start_time"])
+        return jsonify(res_list), 200
+
+    if is_banned_from_club(user_id, club_id):
+        return jsonify({"msg": "Du hast Hausverbot in diesem Club."}), 403
+
+    data = request.get_json() or {}
+    table_id = data.get("table_id")
+    table = db.session.get(ClubTable, str(table_id)) if table_id else None
+    if not table or table.club_id != club_id:
+        return jsonify({"msg": "Bitte einen gültigen Tisch auswählen."}), 400
+
+    try:
+        start_time = datetime.fromisoformat(data["start_time"])
+        end_time = datetime.fromisoformat(data["end_time"])
+    except (KeyError, ValueError):
+        return jsonify({"msg": "Ungültiger Zeitraum."}), 400
+
+    if end_time <= start_time:
+        return jsonify({"msg": "Endzeit muss nach der Startzeit liegen."}), 400
+
+    auto_approve = is_club_keymaster(user_id, club_id)
+    new_res = ClubTableReservation(
+        club_id=club_id,
+        table_id=table.id,
+        user_id=user_id,
+        system=(data.get("system") or "Tabletop").strip(),
+        start_time=start_time,
+        end_time=end_time,
+        status="Approved" if auto_approve else "Pending",
+        note=(data.get("note") or "").strip() or None,
+    )
+    db.session.add(new_res)
+    db.session.commit()
+
+    return jsonify({
+        "msg": "Tisch-Reservierung eingetragen!",
+        "id": new_res.id,
+        "status": new_res.status,
+    }), 201
+
+
+@clubs_bp.route("/api/clubs/<string:club_id>/reservations/<string:res_id>/status", methods=["PUT"])
+@jwt_required()
+def update_table_reservation_status(club_id, res_id):
+    user_id = get_jwt_identity()
+    if not is_club_keymaster(user_id, club_id):
+        return jsonify({"msg": "Keine Berechtigung."}), 403
+
+    data = request.get_json() or {}
+    new_status = data.get("status", "Approved")
+    source = data.get("source", "reservation")
+
+    if source == "game":
+        game = db.session.get(Game, res_id)
+        if not game or game.club_id != club_id:
+            return jsonify({"msg": "Spiel nicht gefunden."}), 404
+        game.is_approved = (new_status == "Approved")
+        db.session.commit()
+        update_game_webhook(game)
+        return jsonify({"msg": "Spiel-Tischreservierung aktualisiert!", "status": new_status}), 200
+
+    res_obj = db.session.get(ClubTableReservation, res_id)
+    if not res_obj or res_obj.club_id != club_id:
+        return jsonify({"msg": "Reservierung nicht gefunden."}), 404
+
+    if new_status == "Deleted":
+        db.session.delete(res_obj)
+        db.session.commit()
+        return jsonify({"msg": "Reservierung gelöscht."}), 200
+
+    res_obj.status = new_status
+    db.session.commit()
+    return jsonify({"msg": f"Reservierung auf '{new_status}' gesetzt!", "status": res_obj.status}), 200
 
 
 # ==========================================
@@ -1061,3 +1791,343 @@ def unban_user_from_club(club_id, banned_user_id):
     db.session.delete(ban)
     db.session.commit()
     return jsonify({"msg": "Hausverbot aufgehoben."}), 200
+
+
+# ==========================================
+# 6. CLUB EVENTS & SHOWCASE PICTURES
+# ==========================================
+
+@clubs_bp.route("/api/clubs/<string:club_id>/events", methods=["GET", "POST"])
+@jwt_required()
+def manage_club_events(club_id):
+    user_id = get_jwt_identity()
+    club = db.session.get(Club, club_id)
+    if not club:
+        return jsonify({"msg": "Club nicht gefunden."}), 404
+
+    if request.method == "GET":
+        events = club.events.order_by(Event.start_time.asc()).all()
+        return jsonify([
+            {
+                "id": e.id,
+                "title": e.title,
+                "club_id": e.club_id,
+                "start_time": e.start_time.isoformat() if e.start_time else None,
+                "description": e.description,
+                "attendees_count": e.attendees.count(),
+                "attendees": [
+                    {"id": a.id, "display_name": a.display_name}
+                    for a in e.attendees.all()
+                ],
+            }
+            for e in events
+        ]), 200
+
+    if not can_manage_club_events(user_id, club_id):
+        return jsonify({"msg": "Keine Berechtigung zum Erstellen von Events."}), 403
+
+    data = request.get_json() or {}
+    title = (data.get("title") or "").strip()
+    start_time_str = data.get("start_time")
+    description = (data.get("description") or "").strip()
+
+    if not title or not start_time_str:
+        return jsonify({"msg": "Titel und Startzeit sind erforderlich."}), 400
+
+    try:
+        start_time = datetime.fromisoformat(start_time_str)
+    except ValueError:
+        return jsonify({"msg": "Ungültiges Datumsformat."}), 400
+
+    new_event = Event(
+        club_id=club.id,
+        title=title,
+        start_time=start_time,
+        description=description,
+    )
+    db.session.add(new_event)
+    db.session.commit()
+    return jsonify({"msg": "Club-Event erfolgreich erstellt!", "id": new_event.id}), 201
+
+
+@clubs_bp.route("/api/clubs/<string:club_id>/events/<string:event_id>", methods=["DELETE"])
+@jwt_required()
+def delete_club_event(club_id, event_id):
+    user_id = get_jwt_identity()
+    if not can_manage_club_events(user_id, club_id):
+        return jsonify({"msg": "Keine Berechtigung."}), 403
+
+    ev = db.session.get(Event, event_id)
+    if not ev or ev.club_id != club_id:
+        return jsonify({"msg": "Event nicht gefunden."}), 404
+
+    db.session.delete(ev)
+    db.session.commit()
+    return jsonify({"msg": "Event gelöscht."}), 200
+
+
+@clubs_bp.route("/api/clubs/<string:club_id>/pictures", methods=["GET", "POST"])
+@jwt_required()
+def manage_club_pictures(club_id):
+    user_id = get_jwt_identity()
+    club = db.session.get(Club, club_id)
+    if not club:
+        return jsonify({"msg": "Club nicht gefunden."}), 404
+
+    if request.method == "GET":
+        pics = club.pictures.order_by(ClubPicture.created_at.desc()).all()
+        return jsonify([
+            {
+                "id": p.id,
+                "club_id": p.club_id,
+                "gallery_name": getattr(p, "gallery_name", None) or "IMPRESSIONEN // GALERIE",
+                "title": p.title or "",
+                "s3_key": p.s3_key,
+                "url": p.url,
+                "created_at": p.created_at.isoformat() if p.created_at else None,
+            }
+            for p in pics
+        ]), 200
+
+    if not is_club_keymaster(user_id, club_id):
+        return jsonify({"msg": "Nur der Club-Besitzer oder ein Keymaster kann Club-Bilder hochladen."}), 403
+
+    if "file" not in request.files:
+        return jsonify({"msg": "Keine Bilddatei übermittelt."}), 400
+
+    file = request.files["file"]
+    content_type = (file.mimetype or "").lower()
+    if content_type not in ALLOWED_IMAGE_MIMES:
+        return jsonify({"msg": "Nur PNG, JPG, WEBP oder GIF erlaubt."}), 400
+
+    raw_bytes = file.read()
+    if len(raw_bytes) > 8 * 1024 * 1024:
+        return jsonify({"msg": "Bild darf maximal 8 MB groß sein."}), 400
+
+    title = (request.form.get("title") or "").strip()[:120]
+    gallery_name = (request.form.get("gallery_name") or "").strip()[:120] or "IMPRESSIONEN // GALERIE"
+
+    # Enforce max_galleries per tier (1 for Outpost/Stronghold, multiple for Citadel+)
+    max_galleries = int(club.tier_limits.get("max_galleries", 10 if club.tier in ("tier_3", "tier_4") else 1))
+    existing_galleries = {
+        (getattr(p, "gallery_name", None) or "IMPRESSIONEN // GALERIE")
+        for p in club.pictures.all()
+    }
+    if gallery_name not in existing_galleries and len(existing_galleries) >= max_galleries:
+        return jsonify({
+            "msg": f"Dein aktuelles Tier ({club.tier_limits.get('name', club.tier)}) erlaubt maximal {max_galleries} Galerie(n). Mehrere Galerien sind ab Citadel (Tier 3) verfügbar."
+        }), 403
+
+    ext = ALLOWED_IMAGE_MIMES[content_type]
+    token_hex = secrets.token_hex(6)
+    object_key = f"clubs/{club.id}/gallery/{token_hex}.{ext}"
+
+    s3_url = upload_bytes_to_s3(raw_bytes, object_key, content_type=content_type)
+    if not s3_url:
+        return jsonify({"msg": "S3-Upload fehlgeschlagen."}), 500
+
+    pic = ClubPicture(
+        club_id=club.id,
+        uploaded_by_id=user_id,
+        gallery_name=gallery_name,
+        title=title or None,
+        s3_key=object_key,
+        url=s3_url,
+    )
+    db.session.add(pic)
+    db.session.commit()
+
+    return jsonify({
+        "msg": "Club-Bild erfolgreich hochgeladen!",
+        "picture": {
+            "id": pic.id,
+            "club_id": pic.club_id,
+            "gallery_name": pic.gallery_name,
+            "title": pic.title or "",
+            "s3_key": pic.s3_key,
+            "url": pic.url,
+            "created_at": pic.created_at.isoformat() if pic.created_at else None,
+        },
+    }), 201
+
+
+@clubs_bp.route("/api/clubs/<string:club_id>/pictures/<string:picture_id>", methods=["DELETE"])
+@jwt_required()
+def delete_club_picture(club_id, picture_id):
+    user_id = get_jwt_identity()
+    if not is_club_keymaster(user_id, club_id):
+        return jsonify({"msg": "Keine Berechtigung."}), 403
+
+    pic = db.session.get(ClubPicture, picture_id)
+    if not pic or pic.club_id != club_id:
+        return jsonify({"msg": "Bild nicht gefunden."}), 404
+
+    db.session.delete(pic)
+    db.session.commit()
+    return jsonify({"msg": "Bild entfernt."}), 200
+
+
+# ==========================================
+# 7. CLUB LOGO UPLOAD & PLAYER MEMBERSHIP / JOIN REQUESTS
+# ==========================================
+
+@clubs_bp.route("/api/clubs/<string:club_id>/logo", methods=["POST"])
+@jwt_required()
+def upload_club_logo(club_id):
+    """Uploads a custom Store/Club Logo to SeaweedFS S3 (strictly reserved for Citadel / Tier 3+)."""
+    user_id = get_jwt_identity()
+    club = db.session.get(Club, club_id)
+    if not club:
+        return jsonify({"msg": "Club nicht gefunden."}), 404
+    if not is_club_owner(user_id, club_id):
+        return jsonify({"msg": "Nur der Club-Besitzer kann das Store-Logo hochladen."}), 403
+
+    can_edit_logo = bool(
+        club.tier_limits.get("can_edit_logo_and_description", False)
+        or club.tier in ("tier_3", "tier_4")
+    )
+    if not can_edit_logo:
+        return jsonify({
+            "msg": "Ein eigenes Store-Logo ist erst ab Citadel (Tier 3) verfügbar."
+        }), 403
+
+    if "file" not in request.files:
+        return jsonify({"msg": "Keine Bilddatei übermittelt."}), 400
+
+    file = request.files["file"]
+    content_type = (file.mimetype or "").lower()
+    if content_type not in ALLOWED_IMAGE_MIMES:
+        return jsonify({"msg": "Nur PNG, JPG, WEBP oder GIF erlaubt."}), 400
+
+    raw_bytes = file.read()
+    if len(raw_bytes) > 5 * 1024 * 1024:
+        return jsonify({"msg": "Logo darf maximal 5 MB groß sein."}), 400
+
+    ext = ALLOWED_IMAGE_MIMES[content_type]
+    token_hex = secrets.token_hex(6)
+    object_key = f"clubs/{club.id}/logo/{token_hex}.{ext}"
+
+    s3_url = upload_bytes_to_s3(raw_bytes, object_key, content_type=content_type)
+    if not s3_url:
+        return jsonify({"msg": "S3-Upload fehlgeschlagen."}), 500
+
+    club.logo_url = s3_url
+    merged_theme = dict(club.theme_config or {})
+    merged_theme["logo_url"] = s3_url
+    club.theme_config = merged_theme
+    db.session.commit()
+
+    return jsonify({
+        "msg": "Store-Logo erfolgreich hochgeladen!",
+        "logo_url": s3_url,
+    }), 200
+
+
+@clubs_bp.route("/api/clubs/<string:slug_or_id>/join", methods=["POST", "DELETE"])
+@jwt_required()
+def player_join_or_leave_club(slug_or_id):
+    """
+    Allows a player to associate with a Store or request to join a Club:
+    - Outpost (tier_1) or Private pages: sets status='Pending' (requires Owner/Keymaster approval).
+    - Public Commercial Stores (Stronghold / Citadel) when not private: sets status='Approved' (or 'Pending' if store is private).
+    """
+    user_id = get_jwt_identity()
+    club = Club.query.filter_by(slug=slug_or_id).first()
+    if not club:
+        try:
+            uuid.UUID(str(slug_or_id))
+            club = db.session.get(Club, slug_or_id)
+        except ValueError:
+            club = None
+
+    if not club:
+        return jsonify({"msg": "Club nicht gefunden."}), 404
+
+    if is_banned_from_club(user_id, club.id):
+        return jsonify({"msg": "Du hast Hausverbot in diesem Club."}), 403
+
+    existing = ClubMember.query.filter_by(club_id=club.id, user_id=user_id).first()
+
+    if request.method == "DELETE":
+        if not existing:
+            return jsonify({"msg": "Du bist nicht mit diesem Club verknüpft."}), 404
+        db.session.delete(existing)
+        db.session.commit()
+        return jsonify({"msg": "Mitgliedschaft / Zuordnung beendet.", "membership_status": None}), 200
+
+    if existing:
+        return jsonify({
+            "msg": "Anfrage oder Mitgliedschaft besteht bereits.",
+            "membership_status": existing.status,
+        }), 200
+
+    # Outpost (tier_1) or Private clubs ALWAYS require Keymaster/Admin approval
+    requires_approval = (club.tier == "tier_1") or bool(getattr(club, "is_private", False))
+    initial_status = "Pending" if requires_approval else "Approved"
+
+    mem = ClubMember(
+        club_id=club.id,
+        user_id=user_id,
+        status=initial_status,
+    )
+    db.session.add(mem)
+    db.session.commit()
+
+    msg = (
+        "Beitrittsanfrage gesendet! Ein Admin oder Keymaster muss deine Anfrage bestätigen."
+        if initial_status == "Pending"
+        else f"Du bist jetzt mit '{club.name}' verknüpft!"
+    )
+    return jsonify({"msg": msg, "membership_status": initial_status}), 201
+
+
+@clubs_bp.route("/api/clubs/<string:club_id>/members", methods=["GET"])
+@jwt_required()
+def get_club_members_and_requests(club_id):
+    user_id = get_jwt_identity()
+    club = db.session.get(Club, club_id)
+    if not club:
+        return jsonify({"msg": "Club nicht gefunden."}), 404
+
+    if not is_club_keymaster(user_id, club_id) and not ClubEmployee.query.filter_by(
+        club_id=club_id, user_id=user_id
+    ).first():
+        return jsonify({"msg": "Zugriff verweigert."}), 403
+
+    members = club.members.order_by(ClubMember.created_at.desc()).all()
+    return jsonify([
+        {
+            "id": m.id,
+            "user_id": m.user_id,
+            "display_name": m.user.display_name if m.user else "Unbekannt",
+            "email": m.user.email if m.user else None,
+            "discord_account": m.user.discord_account if m.user else None,
+            "status": m.status,
+            "created_at": m.created_at.isoformat() if m.created_at else None,
+        }
+        for m in members
+    ]), 200
+
+
+@clubs_bp.route("/api/clubs/<string:club_id>/members/<string:member_id>", methods=["PUT", "DELETE"])
+@jwt_required()
+def manage_club_member_request(club_id, member_id):
+    user_id = get_jwt_identity()
+    if not is_club_keymaster(user_id, club_id):
+        return jsonify({"msg": "Nur der Club-Besitzer oder ein Keymaster kann Beitrittsanfragen bestätigen."}), 403
+
+    mem = db.session.get(ClubMember, member_id)
+    if not mem or mem.club_id != club_id:
+        return jsonify({"msg": "Mitglieds-Eintrag nicht gefunden."}), 404
+
+    if request.method == "DELETE":
+        db.session.delete(mem)
+        db.session.commit()
+        return jsonify({"msg": "Mitglied / Anfrage entfernt."}), 200
+
+    data = request.get_json() or {}
+    new_status = data.get("status", "Approved")
+    mem.status = new_status
+    db.session.commit()
+    return jsonify({"msg": "Mitgliedsstatus aktualisiert!", "status": mem.status}), 200
+

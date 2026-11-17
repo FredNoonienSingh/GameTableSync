@@ -1,0 +1,188 @@
+/* ==========================================================================
+   29. CLUB MANAGEMENT – OVERVIEW, TABLE PLANNER, CALENDAR & SETTINGS
+   ========================================================================== */
+
+/* --- Club layout roots --- */
+.gts-club-root {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: clip;
+}
+
+.gts-club-login-root {
+  position: relative;
+  min-height: 100vh;
+}
+
+.gts-club-login-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--gts-accent) 40%, transparent);
+  background-color: color-mix(in srgb, var(--gts-primary) 14%, var(--gts-bg-subcard));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--gts-accent) 18%, transparent);
+}
+
+/* --- Monthly table-planner calendar --- */
+.gts-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.gts-calendar-grid + .gts-calendar-grid {
+  margin-top: 6px;
+}
+
+.gts-calendar-weekday {
+  font-family: var(--gts-font-brand);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--gts-text-muted);
+  padding-bottom: 2px;
+}
+
+.gts-calendar-cell {
+  position: relative;
+  min-height: 88px;
+  min-width: 0;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: var(--gts-bg-subcard);
+  border: 1px solid var(--gts-border-faint);
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.gts-calendar-cell:hover {
+  border-color: var(--gts-border-subtle);
+  background-color: color-mix(in srgb, var(--gts-primary) 6%, var(--gts-bg-subcard));
+}
+
+.gts-calendar-cell[data-empty="true"] {
+  cursor: default;
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.gts-calendar-cell[data-closed="true"] {
+  opacity: 0.55;
+  background-color: var(--gts-bg-glass-subtle);
+  background-image: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--gts-text-muted) 10%, transparent) 0 6px,
+    transparent 6px 12px
+  );
+}
+
+.gts-calendar-cell[data-has-blocker="true"] {
+  border-color: color-mix(in srgb, var(--gts-danger) 35%, var(--gts-border-faint));
+}
+
+.gts-calendar-cell[data-has-pending="true"]::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--gts-warning);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--gts-warning) 70%, transparent);
+}
+
+.gts-calendar-cell[data-today="true"] .gts-calendar-daynum {
+  color: var(--gts-accent);
+}
+
+.gts-calendar-cell[data-selected="true"] {
+  opacity: 1;
+  border-color: var(--gts-primary);
+  background-color: color-mix(in srgb, var(--gts-primary) 14%, var(--gts-bg-subcard));
+  box-shadow: 0 0 14px color-mix(in srgb, var(--gts-primary) 30%, transparent);
+}
+
+.gts-calendar-cell-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 4px;
+  padding-right: 8px;
+}
+
+.gts-calendar-daynum {
+  font-family: var(--gts-font-brand);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--gts-text-secondary);
+}
+
+.gts-calendar-cell[data-selected="true"] .gts-calendar-daynum {
+  color: var(--gts-text-heading);
+}
+
+.gts-calendar-hours {
+  font-size: 0.6rem;
+  color: var(--gts-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gts-calendar-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* Event chip inside a cell */
+.gts-calendar-dot {
+  --dot-color: var(--gts-accent);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--dot-color) 75%, var(--gts-text-heading));
+  background-color: color-mix(in srgb, var(--dot-color) 18%, transparent);
+  border-left: 2px solid var(--dot-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gts-calendar-dot[data-kind="blocker"] { --dot-color: var(--gts-danger); }
+.gts-calendar-dot[data-kind="pending"] { --dot-color: var(--gts-warning); }
+.gts-calendar-dot[data-kind="approved"] { --dot-color: #40c057; }
+
+/* --- Toned sub-cards (blocker rows, reservation rows) --- */
+.gts-subcard-accent[data-tone] {
+  --subcard-tone: var(--gts-primary);
+  border-left-color: var(--subcard-tone);
+  background-color: color-mix(in srgb, var(--subcard-tone) 8%, var(--gts-bg-subcard));
+}
+
+.gts-subcard-accent[data-tone="danger"] { --subcard-tone: var(--gts-danger); }
+.gts-subcard-accent[data-tone="warning"] { --subcard-tone: var(--gts-warning); }
+.gts-subcard-accent[data-tone="success"] { --subcard-tone: #40c057; }
+.gts-subcard-accent[data-tone="accent"] { --subcard-tone: var(--gts-accent); }
+
+/* --- Settings: opening-hours rows --- */
+.gts-hours-row {
+  padding: 6px 10px;
+}
+
+.gts-hours-row[data-closed="true"] {
+  opacity: 0.6;
+}

@@ -146,6 +146,8 @@ services:
       - gts-net
     env_file:
       - ./GTS_landingpage/.env.production
+    environment:
+      BACKEND_INTERNAL_URL: http://app-backend:5000
     expose:
       - "3000"
     logging: *default-logging

@@ -11,10 +11,18 @@ class Tournament(db.Model):
     club_id = db.Column(UUID(as_uuid=False), db.ForeignKey('clubs.id', ondelete="CASCADE"), nullable=False, index=True)
     name = db.Column(db.String(150), nullable=False)
     system = db.Column(db.String(64), nullable=False, index=True)
+    # 'tabletop' | 'tcg'
+    category = db.Column(db.String(32), default='tabletop', nullable=False, index=True)
     format_type = db.Column(db.String(64), nullable=False)
+    # 'swiss' | 'ko' (Single Elimination Knockout)
+    pairing_system = db.Column(db.String(32), default='swiss', nullable=False)
+    # 'sync' (round duration in hours) | 'async' (round duration in days, players schedule & report games)
+    schedule_mode = db.Column(db.String(32), default='sync', nullable=False)
+    # Default is in-person (is_virtual=False)
     is_virtual = db.Column(db.Boolean, default=False, nullable=False)
     max_players = db.Column(db.Integer, default=8, nullable=False)
     round_duration_days = db.Column(db.Integer, default=14, nullable=False)
+    round_duration_hours = db.Column(db.Float, default=3.0, nullable=False)
     discord_thread_id = db.Column(db.String(64), nullable=True)
     status = db.Column(db.String(32), default='Registration', nullable=False)
     start_date = db.Column(db.DateTime, nullable=False)
@@ -23,6 +31,24 @@ class Tournament(db.Model):
     club = db.relationship('Club', backref=db.backref('tournaments', lazy='dynamic', cascade='all, delete-orphan'))
     participants = db.relationship('TournamentParticipant', backref='tournament', lazy='dynamic', cascade='all, delete-orphan')
     matches = db.relationship('TournamentMatch', backref='tournament', lazy='dynamic', cascade='all, delete-orphan')
+    judges = db.relationship('TournamentJudge', backref='tournament', lazy='dynamic', cascade='all, delete-orphan')
+
+
+class TournamentJudge(db.Model):
+    __tablename__ = 'tournament_judges'
+
+    id = db.Column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tournament_id = db.Column(UUID(as_uuid=False), db.ForeignKey('tournaments.id', ondelete="CASCADE"), nullable=False, index=True)
+    user_id = db.Column(UUID(as_uuid=False), db.ForeignKey('users.id', ondelete="CASCADE"), nullable=False, index=True)
+    is_employee = db.Column(db.Boolean, default=False, nullable=False)
+    role_label = db.Column(db.String(64), default='Judge', nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint('tournament_id', 'user_id', name='uq_tournament_judge_user'),
+    )
+
+    user = db.relationship('User', backref='tournament_judge_roles')
 
 class TournamentParticipant(db.Model):
     __tablename__ = 'tournament_participants'
@@ -60,6 +86,8 @@ class TournamentMatch(db.Model):
     p2_reported_s2 = db.Column(db.Integer, nullable=True)
     
     hand_in_by = db.Column(db.DateTime, nullable=True)
+    scheduled_at = db.Column(db.DateTime, nullable=True)
+    table_id = db.Column(UUID(as_uuid=False), db.ForeignKey('club_tables.id', ondelete="SET NULL"), nullable=True)
     p1_submitted = db.Column(db.Boolean, default=False, nullable=False)
     p2_submitted = db.Column(db.Boolean, default=False, nullable=False)
     elo_processed = db.Column(db.Boolean, default=False, nullable=False)

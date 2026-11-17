@@ -1,0 +1,121 @@
+/* ==========================================================================
+   30. CLUB MANAGEMENT – MODULES (EVENTS, TOURNAMENTS, PICTURES, BANLIST, EMPLOYEES, LICENSES)
+   ========================================================================== */
+
+/* --- Employees: monthly hours summary cards --- */
+.gts-hours-card[data-overtime="true"] {
+  border-color: color-mix(in srgb, var(--gts-danger) 55%, transparent);
+  background-color: color-mix(in srgb, var(--gts-danger) 8%, var(--gts-bg-subcard));
+}
+
+.gts-hours-card[data-overtime="true"]:hover {
+  border-color: var(--gts-danger);
+}
+
+/* Hour progress bars (Mantine Progress without color prop) */
+.gts-hours-progress {
+  background-color: var(--gts-bg-glass-subtle);
+  border: 1px solid var(--gts-border-faint);
+}
+
+.gts-hours-progress .mantine-Progress-section {
+  background: linear-gradient(90deg, var(--gts-primary), var(--gts-accent));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--gts-accent) 35%, transparent);
+}
+
+.gts-hours-progress[data-overtime="true"] {
+  border-color: color-mix(in srgb, var(--gts-danger) 40%, transparent);
+}
+
+.gts-hours-progress[data-overtime="true"] .mantine-Progress-section {
+  background: linear-gradient(90deg, var(--gts-warning), var(--gts-danger));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--gts-danger) 40%, transparent);
+}
+
+/* --- Employees: monthly shift planner calendar --- */
+.gts-shift-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.gts-shift-grid-head {
+  margin-bottom: 6px;
+}
+
+.gts-shift-cell {
+  min-height: 82px;
+  min-width: 0;
+  cursor: pointer;
+  background-color: var(--gts-bg-subcard);
+  border: 1px solid var(--gts-border-faint);
+  border-radius: 6px;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.gts-shift-cell:hover {
+  border-color: var(--gts-border-subtle);
+  background-color: color-mix(in srgb, var(--gts-primary) 6%, var(--gts-bg-subcard));
+}
+
+.gts-shift-cell[data-empty="true"] {
+  cursor: default;
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.gts-shift-cell[data-today="true"] {
+  border-color: color-mix(in srgb, var(--gts-accent) 55%, transparent);
+}
+
+.gts-shift-cell[data-selected="true"] {
+  border-color: var(--gts-primary);
+  background-color: color-mix(in srgb, var(--gts-primary) 12%, var(--gts-bg-subcard));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--gts-primary) 25%, transparent);
+}
+
+.gts-shift-daynum {
+  font-family: var(--gts-font-brand);
+  color: var(--gts-text-muted);
+}
+
+.gts-shift-cell[data-today="true"] .gts-shift-daynum {
+  color: var(--gts-accent);
+}
+
+.gts-shift-cell[data-selected="true"] .gts-shift-daynum {
+  color: var(--gts-text-heading);
+}
+
+.gts-shift-chip {
+  background-color: color-mix(in srgb, var(--gts-primary) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gts-primary) 35%, transparent);
+  border-left: 2px solid var(--gts-accent);
+  border-radius: 4px;
+  color: var(--gts-text-body);
+  min-width: 0;
+}
+
+.gts-shift-chip[data-overtime="true"] {
+  background-color: color-mix(in srgb, var(--gts-danger) 16%, transparent);
+  border-color: color-mix(in srgb, var(--gts-danger) 45%, transparent);
+  border-left-color: var(--gts-danger);
+}
+
+.gts-shift-chip[data-warning="true"] {
+  background-color: color-mix(in srgb, var(--gts-warning) 14%, transparent);
+  border-color: color-mix(in srgb, var(--gts-warning) 40%, transparent);
+  border-left-color: var(--gts-warning);
+}
+
+/* --- Licenses: active / current plan highlight (mirrors .gts-game-card) --- */
+.gts-license-plan {
+  --card-color: var(--gts-primary);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.gts-license-plan[data-active="true"] {
+  border-color: color-mix(in srgb, var(--card-color) 55%, transparent);
+  border-top: 4px solid var(--card-color);
+  box-shadow: var(--gts-shadow-card), 0 0 18px color-mix(in srgb, var(--card-color) 18%, transparent);
+}

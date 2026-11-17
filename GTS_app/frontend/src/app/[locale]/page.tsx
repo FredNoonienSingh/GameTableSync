@@ -40,6 +40,7 @@ export default function AppPage() {
           tcgPods: t('nav.tcgPods'),
           gameFinder: t('nav.gameFinder'),
           account: t('nav.account'),
+          clubManagement: t('nav.clubManagement'),
         }}
       />
 

@@ -1,0 +1,167 @@
+/* ==========================================================================
+   32. CLUB SHELL, CLUB DIRECTORY, LICENSE CHECKOUT & SHARED COMPONENT ADDITIONS
+   ========================================================================== */
+
+/* --- Small text helpers not covered by ui-kit.css --- */
+.gts-text-gold { color: var(--gts-gold); }
+
+/* --- Account / Club shell sidebar navigation (NavLink) --- */
+.gts-shell-navlink {
+  border-radius: 6px;
+  border: 1px solid transparent;
+  color: var(--gts-text-secondary);
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.gts-shell-navlink .mantine-NavLink-label {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.gts-shell-navlink .mantine-NavLink-section {
+  color: var(--gts-text-muted);
+  transition: color 0.15s ease;
+}
+
+.gts-shell-navlink:hover {
+  color: var(--gts-text-heading);
+  background-color: color-mix(in srgb, var(--gts-primary) 10%, transparent);
+}
+
+.gts-shell-navlink:hover .mantine-NavLink-section {
+  color: var(--gts-accent);
+}
+
+.gts-shell-navlink[data-active],
+.gts-shell-navlink[data-active]:hover {
+  color: var(--gts-text-heading);
+  background-color: color-mix(in srgb, var(--gts-primary) 20%, transparent);
+  border-color: color-mix(in srgb, var(--gts-primary) 55%, transparent);
+  box-shadow: inset 3px 0 0 var(--gts-accent), 0 0 12px color-mix(in srgb, var(--gts-primary) 18%, transparent);
+}
+
+.gts-shell-navlink[data-active] .mantine-NavLink-section {
+  color: var(--gts-accent);
+}
+
+/* Per-system icon tint (AccountShell "Systems" group) */
+.gts-shell-system-icon { color: var(--gts-primary); }
+.gts-shell-system-icon[data-system="tcg"] { color: var(--gts-accent); }
+.gts-shell-system-icon[data-system="rpg"] { color: var(--gts-gold); }
+
+/* Club shell summary icon (ThemeIcon variant="default") */
+.gts-shell-club-icon,
+.gts-shell-club-icon[data-variant] {
+  background-color: color-mix(in srgb, var(--gts-primary) 16%, var(--gts-bg-subcard));
+  border: 1px solid var(--gts-border-subtle);
+  color: var(--gts-accent);
+}
+
+/* Burger toggles in shells / app header */
+.gts-shell-burger {
+  --burger-color: var(--gts-text-heading);
+}
+
+/* Avatar fallback content when used with .gts-logo-fallback */
+.gts-logo-fallback .mantine-Avatar-placeholder {
+  background: transparent;
+  color: var(--gts-accent);
+  border: 0;
+}
+
+/* --- App header --- */
+.gts-app-header .gts-app-header-logo {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+
+.gts-app-menu-item.gts-app-menu-item-danger,
+.gts-app-menu-item-danger {
+  color: var(--gts-danger);
+}
+
+.gts-app-menu-item.gts-app-menu-item-danger:hover,
+.gts-app-menu-item-danger:hover {
+  background-color: color-mix(in srgb, var(--gts-danger) 14%, transparent);
+}
+
+/* --- License checkout --- */
+.gts-checkout-total {
+  font-family: var(--gts-font-brand);
+  color: var(--gts-accent);
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 16px color-mix(in srgb, var(--gts-accent) 30%, transparent);
+}
+
+/* --- Tournament matchup slot rows (state comes from data attributes) --- */
+.gts-matchup-slot-row {
+  min-height: 38px;
+}
+
+.gts-matchup-slot-row[data-compact="true"] {
+  min-height: 32px;
+}
+
+.gts-matchup-slot-name {
+  color: var(--gts-text-muted);
+}
+
+.gts-matchup-slot-row[data-occupied="true"] .gts-matchup-slot-name {
+  color: var(--gts-text-body);
+}
+
+.gts-matchup-slot-row[data-winner="true"] .gts-matchup-slot-name {
+  color: #40c057;
+}
+
+.gts-matchup-slot-row[data-dq="true"] .gts-matchup-slot-name {
+  color: var(--gts-danger);
+}
+
+/* --- Bracket / Swiss graphics --- */
+.gts-badge-canceled {
+  color: var(--gts-danger) !important;
+  border-color: color-mix(in srgb, var(--gts-danger) 40%, transparent);
+}
+
+.gts-swiss-round-indicator {
+  color: var(--gfx-text);
+  background-color: currentColor;
+}
+
+.gts-swiss-round-header[data-status="active"] .gts-swiss-round-indicator {
+  color: var(--gfx-accent);
+}
+
+.gts-swiss-round-header[data-status="completed"] .gts-swiss-round-indicator {
+  color: var(--gfx-primary);
+}
+
+/* SVG elements animated by framer-motion rotate / scale around their own center */
+.gts-svg-origin-center {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* --- Tactical table cards --- */
+.gts-table-card {
+  --table-active-color: var(--gfx-primary);
+}
+
+.gts-table-card[data-status="occupied"] {
+  --table-active-color: var(--gfx-accent);
+}
+
+.gts-table-active-icon {
+  color: var(--table-active-color);
+}
+
+.gts-table-card[data-selected="true"],
+.gts-table-card[data-selected="true"]:hover {
+  border-color: var(--gfx-accent);
+  box-shadow:
+    0 0 0 1px var(--gfx-accent),
+    0 0 24px color-mix(in srgb, var(--gfx-accent) 40%, transparent),
+    inset 0 0 24px color-mix(in srgb, var(--gfx-accent) 10%, transparent);
+}

@@ -1,0 +1,479 @@
+/* ==========================================================================
+   3. ANIMATED BACKGROUND
+   ========================================================================== */
+.gts-bg-root {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background-color: var(--gts-bg-canvas);
+  transition: background-color 0.25s ease;
+}
+
+.gts-bg-grid-svg {
+  width: 100%;
+  height: 100%;
+  opacity: var(--gts-grid-opacity);
+}
+
+.gts-bg-grid-path {
+  fill: none;
+  stroke: var(--gts-primary);
+  stroke-width: 1;
+}
+
+.gts-bg-beam-v-primary {
+  position: absolute;
+  top: 0;
+  left: 20%;
+  width: 2px;
+  height: 35vh;
+  background: linear-gradient(to bottom, transparent, var(--gts-primary), transparent);
+  opacity: 0.65;
+}
+
+.gts-bg-beam-v-accent {
+  position: absolute;
+  top: 0;
+  left: 78%;
+  width: 2px;
+  height: 45vh;
+  background: linear-gradient(to bottom, transparent, var(--gts-accent), transparent);
+  opacity: 0.45;
+}
+
+.gts-bg-beam-h-primary {
+  position: absolute;
+  top: 40%;
+  left: 0;
+  height: 1px;
+  width: 40vw;
+  background: linear-gradient(to right, transparent, var(--gts-primary), transparent);
+  opacity: 0.4;
+}
+
+/* ==========================================================================
+   4. COOKIE BANNER
+   ========================================================================== */
+.gts-cookie-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: var(--gts-bg-input);
+  border-top: 2px solid var(--gts-danger);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.gts-cookie-content {
+  flex: 1;
+  min-width: 300px;
+}
+
+.gts-cookie-icon {
+  flex-shrink: 0;
+  color: var(--gts-gold);
+}
+
+.gts-cookie-title {
+  font-family: var(--gts-font-impact);
+  letter-spacing: 0.05em;
+  color: var(--gts-text-heading);
+}
+
+.gts-cookie-text {
+  color: var(--gts-text-secondary);
+}
+
+.gts-cookie-btn {
+  font-family: var(--gts-font-impact);
+  letter-spacing: 0.05em;
+}
+
+/* ==========================================================================
+   5. FOOTER
+   ========================================================================== */
+.gts-footer {
+  background-color: var(--gts-bg-footer);
+  border-top: 1px solid var(--gts-border-faint);
+  z-index: 1;
+  position: relative;
+}
+
+.gts-footer-logo {
+  width: auto;
+  height: 28px;
+}
+
+.gts-footer-brand {
+  letter-spacing: 0.1em;
+  color: var(--gts-text-heading);
+}
+
+.gts-footer-link {
+  color: var(--gts-text-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color 0.15s ease;
+}
+
+.gts-footer-link:hover {
+  color: var(--gts-text-heading);
+}
+
+/* ==========================================================================
+   6. MODALS (MODERNIZED TO GTS VISUAL LANGUAGE + OPAQUE STICKY HEADER)
+   ========================================================================== */
+.gts-modal-content {
+  background-color: var(--gts-bg-modal);
+  color: var(--gts-text-heading);
+  border: 1px solid var(--gts-border-subtle);
+  border-top: 3px solid var(--gts-primary);
+  box-shadow: var(--gts-shadow-card), 0 0 24px color-mix(in srgb, var(--gts-primary) 15%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.gts-modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: var(--gts-bg-modal) !important;
+  color: var(--gts-text-heading);
+  border-bottom: 1px solid var(--gts-border-faint);
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.gts-modal-title {
+  font-family: var(--gts-font-brand);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-size: 1.1rem;
+  color: var(--gts-text-heading);
+}
+
+.gts-modal-close {
+  color: var(--gts-text-secondary);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.gts-modal-close:hover {
+  background-color: color-mix(in srgb, var(--gts-danger) 20%, transparent);
+  color: var(--gts-danger);
+}
+
+.gts-input-field {
+  background-color: var(--gts-bg-input);
+  color: var(--gts-text-heading);
+  border-color: var(--gts-border-subtle);
+  transition: border-color 0.15s ease;
+}
+
+.gts-input-field:focus,
+.gts-input-field:focus-within {
+  border-color: var(--gts-accent);
+}
+
+.gts-input-label {
+  color: var(--gts-text-secondary);
+  font-family: var(--gts-font-brand);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.gts-modal-submit-btn,
+.gts-modal-submit-btn[data-variant] {
+  background-color: color-mix(in srgb, var(--gts-primary) 18%, transparent);
+  border: 1px solid var(--gts-primary);
+  color: var(--gts-text-heading);
+  transition: background-color 0.18s ease, box-shadow 0.18s ease, transform 0.15s ease;
+}
+
+.gts-modal-submit-btn:hover,
+.gts-modal-submit-btn[data-variant]:hover {
+  background-color: color-mix(in srgb, var(--gts-primary) 30%, transparent);
+  border-color: var(--gts-accent);
+  color: var(--gts-text-heading);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--gts-primary) 35%, transparent);
+  transform: translateY(-1px);
+}
+
+.gts-modal-toggle-link {
+  cursor: pointer;
+  color: var(--gts-text-secondary);
+  text-decoration: underline;
+  transition: color 0.15s ease;
+}
+
+.gts-modal-toggle-link:hover {
+  color: var(--gts-accent);
+}
+
+/* ==========================================================================
+   7. SECTION & SUBSECTION
+   ========================================================================== */
+.gts-section {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.gts-section-intro-title {
+  font-size: clamp(1.4rem, 3.8vw, 2.6rem);
+  line-height: 1.15;
+  color: var(--gts-text-heading);
+  text-shadow: 0 4px 25px color-mix(in srgb, var(--gts-primary) 35%, transparent);
+  word-break: break-word;
+}
+
+.gts-section-col-content {
+  position: relative;
+  z-index: 2;
+}
+
+.gts-section-col-graphic {
+  position: relative;
+  z-index: 1;
+}
+
+.gts-section-paper {
+  position: relative;
+  z-index: 2;
+  background-color: var(--gts-bg-panel);
+  backdrop-filter: blur(8px);
+}
+
+.gts-section-title {
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  line-height: 1.15;
+  word-break: break-word;
+}
+
+.gts-section-children {
+  position: relative;
+  z-index: 3;
+}
+
+.gts-section-graphic-box {
+  height: 360px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gts-subsection-paper {
+  position: relative;
+  z-index: 3;
+  background-color: var(--gts-bg-subcard);
+  border: 1px solid color-mix(in srgb, var(--gts-primary) 20%, transparent);
+  border-left: 3px solid var(--gts-primary);
+}
+
+.gts-subsection-icon {
+  background-color: color-mix(in srgb, var(--gts-primary) 15%, transparent);
+}
+
+.gts-subsection-title {
+  font-size: clamp(0.95rem, 2.2vw, 1.15rem);
+  color: var(--gts-text-heading);
+}
+
+/* ==========================================================================
+   8. SIMPLE HEADER
+   ========================================================================== */
+.gts-simple-header {
+  padding-top: 86px;
+  padding-bottom: 16px;
+  padding-left: 16px;
+  position: relative;
+  z-index: 10;
+}
+
+.gts-simple-header-anchor {
+  display: inline-block;
+}
+
+.gts-simple-header-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--gts-primary) 40%, transparent));
+}
+
+.gts-simple-header-text {
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  color: var(--gts-text-heading);
+  text-shadow: 0 2px 12px color-mix(in srgb, var(--gts-primary) 35%, transparent);
+}
+
+/* ==========================================================================
+   12. LANDING NAVBAR & THEME TOGGLE
+   ========================================================================== */
+.gts-landing-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  z-index: 1000;
+  background-color: color-mix(in srgb, var(--gts-bg-footer) 85%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--gts-border-faint);
+}
+
+.gts-nav-link {
+  color: var(--gts-text-secondary);
+  font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.gts-nav-link:hover {
+  color: var(--gts-text-heading);
+  background-color: color-mix(in srgb, var(--gts-primary) 12%, transparent);
+}
+
+.gts-drawer-content {
+  background-color: var(--gts-bg-footer);
+}
+
+.gts-drawer-header {
+  background-color: var(--gts-bg-footer);
+  border-bottom: 1px solid var(--gts-border-faint);
+}
+
+.gts-drawer-close {
+  color: var(--gts-text-secondary);
+}
+
+.gts-drawer-item {
+  margin-bottom: 1rem;
+}
+
+.gts-theme-toggle-btn {
+  background-color: var(--gts-bg-glass-subtle);
+  border: 1px solid var(--gts-border-subtle);
+  color: var(--gts-text-heading);
+  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
+}
+
+.gts-theme-toggle-btn:hover {
+  background-color: color-mix(in srgb, var(--gts-primary) 18%, transparent);
+  border-color: var(--gts-primary);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   14. APP HEADER
+   ========================================================================== */
+.gts-app-header {
+  height: 80px;
+  background-color: var(--gts-bg-card);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid color-mix(in srgb, var(--gts-primary) 25%, transparent);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  width: 100%;
+}
+
+.gts-app-header-brand-link {
+  text-decoration: none;
+}
+
+.gts-app-header-logo {
+  width: auto;
+  height: 38px;
+  object-fit: contain;
+}
+
+.gts-app-header-title {
+  letter-spacing: 0.1em;
+  font-weight: 800;
+  color: var(--gts-text-heading);
+}
+
+.gts-app-nav-btn {
+  color: var(--gts-text-secondary);
+}
+
+.gts-app-menu-trigger {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--gts-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: color 0.15s ease;
+}
+
+.gts-app-menu-trigger:hover {
+  color: var(--gts-text-heading);
+}
+
+.gts-app-menu-dropdown {
+  background-color: var(--gts-bg-modal);
+  border: 1px solid color-mix(in srgb, var(--gts-primary) 25%, transparent);
+}
+
+.gts-app-menu-item {
+  color: var(--gts-text-heading);
+}
+
+.gts-app-menu-item:hover {
+  background-color: color-mix(in srgb, var(--gts-primary) 15%, transparent);
+}
+
+.gts-app-account-btn {
+  background-color: var(--gts-border-faint);
+  border: 1px solid var(--gts-border-subtle);
+  color: var(--gts-accent);
+}
+
+/* ==========================================================================
+   18. DYNAMIC LANGUAGE SWITCHER
+   ========================================================================== */
+.gts-lang-trigger {
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background-color: var(--gts-bg-glass-subtle);
+  border: 1px solid var(--gts-border-subtle);
+  color: var(--gts-text-heading);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
+}
+
+.gts-lang-trigger:hover {
+  background-color: color-mix(in srgb, var(--gts-primary) 18%, transparent);
+  border-color: var(--gts-primary);
+  transform: translateY(-1px);
+}
+
+.gts-lang-item-active {
+  background-color: color-mix(in srgb, var(--gts-primary) 22%, transparent);
+  color: var(--gts-accent);
+  font-weight: 700;
+}
+

@@ -19,17 +19,17 @@ services:
       timeout: 5s
       retries: 5
 
-#  seaweedfs:
-#    image: chrislusf/seaweedfs:latest
-#    container_name: gts-seaweedfs-dev
-#    restart: unless-stopped
-#    command: "server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json -filer"
-#    ports:
-#      - "8333:8333" # S3 API (http://localhost:8333)
-#      - "8888:8888" # Filer UI (http://localhost:8888)
-#    volumes:
-#      - seaweed_dev:/data
-#      - ./s3.json:/etc/seaweedfs/s3.json:ro
+  seaweedfs:
+    image: chrislusf/seaweedfs:latest
+    container_name: gts-seaweedfs-dev
+    restart: unless-stopped
+    command: "server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json -filer"
+    ports:
+      - "8333:8333" # S3 API (http://localhost:8333)
+      - "8888:8888" # Filer UI (http://localhost:8888)
+    volumes:
+      - seaweed_dev:/data
+      - ./s3.json:/etc/seaweedfs/s3.json:ro
 
   app-backend:
     build:
@@ -87,6 +87,8 @@ services:
     restart: unless-stopped
     env_file:
       - ./GTS_landingpage/.env.local
+    environment:
+      BACKEND_INTERNAL_URL: http://app-backend:5000
     ports:
       - "3000:3000" # Accessible at http://localhost:3000
     volumes:

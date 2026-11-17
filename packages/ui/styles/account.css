@@ -1,0 +1,149 @@
+/* ==========================================================================
+   26. ACCOUNT & CLUB MANAGEMENT SHELL (TOKEN-DRIVEN, MATCHES ARMY / GAME CARDS)
+   ========================================================================== */
+
+/* --- Base Shell Layout --- */
+.gts-account-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 80px);
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+.gts-account-mobile-bar {
+  background-color: var(--gts-bg-card);
+  border-bottom: 1px solid var(--gts-border-faint);
+  backdrop-filter: blur(12px);
+}
+
+.gts-account-split-layout {
+  display: flex;
+  flex: 1;
+  width: 100%;
+}
+
+.gts-account-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  background-color: var(--gts-bg-panel);
+  border-right: 1px solid var(--gts-border-faint);
+  backdrop-filter: blur(8px);
+}
+
+.gts-account-main-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* --- Panels & Cards (same recipe as .gts-army-header-card / .gts-army-panel) --- */
+.gts-panel-header {
+  --card-color: var(--gts-primary);
+  background-color: var(--gts-bg-card);
+  border: 1px solid var(--gts-border-subtle);
+  border-top: 4px solid var(--card-color);
+  box-shadow: var(--gts-shadow-card), 0 0 18px color-mix(in srgb, var(--card-color) 10%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.gts-panel-card {
+  background-color: var(--gts-bg-card);
+  border: 1px solid var(--gts-border-subtle);
+  box-shadow: var(--gts-shadow-card);
+  backdrop-filter: blur(8px);
+}
+
+.gts-panel-summary {
+  background-color: var(--gts-bg-subcard);
+  border: 1px solid var(--gts-border-faint);
+  border-left: 3px solid var(--gts-primary);
+}
+
+.gts-panel-discord {
+  background-color: var(--gts-bg-card);
+  border: 1px solid var(--gts-border-subtle);
+  transition: border-color 0.2s ease;
+}
+
+.gts-panel-discord-linked {
+  border-color: rgba(88, 101, 242, 0.45);
+}
+
+.gts-panel-discord-subcard {
+  background-color: rgba(88, 101, 242, 0.12);
+  border: 1px solid rgba(88, 101, 242, 0.3);
+}
+
+/* --- Utility & Typography --- */
+.gts-text-subtitle {
+  color: var(--gts-text-secondary);
+  line-height: 1.6;
+}
+
+.gts-text-description {
+  color: var(--gts-text-secondary);
+  line-height: 1.5;
+}
+
+.gts-avatar-border {
+  border: 2px solid var(--gts-border-subtle);
+}
+
+.gts-flex-1 {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ==========================================================================
+   PROFILE SMALL (HOVER CARD)
+   ========================================================================== */
+.gts-profile-small-box {
+  background-color: var(--gts-bg-card);
+  border: 1px solid color-mix(in srgb, var(--gts-accent) 25%, transparent);
+  border-top: 3px solid var(--gts-accent);
+  box-shadow: var(--gts-shadow-card);
+  backdrop-filter: blur(8px);
+  border-radius: 8px;
+  padding: 16px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.gts-profile-small-avatar {
+  border: 2px solid color-mix(in srgb, var(--gts-accent) 30%, transparent);
+}
+
+.gts-profile-small-name {
+  color: var(--gts-text-heading);
+}
+
+.gts-profile-small-icon {
+  color: var(--gts-accent);
+  flex-shrink: 0;
+}
+
+.gts-profile-small-discord {
+  color: #8891f2;
+}
+
+.gts-profile-small-divider {
+  border-color: var(--gts-border-faint);
+}
+
+/* Mantine HoverCard dropdown wrapper: ProfileSmall brings its own frame */
+.gts-hovercard-dropdown {
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.gts-hovercard-arrow {
+  background-color: var(--gts-bg-card);
+  border-color: color-mix(in srgb, var(--gts-accent) 25%, transparent);
+}
+
+.gts-hover-target {
+  cursor: pointer;
+}

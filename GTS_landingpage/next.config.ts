@@ -13,6 +13,16 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname, '..'),
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/billing/:path*',
+        destination: process.env.BACKEND_INTERNAL_URL
+          ? `${process.env.BACKEND_INTERNAL_URL}/api/billing/:path*`
+          : 'http://127.0.0.1:5001/api/billing/:path*',
+      },
+    ];
+  },
 };
 
 export default withNextIntl(nextConfig);

@@ -1,13 +1,19 @@
 'use client';
 
-import { Box, Group, Paper, Stack, Text, Badge, Button } from '@mantine/core';
+import { Box, Group, Paper, Stack, Text, Badge, Button, HoverCard } from '@mantine/core';
 import { IconClock, IconFileCode } from '@tabler/icons-react';
 import { useTranslations, useLocale } from 'next-intl';
+import { ProfileSmall, type ProfileSmallProps } from '../player/ProfileSmall';
 
 export interface UITournamentParticipant {
-  id?: number;
-  user_id: number;
+  id?: number | string;
+  user_id: number | string;
   display_name: string;
+  avatar_url?: string | null;
+  city_or_zip?: string | null;
+  bio?: string | null;
+  discord_account?: string | null;
+  profile?: ProfileSmallProps['player'] | null;
   army_list_id?: number | null;
   army_list_name?: string | null;
   is_disqualified?: boolean;
@@ -16,13 +22,15 @@ export interface UITournamentParticipant {
 export interface UITournamentMatch {
   id: number | string;
   round_number: number;
-  player1_id: number | null;
+  player1_id: number | string | null;
   player1_name: string | null;
-  player2_id: number | null;
+  player1_profile?: ProfileSmallProps['player'] | null;
+  player2_id: number | string | null;
   player2_name: string | null;
+  player2_profile?: ProfileSmallProps['player'] | null;
   score_player1: number | null;
   score_player2: number | null;
-  winner_id: number | null;
+  winner_id: number | string | null;
   hand_in_by?: string | null;
   status: string;
 }
@@ -39,12 +47,14 @@ export interface TournamentMatchupGraphicProps {
 interface SlotPair {
   id: string | number;
   p1Name: string | null;
+  p1Profile?: ProfileSmallProps['player'] | null;
   p2Name: string | null;
+  p2Profile?: ProfileSmallProps['player'] | null;
   score1: number | null;
   score2: number | null;
-  winnerId: number | null;
-  p1Id: number | null;
-  p2Id: number | null;
+  winnerId: number | string | null;
+  p1Id: number | string | null;
+  p2Id: number | string | null;
   p1ArmyId: number | null;
   p1ArmyName: string | null;
   p2ArmyId: number | null;
@@ -73,7 +83,7 @@ export function TournamentMatchupGraphic({
     (matches.length > 0 ? Math.max(...matches.map((m) => m.round_number)) : 1);
 
   const roundMatches = matches.filter((m) => m.round_number === targetRound);
-  const participantMap = new Map<number, UITournamentParticipant>();
+  const participantMap = new Map<number | string, UITournamentParticipant>();
   participants.forEach((p) => participantMap.set(p.user_id, p));
 
   const pairs: SlotPair[] = [];
@@ -88,7 +98,21 @@ export function TournamentMatchupGraphic({
         pairs.push({
           id: m.id,
           p1Name: m.player1_name,
+          p1Profile: m.player1_profile || p1Part?.profile || (p1Part ? {
+            DisplayName: p1Part.display_name,
+            Avatar: p1Part.avatar_url || undefined,
+            city_or_zip: p1Part.city_or_zip,
+            bio: p1Part.bio,
+            discord_account: p1Part.discord_account,
+          } : null),
           p2Name: m.player2_name,
+          p2Profile: m.player2_profile || p2Part?.profile || (p2Part ? {
+            DisplayName: p2Part.display_name,
+            Avatar: p2Part.avatar_url || undefined,
+            city_or_zip: p2Part.city_or_zip,
+            bio: p2Part.bio,
+            discord_account: p2Part.discord_account,
+          } : null),
           score1: m.score_player1,
           score2: m.score_player2,
           winnerId: m.winner_id,
@@ -125,7 +149,21 @@ export function TournamentMatchupGraphic({
       pairs.push({
         id: `seed-slot-${i}`,
         p1Name: p1 ? p1.display_name : null,
+        p1Profile: p1?.profile || (p1 ? {
+          DisplayName: p1.display_name,
+          Avatar: p1.avatar_url || undefined,
+          city_or_zip: p1.city_or_zip,
+          bio: p1.bio,
+          discord_account: p1.discord_account,
+        } : null),
         p2Name: p2 ? p2.display_name : null,
+        p2Profile: p2?.profile || (p2 ? {
+          DisplayName: p2.display_name,
+          Avatar: p2.avatar_url || undefined,
+          city_or_zip: p2.city_or_zip,
+          bio: p2.bio,
+          discord_account: p2.discord_account,
+        } : null),
         score1: null,
         score2: null,
         winnerId: null,
@@ -144,68 +182,81 @@ export function TournamentMatchupGraphic({
 
   const renderSlotRow = (
     name: string | null,
+    profile: ProfileSmallProps['player'] | null | undefined,
     score: number | null,
     isWinner: boolean,
     armyId: number | null,
     armyName: string | null,
     isDisqualified?: boolean
-  ) => (
-    <Group
-      justify="space-between"
-      px={compact ? 10 : 12}
-      py={compact ? 6 : 8}
-      wrap="nowrap"
-      className="gts-matchup-slot-row"
-      data-occupied={name ? 'true' : undefined}
-      data-winner={isWinner ? 'true' : undefined}
-      data-dq={isDisqualified ? 'true' : undefined}
-      style={{ minHeight: compact ? 32 : 38 }}
-    >
-      <Group gap={8} wrap="nowrap" style={{ overflow: 'hidden', flex: 1, minWidth: 0 }}>
-        <Text
-          size={compact ? 'xs' : 'sm'}
-          fw={name ? 700 : 500}
-          c={isDisqualified ? 'red.5' : isWinner ? 'teal.4' : name ? undefined : 'dimmed'}
-          td={isDisqualified ? 'line-through' : undefined}
-          truncate
-        >
-          {name || tr('Tournament.openSlot', 'OFFENER SLOT')}
-        </Text>
-
-        {isDisqualified && (
-          <Badge color="red" size="xs" variant="filled">
-            DQ
-          </Badge>
-        )}
-
-        {armyId && (
-          <Button
-            size="compact-xs"
-            variant="light"
-            color="brandBlue.5"
-            leftSection={<IconFileCode size={12} />}
-            onClick={(e) => {
-              e.stopPropagation();
-              onInspectArmyList?.(armyId);
-            }}
-            style={{ flexShrink: 0 }}
-          >
-            {armyName || tr('Tournament.list', 'Liste')}
-          </Button>
-        )}
-      </Group>
-
+  ) => {
+    const labelText = (
       <Text
         size={compact ? 'xs' : 'sm'}
-        fw={800}
-        className="brand-logo"
-        c={score !== null ? 'var(--gts-accent)' : 'dimmed'}
-        style={{ flexShrink: 0 }}
+        fw={name ? 700 : 500}
+        td={isDisqualified ? 'line-through' : undefined}
+        className={name ? 'gts-matchup-slot-name gts-hover-target' : 'gts-matchup-slot-name'}
+        truncate
       >
-        {score !== null ? score : '—'}
+        {name || tr('Tournament.openSlot', 'OFFENER SLOT')}
       </Text>
-    </Group>
-  );
+    );
+
+    return (
+      <Group
+        justify="space-between"
+        px={compact ? 10 : 12}
+        py={compact ? 6 : 8}
+        wrap="nowrap"
+        className="gts-matchup-slot-row"
+        data-occupied={name ? 'true' : undefined}
+        data-winner={isWinner ? 'true' : undefined}
+        data-dq={isDisqualified ? 'true' : undefined}
+        data-compact={compact ? 'true' : undefined}
+      >
+        <Group gap={8} wrap="nowrap" className="gts-grow gts-overflow-hidden">
+          {name ? (
+            <HoverCard width={270} shadow="lg" withArrow openDelay={120} closeDelay={80} position="top-start" withinPortal classNames={{ arrow: 'gts-hovercard-arrow' }}>
+              <HoverCard.Target>{labelText}</HoverCard.Target>
+              <HoverCard.Dropdown className="gts-hovercard-dropdown">
+                <ProfileSmall player={profile || { DisplayName: name }} />
+              </HoverCard.Dropdown>
+            </HoverCard>
+          ) : (
+            labelText
+          )}
+
+          {isDisqualified && (
+            <Badge size="xs" variant="outline" className="gts-status-badge" data-tone="danger">
+              DQ
+            </Badge>
+          )}
+
+          {armyId && (
+            <Button
+              size="compact-xs"
+              variant="default"
+              className="gts-btn-secondary gts-shrink-0"
+              leftSection={<IconFileCode size={12} />}
+              onClick={(e) => {
+                e.stopPropagation();
+                onInspectArmyList?.(armyId);
+              }}
+            >
+              {armyName || tr('Tournament.list', 'Liste')}
+            </Button>
+          )}
+        </Group>
+
+        <Text
+          size={compact ? 'xs' : 'sm'}
+          fw={800}
+          className={`brand-logo gts-shrink-0 ${score !== null ? 'gts-text-accent' : 'gts-text-muted'}`}
+        >
+          {score !== null ? score : '—'}
+        </Text>
+      </Group>
+    );
+  };
 
   return (
     <Box className="gts-matchup-grid" data-compact={compact ? 'true' : undefined}>
@@ -217,14 +268,14 @@ export function TournamentMatchupGraphic({
             py={compact ? 4 : 6}
             className="gts-matchup-pair-header"
           >
-            <Text size="10px" fw={700} className="brand-logo" c="dimmed">
+            <Text size="10px" fw={700} className="brand-logo gts-text-muted">
               {tr('Tournament.match', 'MATCH')} #{idx + 1}
             </Text>
 
             {pair.handInBy && (
               <Group gap={4}>
-                <IconClock size={12} color="var(--gts-accent)" />
-                <Text size="10px" fw={700} style={{ color: 'var(--gts-accent)' }}>
+                <IconClock size={12} className="gts-text-accent" />
+                <Text size="10px" fw={700} className="gts-text-accent">
                   {new Date(pair.handInBy).toLocaleString(locale === 'de' ? 'de-DE' : 'en-GB', {
                     day: '2-digit',
                     month: '2-digit',
@@ -239,6 +290,7 @@ export function TournamentMatchupGraphic({
           <Stack gap={0}>
             {renderSlotRow(
               pair.p1Name,
+              pair.p1Profile,
               pair.score1,
               Boolean(pair.winnerId && pair.winnerId === pair.p1Id),
               pair.p1ArmyId,
@@ -247,13 +299,14 @@ export function TournamentMatchupGraphic({
             )}
 
             <Box className="gts-matchup-vs-divider">
-              <Text size="9px" fw={800} className="brand-logo" style={{ color: 'var(--gts-primary)' }}>
+              <Text size="9px" fw={800} className="brand-logo gts-text-primary">
                 VS
               </Text>
             </Box>
 
             {renderSlotRow(
               pair.p2Name,
+              pair.p2Profile,
               pair.score2,
               Boolean(pair.winnerId && pair.winnerId === pair.p2Id),
               pair.p2ArmyId,

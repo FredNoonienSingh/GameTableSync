@@ -15,6 +15,12 @@
         "Tagging",
         "Write"
       ]
+    },
+    {
+      "name": "anonymous",
+      "actions": [
+        "Read:gts-media/*"
+      ]
     }
   ]
 }

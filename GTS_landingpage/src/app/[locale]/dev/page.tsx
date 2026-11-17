@@ -63,6 +63,8 @@ import {
   TacticalTableGraphic,
   TacticalTableGrid,
   TournamentBracketGraphic,
+  SwissTournamentGraphic,
+  type SwissRound,
   type TacticalTableProps,
   type UIGame,
   type GameFilterValues,
@@ -267,6 +269,71 @@ const TENANT_PRESETS: Record<string, { label: string; primary: string; accent: s
   khorne: { label: 'Crimson Crusade', primary: '#e0282b', accent: '#ff8787' },
   necron: { label: 'Tomb World Gauss', primary: '#10b981', accent: '#6ee7b7' },
 };
+
+const MOCK_SWISS_DATA: SwissRound[] = [
+  {
+    id: 's-r1',
+    title: 'ROUND 1',
+    status: 'completed',
+    matches: [
+      {
+        id: '1',
+        tableNumber: '12',
+        status: 'finished',
+        top: { id: 'p1', name: 'TechPriest_Frederic', record: '0-0', score: '20', isWinner: true },
+        bottom: { id: 'p2', name: 'HiveTyrant_Max', record: '0-0', score: '0', isWinner: false },
+      },
+      {
+        id: '2',
+        tableNumber: '14',
+        status: 'finished',
+        top: { id: 'p3', name: 'Praetor_Basti', record: '0-0', score: '13', isWinner: true },
+        bottom: { id: 'p4', name: 'Neophyte_Lukas', record: '0-0', score: '7', isWinner: false },
+      },
+      {
+        id: '3',
+        tableNumber: 'BYE',
+        status: 'finished',
+        top: { id: 'p5', name: 'KriegMarshal', record: '0-0', score: '20', isWinner: true },
+        bottom: { id: null, name: 'BYE', score: '0', isWinner: false },
+      },
+    ],
+  },
+  {
+    id: 's-r2',
+    title: 'ROUND 2',
+    status: 'active',
+    matches: [
+      {
+        id: '4',
+        tableNumber: '1',
+        status: 'open',
+        top: { id: 'p1', name: 'TechPriest_Frederic', record: '1-0 (20 VP)', score: null, isWinner: false },
+        bottom: { id: 'p5', name: 'KriegMarshal', record: '1-0 (20 VP)', score: null, isWinner: false },
+      },
+      {
+        id: '5',
+        tableNumber: '2',
+        status: 'open',
+        top: { id: 'p3', name: 'Praetor_Basti', record: '1-0 (13 VP)', score: null, isWinner: false },
+        bottom: { id: 'p4', name: 'Neophyte_Lukas', record: '0-1 (7 VP)', score: null, isWinner: false },
+      },
+      {
+        id: '6',
+        tableNumber: 'BYE',
+        status: 'open',
+        top: { id: 'p2', name: 'HiveTyrant_Max', record: '0-1 (0 VP)', score: null, isWinner: false },
+        bottom: { id: null, name: 'BYE', score: null, isWinner: false },
+      },
+    ],
+  },
+  {
+    id: 's-r3',
+    title: 'ROUND 3',
+    status: 'pending',
+    matches: [],
+  },
+];
 
 const INITIAL_ARENA_TABLES: TacticalTableProps[] = [
   {
@@ -1212,6 +1279,30 @@ export default function DevKitchenSinkPage() {
             </Paper>
           </Stack>
         </Stack>
+
+            {/* ================================================================
+              12. SWISS PAIRING TOURNAMENT TRACK
+             ================================================================ */}
+          <Divider color="var(--gts-border-subtle)" />
+
+          <Stack gap="md">
+            <Group justify="space-between" align="center" wrap="wrap">
+              <Title order={2} className="brand-logo">
+                12. SWISS SYSTEM TRACK GRAPHIC
+              </Title>
+              <Badge variant="outline" className="brand-logo gts-price-badge">
+                HORIZONTAL SCROLL ENABLED
+              </Badge>
+            </Group>
+
+            <ClassTag
+              name="<SwissTournamentGraphic />"
+              desc="Parallel pairing tracks handling Byes, table numbers, running win/loss records, and pending pair states."
+            />
+
+            <SwissTournamentGraphic rounds={MOCK_SWISS_DATA} />
+          </Stack>
+
       </Container>
 
       <LoginModal

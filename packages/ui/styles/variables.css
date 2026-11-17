@@ -1,0 +1,119 @@
+/* ==========================================================================
+   1. DESIGN TOKENS & WHITE-LABEL VARIABLES (DARK DEFAULT + LIGHT MODE)
+   Override these on :root or [data-tenant="..."] for instant white-labeling
+   ========================================================================== */
+:root,
+[data-mantine-color-scheme="dark"] {
+  --gts-font-brand: 'Orbitron', sans-serif;
+  --gts-font-impact: Impact, 'Arial Black', sans-serif;
+  --gts-font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Core Brand Palette */
+  --gts-primary: #1864ff;
+  --gts-accent: #29d4ff;
+  --gts-danger: #e0282b;
+  --gts-warning: #f59f00;
+  --gts-gold: #e5c158;
+
+  /* Surfaces & Backgrounds (Dark) */
+  --gts-bg-canvas: #0f100c;
+  --gts-bg-footer: #0a0b08;
+  --gts-bg-panel: rgba(20, 22, 27, 0.85);
+  --gts-bg-card: rgba(15, 16, 12, 0.88);
+  --gts-bg-subcard: rgba(15, 16, 12, 0.92);
+  --gts-bg-modal: #1a1d24;
+  --gts-bg-input: #101113;
+  --gts-bg-glass-subtle: rgba(255, 255, 255, 0.04);
+
+  /* Text Hierarchy (Dark) */
+  --gts-text-heading: #ffffff;
+  --gts-text-body: #e9ecef;
+  --gts-text-secondary: #c1c2c5;
+  --gts-text-muted: #909296;
+
+  /* Borders & Shadows */
+  --gts-border-subtle: color-mix(in srgb, var(--gts-primary) 28%, transparent);
+  --gts-border-faint: color-mix(in srgb, var(--gts-primary) 15%, transparent);
+  --gts-border-modal: #354b60;
+  --gts-shadow-card: 0 12px 35px rgba(0, 0, 0, 0.6);
+  --gts-grid-opacity: 0.14;
+}
+
+[data-mantine-color-scheme="light"] {
+  /* Core Brand Palette (Slightly deeper in light mode for contrast) */
+  --gts-primary: #0052e0;
+  --gts-accent: #0087b8;
+  --gts-danger: #d91b1e;
+  --gts-warning: #d97706;
+  --gts-gold: #b45309;
+
+  /* Surfaces & Backgrounds (Light) */
+  --gts-bg-canvas: #f4f6fb;
+  --gts-bg-footer: #e9edf5;
+  --gts-bg-panel: rgba(255, 255, 255, 0.88);
+  --gts-bg-card: rgba(255, 255, 255, 0.92);
+  --gts-bg-subcard: rgba(241, 245, 249, 0.95);
+  --gts-bg-modal: #ffffff;
+  --gts-bg-input: #f8fafc;
+  --gts-bg-glass-subtle: rgba(15, 23, 42, 0.05);
+
+  /* Text Hierarchy (Light) */
+  --gts-text-heading: #0f172a;
+  --gts-text-body: #1e293b;
+  --gts-text-secondary: #334155;
+  --gts-text-muted: #64748b;
+
+  /* Borders & Shadows (Light) */
+  --gts-border-subtle: color-mix(in srgb, var(--gts-primary) 25%, transparent);
+  --gts-border-faint: color-mix(in srgb, var(--gts-primary) 14%, transparent);
+  --gts-border-modal: #cbd5e1;
+  --gts-shadow-card: 0 10px 28px rgba(15, 23, 42, 0.08);
+  --gts-grid-opacity: 0.08;
+}
+
+/* ==========================================================================
+   LIGHT MODE GLOBAL SAFETY OVERRIDES
+   Automatically flips leftover, c="gray.3/4" & dark Paper backgrounds
+   ========================================================================== */
+[data-mantine-color-scheme="light"] .mantine-Paper-root {
+  --paper-bg: var(--gts-bg-card) !important;
+  background-color: var(--gts-bg-card) !important;
+  color: var(--gts-text-body);
+  box-shadow: var(--gts-shadow-card);
+}
+
+[data-mantine-color-scheme="light"] .mantine-Title-root,
+[data-mantine-color-scheme="light"] .gts-simple-header-text,
+[data-mantine-color-scheme="light"] .gts-countdown-value,
+[data-mantine-color-scheme="light"] .gts-section-intro-title {
+  color: var(--gts-text-heading) !important;
+}
+
+[data-mantine-color-scheme="light"] .mantine-Text-root[style*="var(--mantine-color-white)"] {
+  color: var(--gts-text-heading) !important;
+}
+
+[data-mantine-color-scheme="light"] .mantine-Text-root[style*="var(--mantine-color-gray-3)"],
+[data-mantine-color-scheme="light"] .mantine-Text-root[style*="var(--mantine-color-gray-4)"] {
+  color: var(--gts-text-secondary) !important;
+}
+
+/* ==========================================================================
+   2. GLOBAL TYPOGRAPHY & UTILITIES
+   ========================================================================== */
+.brand-logo {
+  font-family: var(--gts-font-brand);
+}
+
+.impact-font {
+  font-family: var(--gts-font-impact);
+  letter-spacing: 0.05em;
+}
+
+/* Global safety catch for inline white buttons in Light Mode */
+[data-mantine-color-scheme="light"] .mantine-Button-root[style*="color: rgb(255, 255, 255)"][style*="rgba(41, 212, 255"] {
+  color: var(--gts-text-heading) !important;
+  background-color: color-mix(in srgb, var(--gts-accent) 18%, transparent) !important;
+  border-color: var(--gts-accent) !important;
+}
+

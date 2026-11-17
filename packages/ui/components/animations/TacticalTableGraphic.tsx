@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useState } from 'react';
 import { Box, Text, Group, Badge, SimpleGrid } from '@mantine/core';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -23,10 +23,8 @@ export interface TacticalTableProps {
   occupiedUntil?: Date | string | null;
   /** Optional subtitle e.g. "60x44″ Battlemat" or "4-Player Pod" */
   dimensionsLabel?: string;
-  primaryColor?: string;
-  accentColor?: string;
-  surfaceColor?: string;
-  textColor?: string;
+  /** Highlights the table (accent border + glow), e.g. for the currently selected booking target */
+  isSelected?: boolean;
   onSelect?: (id: string) => void;
 }
 
@@ -81,25 +79,11 @@ export function TacticalTableGraphic({
   status,
   occupiedUntil,
   dimensionsLabel,
-  primaryColor,
-  accentColor,
-  surfaceColor,
-  textColor,
+  isSelected = false,
   onSelect,
 }: TacticalTableProps) {
   const isOccupied = status === 'occupied';
   const { formattedUntil, remainingText, isOvertime } = useTableCountdown(occupiedUntil, status);
-
-  // Dynamic CSS custom properties matching your GTS graphic scope
-  const customVars = {
-    ...(primaryColor ? { '--gfx-primary': primaryColor } : {}),
-    ...(accentColor ? { '--gfx-accent': accentColor } : {}),
-    ...(surfaceColor ? { '--gfx-surface': surfaceColor } : {}),
-    ...(textColor ? { '--gfx-text': textColor } : {}),
-    '--table-active-color': isOccupied
-      ? 'var(--gfx-accent, #f59e0b)'
-      : 'var(--gfx-primary, #10b981)',
-  } as CSSProperties;
 
   const defaultDims = category === 'wargaming' ? '60" × 44" SECTOR' : 'TCG / BOARD POD';
 
@@ -108,7 +92,7 @@ export function TacticalTableGraphic({
       className="gts-graphic-scope gts-table-card"
       data-status={status}
       data-category={category}
-      style={customVars}
+      data-selected={isSelected ? 'true' : undefined}
       whileHover={{ y: -4, scale: 1.01 }}
       transition={{ type: 'spring', stiffness: 320, damping: 24 }}
       onClick={() => onSelect?.(id)}
@@ -186,7 +170,7 @@ export function TacticalTableGraphic({
               className="gts-table-telemetry-row"
             >
               <Group gap={6} align="center">
-                <IconClock size={14} style={{ color: 'var(--table-active-color)' }} />
+                <IconClock size={14} className="gts-table-active-icon" />
                 <Text size="xs" className="gts-telemetry-label">
                   {formattedUntil ? `UNTIL ${formattedUntil}` : 'IN SESSION'}
                 </Text>
@@ -306,6 +290,7 @@ function WargamingSurface({ isOccupied }: { isOccupied: boolean }) {
               stroke="var(--table-active-color)"
               strokeWidth="1.2"
               strokeDasharray="4 3"
+              initial={{ scale: 1, opacity: 0.35, rotate: 0 }}
               animate={
                 isOccupied
                   ? {
@@ -313,14 +298,14 @@ function WargamingSurface({ isOccupied }: { isOccupied: boolean }) {
                       opacity: [0.4, 0.95, 0.4],
                       rotate: idx % 2 === 0 ? 360 : -360,
                     }
-                  : { scale: 1, opacity: 0.35 }
+                  : { scale: 1, opacity: 0.35, rotate: 0 }
               }
               transition={{
                 duration: isOccupied ? 3.5 : 0,
                 repeat: Infinity,
                 ease: 'linear',
               }}
-              style={{ transformOrigin: `${obj.cx}px ${obj.cy}px` }}
+              className="gts-svg-origin-center"
             />
             {/* Core 40mm Marker */}
             <circle
@@ -385,6 +370,7 @@ function CardBoardSurface({ isOccupied }: { isOccupied: boolean }) {
               stroke="var(--table-active-color)"
               strokeWidth="1.2"
               strokeOpacity={isOccupied ? 0.85 : 0.35}
+              initial={{ y: 14, opacity: 0.35 }}
               animate={
                 isOccupied
                   ? { y: [14, i % 2 === 0 ? 18 : 14, 14], opacity: [0.65, 1, 0.65] }
@@ -414,6 +400,7 @@ function CardBoardSurface({ isOccupied }: { isOccupied: boolean }) {
               stroke="var(--table-active-color)"
               strokeWidth="1.2"
               strokeOpacity={isOccupied ? 0.85 : 0.35}
+              initial={{ y: 98, opacity: 0.35 }}
               animate={
                 isOccupied
                   ? { y: [98, i % 2 !== 0 ? 94 : 98, 98], opacity: [0.65, 1, 0.65] }
@@ -426,15 +413,16 @@ function CardBoardSurface({ isOccupied }: { isOccupied: boolean }) {
 
         {/* Central Board / Turn Dial Emblem */}
         <motion.g
+          initial={{ rotate: 0 }}
           animate={isOccupied ? { rotate: 360 } : { rotate: 0 }}
           transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
-          style={{ transformOrigin: '120px 70px' }}
+          className="gts-svg-origin-center"
         >
           <circle
             cx="120"
             cy="70"
             r="16"
-            fill="var(--gfx-surface, #0b0f17)"
+            fill="var(--gfx-surface)"
             stroke="var(--table-active-color)"
             strokeWidth="1.5"
             strokeDasharray="6 4"
@@ -470,6 +458,7 @@ export function TacticalTableGrid({ tables, onSelectTable }: TacticalTableGridPr
         <TacticalTableGraphic
           key={table.id}
           {...table}
+          isSelected={table.isSelected}
           onSelect={onSelectTable ?? table.onSelect}
         />
       ))}

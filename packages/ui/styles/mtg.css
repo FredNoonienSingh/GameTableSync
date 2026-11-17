@@ -1,0 +1,206 @@
+/* ==========================================================================
+   23. MAGIC: THE GATHERING (MTG) LIVE BATTLE COMPANION
+   ========================================================================== */
+.gts-mtg-workspace {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: grid;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.gts-mtg-workspace[data-seats="2"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.gts-mtg-workspace[data-seats="4"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+
+.gts-mtg-seat-card {
+  --seat-color: var(--gts-primary);
+  background-color: var(--gts-bg-card);
+  border: 1px solid color-mix(in srgb, var(--seat-color) 35%, var(--gts-border-subtle));
+  border-top: 3px solid var(--seat-color);
+  border-radius: 8px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4px;
+  min-height: 0;
+  overflow: hidden;
+  box-shadow: var(--gts-shadow-card);
+  font-variant-numeric: tabular-nums;
+}
+
+.gts-mtg-seat-card[data-seat="0"] { --seat-color: var(--gts-primary); }
+.gts-mtg-seat-card[data-seat="1"] { --seat-color: var(--gts-danger); }
+.gts-mtg-seat-card[data-seat="2"] { --seat-color: #20c997; }
+.gts-mtg-seat-card[data-seat="3"] { --seat-color: #fcc419; }
+
+.gts-mtg-seat-card[data-active-turn="true"] {
+  border-color: var(--seat-color);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--seat-color) 22%, transparent);
+}
+
+.gts-mtg-seat-card[data-eliminated="true"] {
+  opacity: 0.42;
+  border-top-color: var(--gts-text-muted);
+}
+
+.gts-mtg-topbar-seat-color[data-active-seat="0"] { --turn-color: var(--gts-primary); }
+.gts-mtg-topbar-seat-color[data-active-seat="1"] { --turn-color: var(--gts-danger); }
+.gts-mtg-topbar-seat-color[data-active-seat="2"] { --turn-color: #20c997; }
+.gts-mtg-topbar-seat-color[data-active-seat="3"] { --turn-color: #fcc419; }
+
+/* --- Main Life Total Strip --- */
+.gts-mtg-life-strip {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(6px, 1.5vw, 14px);
+  background-color: var(--gts-bg-subcard);
+  border: 1px solid var(--gts-border-faint);
+  border-radius: 8px;
+  padding: 4px 8px;
+}
+
+.gts-mtg-life-val {
+  font-family: var(--gts-font-brand);
+  font-size: clamp(2rem, 4.5vw, 3.6rem);
+  font-weight: 900;
+  line-height: 1;
+  min-width: 2.6ch;
+  text-align: center;
+  color: var(--gts-text-heading);
+  font-variant-numeric: tabular-nums;
+}
+
+.gts-mtg-seat-card[data-seats="4"] .gts-mtg-life-val {
+  font-size: clamp(1.35rem, 2.6vw, 2.1rem);
+}
+
+.gts-mtg-life-step-btn {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-family: var(--gts-font-brand);
+  font-size: clamp(0.68rem, 1vw, 0.8rem);
+  font-weight: 800;
+  background-color: var(--gts-bg-card);
+  border: 1px solid var(--gts-border-subtle);
+  color: var(--gts-text-heading);
+  cursor: pointer;
+  user-select: none;
+  min-width: 32px;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+
+.gts-mtg-life-step-btn:hover:not(:disabled) {
+  border-color: var(--seat-color);
+  background-color: color-mix(in srgb, var(--seat-color) 16%, var(--gts-bg-card));
+}
+
+/* --- Overflow-Proof Bottom Counter & Commander Damage Grid --- */
+.gts-mtg-bottom-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.gts-mtg-counter-pill {
+  background-color: var(--gts-bg-subcard);
+  border: 1px solid var(--gts-border-faint);
+  border-radius: 6px;
+  padding: 3px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+.gts-mtg-counter-pill-val {
+  font-family: var(--gts-font-brand);
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--gts-text-heading);
+  min-width: 2.2ch;
+  text-align: center;
+}
+
+.gts-mtg-mini-step-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background-color: var(--gts-bg-card);
+  border: 1px solid var(--gts-border-subtle);
+  color: var(--gts-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.gts-mtg-mini-step-btn:hover {
+  color: var(--gts-text-heading);
+  border-color: var(--seat-color);
+}
+
+/* --- 3-Opponent Commander Damage Strip --- */
+.gts-mtg-cmd-dmg-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.gts-mtg-cmd-dmg-box {
+  background-color: var(--gts-bg-subcard);
+  border: 1px solid var(--gts-border-faint);
+  border-radius: 5px;
+  padding: 2px 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3px;
+  min-width: 0;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+.gts-mtg-cmd-dmg-box[data-lethal="true"] {
+  border-color: var(--gts-danger);
+  background-color: color-mix(in srgb, var(--gts-danger) 18%, var(--gts-bg-subcard));
+}
+
+.gts-mtg-mana-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.52rem;
+  font-weight: 900;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  flex-shrink: 0;
+}
+.gts-mtg-mana-dot[data-mana="W"] { background-color: #f8f6d8; color: #111; }
+.gts-mtg-mana-dot[data-mana="U"] { background-color: #0e68ab; color: #fff; }
+.gts-mtg-mana-dot[data-mana="B"] { background-color: #2b2523; color: #fff; }
+.gts-mtg-mana-dot[data-mana="R"] { background-color: #d3202a; color: #fff; }
+.gts-mtg-mana-dot[data-mana="G"] { background-color: #00733e; color: #fff; }
+.gts-mtg-mana-dot[data-mana="C"] { background-color: #908c8a; color: #111; }
+

@@ -1,14 +1,21 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Modal, Stack, Text, TextInput, PasswordInput, Button } from '@mantine/core';
-import { IconShieldLock, IconUserPlus } from '@tabler/icons-react';
+import { Modal, Stack, Text, TextInput, PasswordInput, Button, Divider } from '@mantine/core';
+import { IconShieldLock, IconUserPlus, IconBrandDiscord } from '@tabler/icons-react';
 
 export interface LoginModalProps {
   opened: boolean;
   onClose: () => void;
-  onLogin: (payload: any) => void;
-  onRegister: (payload: any) => void;
+  onLogin: (payload: { email: string; password: string }) => void;
+  onRegister: (payload: {
+    username: string;
+    email: string;
+    password: string;
+    discord_account: string | null;
+  }) => void;
+  onDiscordLogin?: () => void;
+  locale?: string;
   isLoading?: boolean;
   errorMsg?: string | null;
   successMsg?: string | null;
@@ -24,6 +31,8 @@ export function LoginModal({
   onClose,
   onLogin,
   onRegister,
+  onDiscordLogin,
+  locale,
   isLoading,
   errorMsg,
   successMsg,
@@ -53,10 +62,27 @@ export function LoginModal({
         setLocalError('Passwörter stimmen nicht überein.');
         return;
       }
-      onRegister({ username, email, password, discord_account: discordAccount || null });
+      onRegister({
+        username,
+        email,
+        password,
+        discord_account: discordAccount.trim() || null,
+      });
     } else {
       onLogin({ email, password });
     }
+  };
+
+  const handleDiscordClick = () => {
+    if (onDiscordLogin) {
+      onDiscordLogin();
+      return;
+    }
+    const pathSegment =
+      typeof window !== 'undefined' ? window.location.pathname.split('/')[1] : '';
+    const resolvedLocale =
+      locale || (pathSegment === 'en' || pathSegment === 'de' ? pathSegment : 'de');
+    window.location.href = `/api/auth/discord/login?locale=${encodeURIComponent(resolvedLocale)}`;
   };
 
   const displayError = localError || errorMsg;
@@ -106,6 +132,7 @@ export function LoginModal({
               />
             </>
           )}
+
           <TextInput
             label="E-Mail"
             type="email"
@@ -123,6 +150,7 @@ export function LoginModal({
             required
             classNames={inputClassNames}
           />
+
           {isRegister && (
             <PasswordInput
               label="Passwort bestätigen"
@@ -146,10 +174,24 @@ export function LoginModal({
             {isRegister ? 'REGISTRIEREN' : 'ANMELDEN'}
           </Button>
 
+          <Divider label="ODER" labelPosition="center" my={4} />
+
+          <Button
+            type="button"
+            fullWidth
+            variant="filled"
+            color="indigo"
+            leftSection={<IconBrandDiscord size={18} />}
+            onClick={handleDiscordClick}
+          >
+            Mit Discord anmelden
+          </Button>
+
           <Text
             size="xs"
             ta="center"
             className="gts-modal-toggle-link"
+            style={{ cursor: 'pointer' }}
             onClick={() => {
               setIsRegister(!isRegister);
               setLocalError('');

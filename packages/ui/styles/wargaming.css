@@ -1,0 +1,594 @@
+/* ==========================================================================
+   19. ARMY ROSTER VIEWER & UNIT DATASHEETS
+   ========================================================================== */
+.gts-army-container {
+  padding-top: calc(80px + 2rem);
+  padding-bottom: 3rem;
+  position: relative;
+  z-index: 2;
+}
+
+.gts-army-back-btn {
+  color: var(--gts-text-secondary);
+  letter-spacing: 0.05em;
+}
+
+.gts-army-back-btn:hover {
+  color: var(--gts-text-heading);
+  background-color: var(--gts-bg-glass-subtle);
+}
+
+.gts-army-header-card {
+  background-color: var(--gts-bg-card);
+  border: 1px solid var(--gts-border-subtle);
+  border-top: 4px solid var(--gts-primary);
+  box-shadow: var(--gts-shadow-card);
+  backdrop-filter: blur(8px);
+}
+
+.gts-army-title {
+  position: static;
+  letter-spacing: 0.05em;
+  color: var(--gts-text-heading);
+}
+
+.gts-army-faction {
+  color: var(--gts-text-secondary);
+}
+
+.gts-army-points-badge {
+  border-color: var(--gts-accent);
+  color: var(--gts-accent);
+  background-color: color-mix(in srgb, var(--gts-accent) 12%, transparent);
+  letter-spacing: 0.06em;
+}
+
+.gts-army-panel {
+  background-color: var(--gts-bg-card);
+  border: 1px solid var(--gts-border-subtle);
+  box-shadow: var(--gts-shadow-card);
+  backdrop-filter: blur(8px);
+}
+
+.gts-army-section-icon {
+  color: var(--gts-accent);
+  flex-shrink: 0;
+}
+
+.gts-army-table-head {
+  background-color: var(--gts-bg-subcard);
+}
+
+.gts-army-table-th {
+  color: var(--gts-text-muted);
+  font-family: var(--gts-font-brand);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--gts-border-subtle);
+  padding: 8px 10px;
+}
+
+.gts-army-table-td {
+  color: var(--gts-text-body);
+  font-size: 0.82rem;
+  border-color: var(--gts-border-faint);
+  padding: 8px 10px;
+}
+
+.gts-army-table-row-clickable {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.gts-army-table-row-clickable:hover {
+  background-color: color-mix(in srgb, var(--gts-primary) 10%, transparent);
+}
+
+.gts-army-points-cell {
+  color: var(--gts-accent);
+  font-family: var(--gts-font-brand);
+  font-weight: 700;
+}
+
+.gts-army-loadout-cell {
+  color: var(--gts-text-secondary);
+  font-size: 0.75rem;
+}
+
+.gts-army-unit-header {
+  border-bottom: 1px solid var(--gts-border-subtle);
+}
+
+.gts-army-unit-pts-badge {
+  background-color: color-mix(in srgb, var(--gts-primary) 20%, transparent);
+  border: 1px solid var(--gts-primary);
+  color: var(--gts-text-heading);
+}
+
+.gts-army-loadout-line {
+  color: var(--gts-text-secondary);
+}
+
+.gts-army-loadout-strong {
+  color: var(--gts-text-heading);
+  font-weight: 700;
+}
+
+.gts-army-subcol-header {
+  color: var(--gts-accent);
+  font-family: var(--gts-font-brand);
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gts-army-abilities-col {
+  border-left: 1px solid var(--gts-border-faint);
+}
+
+@media (max-width: 62em) {
+  .gts-army-abilities-col {
+    border-left: none;
+    border-top: 1px solid var(--gts-border-faint);
+    padding-top: 1rem;
+  }
+}
+
+.gts-army-rule-line {
+  padding-left: calc(var(--indent-level, 0) * 12px + var(--bullet-offset, 0px));
+  font-size: 0.76rem;
+  color: var(--gts-text-secondary);
+  line-height: 1.5;
+}
+
+.gts-army-rule-bullet {
+  color: var(--gts-accent);
+  margin-right: 6px;
+}
+
+.gts-army-markdown-strong {
+  color: var(--gts-text-heading);
+  font-weight: 700;
+}
+
+.gts-army-stat-cell-notes {
+  color: var(--gts-text-secondary);
+  font-size: 0.72rem;
+}
+
+.gts-army-stat-cell-val {
+  color: var(--gts-text-heading);
+}
+
+.gts-army-keywords-bar {
+  color: var(--gts-text-muted);
+}
+
+/* ==========================================================================
+   22. WARHAMMER 40K LIVE BATTLE COMPANION (100DVH LOCKED VIEWPORT HUD)
+   ========================================================================== */
+.gts-battle-hud {
+  --p1-color: var(--gts-primary);
+  --p2-color: var(--gts-danger);
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 10px;
+  box-sizing: border-box;
+  font-variant-numeric: tabular-nums;
+}
+
+/* iPhone / iOS Safari Pseudo-Fullscreen Lock (covers fixed navbars & safe-area) */
+.gts-battle-hud[data-pseudo-fullscreen="true"] {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100dvw !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  z-index: 2000 !important;
+  background-color: var(--gts-bg-canvas);
+  padding-top: max(6px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(6px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(10px, env(safe-area-inset-left, 0px));
+  padding-right: max(10px, env(safe-area-inset-right, 0px));
+}
+
+/* --- Portrait Orientation Lock Overlay (Phones in Portrait) --- */
+.gts-landscape-guard {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: var(--gts-bg-canvas);
+  background-image: radial-gradient(
+    circle at 50% 40%,
+    color-mix(in srgb, var(--gts-primary) 22%, transparent),
+    transparent 70%
+  );
+  padding: 24px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 16px;
+}
+
+@keyframes gtsRotatePhone {
+  0%, 15% { transform: rotate(0deg); }
+  50%, 85% { transform: rotate(-90deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.gts-rotate-icon-anim {
+  color: var(--gts-accent);
+  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--gts-accent) 55%, transparent));
+  animation: gtsRotatePhone 2.6s ease-in-out infinite;
+}
+
+@media (max-width: 920px) and (orientation: portrait) {
+  .gts-landscape-guard {
+    display: flex;
+  }
+}
+
+/* --- Top Command Bar (Single Row Always + Turn-Colored Border) --- */
+.gts-battle-topbar {
+  --turn-color: var(--gts-primary);
+  flex-shrink: 0;
+  background-color: var(--gts-bg-panel);
+  border: 1px solid color-mix(in srgb, var(--turn-color) 45%, var(--gts-border-subtle));
+  border-top: 3px solid var(--turn-color);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--turn-color) 18%, transparent);
+  backdrop-filter: blur(12px);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gts-battle-topbar[data-turn="opponent"] {
+  --turn-color: var(--gts-danger);
+}
+
+.gts-battle-topbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 6px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.gts-battle-round-pill {
+  background-color: color-mix(in srgb, var(--turn-color, var(--gts-primary)) 16%, var(--gts-bg-subcard));
+  border: 1px solid color-mix(in srgb, var(--turn-color, var(--gts-primary)) 65%, transparent);
+  color: var(--gts-text-heading);
+  padding: 2px 8px;
+  border-radius: 6px;
+  text-align: center;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.gts-battle-score-summary-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background-color: var(--gts-bg-subcard);
+  border: 1px solid var(--gts-border-subtle);
+  cursor: pointer;
+  user-select: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.gts-battle-phase-scroll {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  min-width: 0;
+}
+.gts-battle-phase-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.gts-battle-phase-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--gts-text-muted);
+  background-color: var(--gts-bg-subcard);
+  border: 1px solid var(--gts-border-faint);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.gts-battle-phase-step:hover {
+  color: var(--gts-text-heading);
+  border-color: var(--gts-border-subtle);
+}
+
+.gts-battle-phase-step[data-active="true"] {
+  color: var(--gts-text-heading);
+  background-color: color-mix(in srgb, var(--gts-accent) 22%, var(--gts-bg-card));
+  border-color: var(--gts-accent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--gts-accent) 28%, transparent);
+}
+
+/* Hide phase text labels on phones & compact screens so topbar never overflows */
+@media (max-width: 68em), (max-height: 520px) {
+  .gts-battle-phase-label {
+    display: none;
+  }
+  .gts-battle-phase-step {
+    padding: 5px 7px;
+  }
+}
+
+/* --- Scorecards & Compact Metrics --- */
+.gts-battle-scorecard {
+  --side-color: var(--gts-primary);
+  background-color: var(--gts-bg-card);
+  border: 1px solid color-mix(in srgb, var(--side-color) 30%, var(--gts-border-subtle));
+  border-top: 3px solid var(--side-color);
+  box-shadow: var(--gts-shadow-card);
+  backdrop-filter: blur(8px);
+}
+
+.gts-battle-scorecard[data-side="opponent"] {
+  --side-color: var(--gts-danger);
+}
+
+.gts-battle-scorecard[data-active-turn="true"] {
+  box-shadow: 0 0 18px color-mix(in srgb, var(--side-color) 20%, transparent);
+  border-color: var(--side-color);
+}
+
+.gts-battle-metric-box {
+  background-color: var(--gts-bg-subcard);
+  border: 1px solid var(--gts-border-faint);
+  border-radius: 6px;
+  padding: 5px 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.gts-battle-metric-val {
+  font-family: var(--gts-font-brand);
+  font-size: clamp(0.95rem, 1.5vw, 1.3rem);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--gts-text-heading);
+  font-variant-numeric: tabular-nums;
+  min-width: 2ch;
+  text-align: center;
+}
+
+.gts-battle-clock {
+  font-family: var(--gts-font-brand);
+  font-size: clamp(0.72rem, 1.1vw, 0.88rem);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background-color: var(--gts-bg-subcard);
+  border: 1px solid var(--gts-border-subtle);
+  color: var(--gts-text-secondary);
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.gts-battle-clock[data-running="true"] {
+  color: var(--gts-accent);
+  border-color: var(--gts-accent);
+  background-color: color-mix(in srgb, var(--gts-accent) 12%, var(--gts-bg-subcard));
+}
+
+/* --- Stance Pill Group --- */
+.gts-stance-pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.gts-stance-pill {
+  padding: 3px 7px;
+  border-radius: 5px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background-color: var(--gts-bg-card);
+  border: 1px solid var(--gts-border-faint);
+  color: var(--gts-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.gts-stance-pill[data-active="true"] {
+  background-color: color-mix(in srgb, var(--gts-primary) 22%, var(--gts-bg-card));
+  border-color: var(--gts-primary);
+  color: var(--gts-text-heading);
+}
+
+/* --- Internal Scroll Workspace (Fills Remaining 100dvh Height) --- */
+.gts-battle-workspace {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  overflow: hidden;
+}
+
+/* Collapsible Left Roster Sidebar (Tablet & Desktop Only) */
+.gts-battle-sidebar {
+  width: 350px;
+  flex-shrink: 0;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--gts-bg-card);
+  border: 1px solid var(--gts-border-subtle);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: width 0.2s ease;
+}
+
+.gts-battle-sidebar[data-collapsed="true"] {
+  width: 44px;
+}
+
+.gts-battle-sidebar-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.gts-battle-roster-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  border-radius: 6px;
+  background-color: var(--gts-bg-subcard);
+  border: 1px solid var(--gts-border-subtle);
+  cursor: pointer;
+  user-select: none;
+  color: var(--gts-text-heading);
+}
+
+.gts-battle-roster-header:hover {
+  background-color: color-mix(in srgb, var(--gts-primary) 12%, var(--gts-bg-subcard));
+}
+
+/* Right Main Datasheet & Stratagem Area */
+.gts-battle-main-pane {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.gts-battle-datasheet-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
+}
+
+.gts-battle-swipe-deck {
+  width: 100%;
+  min-height: 100%;
+  touch-action: pan-y;
+}
+
+/* --- Live Unit Casualty & Wound Control Bar (Locked Single-Line, Zero Shift) --- */
+.gts-unit-live-control-bar {
+  --unit-accent: var(--gts-primary);
+  flex-shrink: 0;
+  background-color: color-mix(in srgb, var(--unit-accent) 8%, var(--gts-bg-card));
+  border: 1px solid color-mix(in srgb, var(--unit-accent) 35%, var(--gts-border-subtle));
+  border-left: 4px solid var(--unit-accent);
+  border-radius: 8px;
+  padding: 5px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  font-variant-numeric: tabular-nums;
+}
+.gts-unit-live-control-bar::-webkit-scrollbar {
+  display: none;
+}
+
+/* --- Interactive Unit Casualty List Row --- */
+.gts-battle-unit-row {
+  --unit-accent: var(--gts-primary);
+  background-color: var(--gts-bg-subcard);
+  border: 1px solid var(--gts-border-faint);
+  border-left: 3px solid var(--unit-accent);
+  border-radius: 6px;
+  padding: 7px 9px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.gts-battle-unit-row[data-side="opponent"],
+.gts-unit-live-control-bar[data-side="opponent"] {
+  --unit-accent: var(--gts-danger);
+}
+
+.gts-battle-unit-row:hover {
+  background-color: color-mix(in srgb, var(--unit-accent) 10%, var(--gts-bg-subcard));
+}
+
+.gts-battle-unit-row[data-selected="true"] {
+  background-color: color-mix(in srgb, var(--unit-accent) 16%, var(--gts-bg-card));
+  border-color: var(--unit-accent);
+}
+
+.gts-battle-unit-row[data-destroyed="true"] {
+  opacity: 0.45;
+  border-left-color: var(--gts-text-muted);
+}
+
+.gts-battle-unit-row[data-shocked="true"] {
+  border-left-color: var(--gts-warning);
+}
+
+.gts-battle-strat-btn {
+  width: 100%;
+  background-color: var(--gts-bg-subcard);
+  border: 1px solid var(--gts-border-subtle);
+  border-radius: 6px;
+  padding: 5px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.gts-battle-strat-btn:hover:not(:disabled) {
+  border-color: var(--gts-accent);
+  background-color: color-mix(in srgb, var(--gts-primary) 14%, var(--gts-bg-subcard));
+}
+
+.gts-battle-strat-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+

@@ -1,0 +1,477 @@
+/* ==========================================================================
+   27. SHARED UI VOCABULARY (CLUB MANAGEMENT, STOREFRONT & ACCOUNT VIEWS)
+   Everything here is derived from the design tokens in variables.css and
+   mirrors the recipes used by game cards, army panels and modals.
+   ========================================================================== */
+
+/* --- Typography --- */
+.gts-section-heading {
+  font-family: var(--gts-font-brand);
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gts-text-heading);
+}
+
+.gts-section-heading-lg {
+  font-family: var(--gts-font-brand);
+  font-weight: 700;
+  font-size: clamp(1rem, 2.2vw, 1.25rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gts-text-heading);
+}
+
+.gts-eyebrow {
+  font-family: var(--gts-font-brand);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gts-text-muted);
+}
+
+.gts-section-icon {
+  color: var(--gts-accent);
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--gts-accent) 40%, transparent));
+}
+
+.gts-text-heading { color: var(--gts-text-heading); }
+.gts-text-body { color: var(--gts-text-body); }
+.gts-text-secondary { color: var(--gts-text-secondary); }
+.gts-text-muted { color: var(--gts-text-muted); }
+.gts-text-primary { color: var(--gts-primary); }
+.gts-text-accent { color: var(--gts-accent); }
+.gts-text-success { color: #40c057; }
+.gts-text-warning { color: var(--gts-warning); }
+.gts-text-danger { color: var(--gts-danger); }
+.gts-text-mono { font-family: var(--mantine-font-family-monospace, monospace); letter-spacing: 0.04em; }
+.gts-text-strike { text-decoration: line-through; }
+
+.gts-link {
+  color: var(--gts-accent);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.gts-link:hover {
+  color: var(--gts-text-heading);
+}
+
+/* --- Layout helpers (replace style={{ ... }}) --- */
+.gts-align-end { align-items: end; }
+.gts-align-center { align-items: center; }
+.gts-grow { flex: 1; min-width: 0; }
+.gts-grow-240 { flex: 1; min-width: 240px; }
+.gts-grow-180 { flex: 1; min-width: 180px; }
+.gts-shrink-0 { flex-shrink: 0; }
+.gts-full-width { width: 100%; }
+.gts-clickable { cursor: pointer; }
+.gts-overflow-hidden { overflow: hidden; }
+.gts-relative-layer { position: relative; z-index: 2; }
+.gts-page-root { position: relative; min-height: 100vh; overflow-x: clip; padding-bottom: 80px; }
+
+/* --- Nested sub-cards (event rows, member cards, list items) --- */
+.gts-subcard {
+  background-color: var(--gts-bg-subcard);
+  border: 1px solid var(--gts-border-faint);
+  border-radius: 8px;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.gts-subcard:hover {
+  border-color: var(--gts-border-subtle);
+}
+
+.gts-subcard[data-active="true"] {
+  border-color: var(--gts-accent);
+  background-color: color-mix(in srgb, var(--gts-primary) 10%, var(--gts-bg-subcard));
+}
+
+.gts-subcard-accent {
+  background-color: var(--gts-bg-subcard);
+  border: 1px solid var(--gts-border-faint);
+  border-left: 3px solid var(--gts-primary);
+  border-radius: 8px;
+}
+
+.gts-empty-state {
+  border: 1px dashed var(--gts-border-subtle);
+  border-radius: 8px;
+  padding: 18px;
+  text-align: center;
+  color: var(--gts-text-muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+}
+
+.gts-divider {
+  border-color: var(--gts-border-faint);
+}
+
+.gts-divider .mantine-Divider-label {
+  font-family: var(--gts-font-brand);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gts-text-muted);
+}
+
+/* --- Badges (same recipe as .gts-game-badge, driven by --badge-color) --- */
+.gts-status-badge {
+  --badge-color: var(--gts-primary);
+  border: 1px solid color-mix(in srgb, var(--badge-color) 55%, transparent);
+  color: var(--badge-color);
+  background-color: color-mix(in srgb, var(--badge-color) 12%, transparent);
+  letter-spacing: 0.06em;
+}
+
+.gts-status-badge[data-tone="accent"] { --badge-color: var(--gts-accent); }
+.gts-status-badge[data-tone="success"] { --badge-color: #40c057; }
+.gts-status-badge[data-tone="warning"] { --badge-color: var(--gts-warning); }
+.gts-status-badge[data-tone="danger"] { --badge-color: var(--gts-danger); }
+.gts-status-badge[data-tone="gold"] { --badge-color: var(--gts-gold); }
+.gts-status-badge[data-tone="muted"] { --badge-color: var(--gts-text-muted); }
+.gts-status-badge[data-tone="discord"] { --badge-color: #8891f2; }
+
+/* Tier / plan pill (mirrors .gts-army-points-badge) */
+.gts-tier-badge {
+  border: 1px solid var(--gts-accent);
+  color: var(--gts-accent);
+  background-color: color-mix(in srgb, var(--gts-accent) 12%, transparent);
+  letter-spacing: 0.06em;
+}
+
+/* --- Buttons --- */
+.gts-btn-primary,
+.gts-btn-primary[data-variant] {
+  background-color: color-mix(in srgb, var(--gts-primary) 18%, transparent);
+  border: 1px solid var(--gts-primary);
+  color: var(--gts-text-heading);
+  transition: background-color 0.18s ease, box-shadow 0.18s ease, transform 0.15s ease, border-color 0.18s ease;
+}
+
+.gts-btn-primary:hover,
+.gts-btn-primary[data-variant]:hover {
+  background-color: color-mix(in srgb, var(--gts-primary) 30%, transparent);
+  border-color: var(--gts-accent);
+  color: var(--gts-text-heading);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--gts-primary) 35%, transparent);
+  transform: translateY(-1px);
+}
+
+.gts-btn-primary:disabled,
+.gts-btn-primary[data-disabled] {
+  opacity: 0.45;
+  transform: none;
+  box-shadow: none;
+}
+
+.gts-btn-secondary,
+.gts-btn-secondary[data-variant] {
+  background-color: var(--gts-bg-subcard);
+  border: 1px solid var(--gts-border-subtle);
+  color: var(--gts-text-heading);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.gts-btn-secondary:hover,
+.gts-btn-secondary[data-variant]:hover {
+  border-color: var(--gts-accent);
+  background-color: color-mix(in srgb, var(--gts-primary) 14%, var(--gts-bg-subcard));
+  color: var(--gts-text-heading);
+}
+
+.gts-btn-ghost,
+.gts-btn-ghost[data-variant] {
+  background-color: transparent;
+  border: 1px solid transparent;
+  color: var(--gts-text-secondary);
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.gts-btn-ghost:hover,
+.gts-btn-ghost[data-variant]:hover {
+  color: var(--gts-text-heading);
+  background-color: var(--gts-bg-glass-subtle);
+}
+
+.gts-btn-success,
+.gts-btn-success[data-variant] {
+  background-color: color-mix(in srgb, #40c057 16%, transparent);
+  border: 1px solid color-mix(in srgb, #40c057 60%, transparent);
+  color: var(--gts-text-heading);
+}
+
+.gts-btn-success:hover,
+.gts-btn-success[data-variant]:hover {
+  background-color: color-mix(in srgb, #40c057 26%, transparent);
+  color: var(--gts-text-heading);
+}
+
+.gts-btn-danger,
+.gts-btn-danger[data-variant] {
+  background-color: color-mix(in srgb, var(--gts-danger) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gts-danger) 55%, transparent);
+  color: var(--gts-text-heading);
+}
+
+.gts-btn-danger:hover,
+.gts-btn-danger[data-variant]:hover {
+  background-color: color-mix(in srgb, var(--gts-danger) 26%, transparent);
+  color: var(--gts-text-heading);
+}
+
+.gts-btn-discord,
+.gts-btn-discord[data-variant] {
+  background-color: rgba(88, 101, 242, 0.18);
+  border: 1px solid rgba(88, 101, 242, 0.6);
+  color: var(--gts-text-heading);
+}
+
+.gts-btn-discord:hover,
+.gts-btn-discord[data-variant]:hover {
+  background-color: rgba(88, 101, 242, 0.3);
+  color: var(--gts-text-heading);
+}
+
+/* Icon-only actions (ActionIcon) */
+.gts-icon-btn,
+.gts-icon-btn[data-variant] {
+  background-color: var(--gts-bg-glass-subtle);
+  border: 1px solid var(--gts-border-faint);
+  color: var(--gts-text-secondary);
+  transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.gts-icon-btn:hover,
+.gts-icon-btn[data-variant]:hover {
+  color: var(--gts-accent);
+  border-color: var(--gts-border-subtle);
+  background-color: color-mix(in srgb, var(--gts-primary) 12%, transparent);
+}
+
+.gts-icon-btn-danger,
+.gts-icon-btn-danger[data-variant] {
+  background-color: transparent;
+  border: 1px solid transparent;
+  color: var(--gts-text-muted);
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.gts-icon-btn-danger:hover,
+.gts-icon-btn-danger[data-variant]:hover {
+  color: var(--gts-danger);
+  background-color: color-mix(in srgb, var(--gts-danger) 14%, transparent);
+}
+
+/* --- Alerts / status banners --- */
+.gts-alert {
+  --alert-tone: var(--gts-accent);
+  background-color: color-mix(in srgb, var(--alert-tone) 10%, var(--gts-bg-card));
+  border: 1px solid color-mix(in srgb, var(--alert-tone) 40%, transparent);
+  border-left: 3px solid var(--alert-tone);
+  color: var(--gts-text-body);
+}
+
+.gts-alert[data-tone="success"] { --alert-tone: #40c057; }
+.gts-alert[data-tone="danger"] { --alert-tone: var(--gts-danger); }
+.gts-alert[data-tone="warning"] { --alert-tone: var(--gts-warning); }
+
+.gts-alert .mantine-Alert-icon,
+.gts-alert .mantine-Alert-title {
+  color: var(--alert-tone);
+}
+
+.gts-alert .mantine-Alert-message {
+  color: var(--gts-text-body);
+}
+
+/* --- Forms: wrap any form / panel in .gts-form to get GTS inputs --- */
+.gts-form .mantine-InputWrapper-label {
+  color: var(--gts-text-secondary);
+  font-family: var(--gts-font-brand);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.gts-form .mantine-InputWrapper-description {
+  color: var(--gts-text-muted);
+}
+
+.gts-form .mantine-Input-input {
+  background-color: var(--gts-bg-input);
+  color: var(--gts-text-heading);
+  border-color: var(--gts-border-subtle);
+  transition: border-color 0.15s ease;
+}
+
+.gts-form .mantine-Input-input:focus,
+.gts-form .mantine-Input-input:focus-within {
+  border-color: var(--gts-accent);
+}
+
+.gts-form .mantine-Input-input[data-disabled],
+.gts-form .mantine-Input-input:disabled {
+  opacity: 0.55;
+}
+
+.gts-form .mantine-Switch-label,
+.gts-form .mantine-Checkbox-label {
+  color: var(--gts-text-secondary);
+}
+
+/* --- Pill tabs (Mantine Tabs variant="pills") --- */
+.gts-pill-tabs .mantine-Tabs-list {
+  gap: 6px;
+}
+
+.gts-pill-tabs .mantine-Tabs-tab {
+  font-family: var(--gts-font-brand);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--gts-text-secondary);
+  background-color: var(--gts-bg-glass-subtle);
+  border: 1px solid var(--gts-border-faint);
+  transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.gts-pill-tabs .mantine-Tabs-tab:hover {
+  color: var(--gts-text-heading);
+  border-color: var(--gts-border-subtle);
+  background-color: color-mix(in srgb, var(--gts-primary) 10%, transparent);
+}
+
+.gts-pill-tabs .mantine-Tabs-tab[data-active] {
+  color: var(--gts-text-heading);
+  background-color: color-mix(in srgb, var(--gts-primary) 22%, transparent);
+  border-color: var(--gts-primary);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--gts-primary) 25%, transparent);
+}
+
+.gts-pill-tabs .mantine-Tabs-tab[data-active] .mantine-Tabs-tabSection {
+  color: var(--gts-accent);
+}
+
+/* --- Segmented control --- */
+.gts-segmented {
+  background-color: var(--gts-bg-subcard);
+  border: 1px solid var(--gts-border-faint);
+}
+
+.gts-segmented .mantine-SegmentedControl-indicator {
+  background-color: color-mix(in srgb, var(--gts-primary) 26%, var(--gts-bg-card));
+  border: 1px solid var(--gts-primary);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--gts-primary) 25%, transparent);
+}
+
+.gts-segmented .mantine-SegmentedControl-label {
+  font-family: var(--gts-font-brand);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--gts-text-secondary);
+}
+
+.gts-segmented .mantine-SegmentedControl-label[data-active] {
+  color: var(--gts-text-heading);
+}
+
+/* --- Data tables (mirrors .gts-army-table-*) --- */
+.gts-data-table {
+  --table-border-color: var(--gts-border-faint);
+  --table-striped-color: var(--gts-bg-glass-subtle);
+  --table-highlight-on-hover-color: color-mix(in srgb, var(--gts-primary) 10%, transparent);
+  color: var(--gts-text-body);
+}
+
+.gts-data-table thead {
+  background-color: var(--gts-bg-subcard);
+}
+
+.gts-data-table th {
+  font-family: var(--gts-font-brand);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gts-text-muted);
+}
+
+.gts-data-table td {
+  font-size: 0.82rem;
+}
+
+/* --- Avatars / logos --- */
+.gts-logo-frame {
+  border: 2px solid color-mix(in srgb, var(--gts-accent) 45%, transparent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--gts-accent) 20%, transparent);
+  background-color: var(--gts-bg-subcard);
+}
+
+.gts-logo-fallback {
+  border: 1px solid var(--gts-border-subtle);
+  background-color: color-mix(in srgb, var(--gts-primary) 14%, var(--gts-bg-subcard));
+  color: var(--gts-accent);
+}
+
+/* --- Image thumbnails --- */
+.gts-thumb-frame {
+  border: 1px solid var(--gts-border-subtle);
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: var(--gts-bg-subcard);
+}
+
+.gts-thumb-frame-sm { height: 64px; }
+.gts-thumb-frame-md { height: 120px; }
+.gts-thumb-frame-lg { height: 180px; }
+
+.gts-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ==========================================================================
+   28. CLUB / STORE THEME PRESETS (WHITE-LABEL VIA DATA ATTRIBUTE)
+   Applied with data-gts-theme="..." on a wrapper; everything inside inherits.
+   ========================================================================== */
+[data-gts-theme="gts"] { --gts-primary: #1864ff; --gts-accent: #29d4ff; }
+[data-gts-theme="ember"] { --gts-primary: #d9480f; --gts-accent: #ffa94d; }
+[data-gts-theme="gold"] { --gts-primary: #b08900; --gts-accent: #e5c158; }
+[data-gts-theme="crimson"] { --gts-primary: #c92a2a; --gts-accent: #ff6b6b; }
+[data-gts-theme="emerald"] { --gts-primary: #2b8a3e; --gts-accent: #51cf66; }
+[data-gts-theme="violet"] { --gts-primary: #6741d9; --gts-accent: #b197fc; }
+[data-gts-theme="steel"] { --gts-primary: #495057; --gts-accent: #adb5bd; }
+
+.gts-theme-swatch {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--gts-primary) 0 50%, var(--gts-accent) 50% 100%);
+  border: 2px solid var(--gts-border-faint);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.gts-theme-swatch:hover {
+  transform: translateY(-1px);
+  border-color: var(--gts-border-subtle);
+}
+
+.gts-theme-swatch[data-active="true"] {
+  border-color: var(--gts-text-heading);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--gts-accent) 45%, transparent);
+}
+
+.gts-theme-swatch[data-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.4;
+}

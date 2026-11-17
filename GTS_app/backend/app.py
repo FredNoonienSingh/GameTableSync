@@ -8,10 +8,12 @@ from werkzeug.security import generate_password_hash
 from flask_jwt_extended import JWTManager
 from sqlalchemy import func
 from flasgger import Swagger
+from services.bsdata_sync import start_catalog_scheduler
 
 from extensions import db
 from models import User, FactionCategory, Faction
 from endpoints import register_blueprints
+from endpoints.auth import _ensure_user_profile_columns
 from endpoints.utils import log
 
 app = Flask(__name__)
@@ -105,6 +107,7 @@ def init_factions():
 def init_db_and_admin():
     with app.app_context():
         db.create_all()
+        _ensure_user_profile_columns()
         init_factions()
 
         admin_username = os.environ.get("ADMIN_USERNAME")
@@ -152,4 +155,5 @@ def init_db_command():
 
 if __name__ == "__main__":
     init_db_and_admin()
+    start_catalog_scheduler(app)
     app.run(host="0.0.0.0", port=5000)
